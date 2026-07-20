@@ -499,6 +499,49 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   @doc """
+  Renders the mark: a head, face on, eyes open.
+
+  It is the whole argument of the product in one shape — people are the primary
+  focus — so it is a FACE rather than a monogram or a glyph of a network. Two
+  eyes on a circle is the least you can draw that a person reads as another
+  person looking back.
+
+  `animated` blinks it. The blink is long-cycle and single-frame on purpose: a
+  logo that blinks often is a logo that nags, but one that blinks occasionally
+  is alive in peripheral vision, which is exactly the claim the mark is making.
+  Pass `animated={false}` where stillness matters — a favicon, a print sheet, a
+  dense list of many marks.
+
+  ## Examples
+
+      <.head />
+      <.head class="h-8 text-primary-600" animated={false} />
+  """
+  attr :class, :string, default: "h-20 text-primary-500"
+  attr :animated, :boolean, default: true
+  attr :rest, :global
+
+  def head(assigns) do
+    ~H"""
+    <svg
+      class={["head", @animated && "is-animated", @class]}
+      viewBox="50.8 0 298 400"
+      fill="none"
+      aria-hidden="true"
+      {@rest}
+    >
+      <g class="head-face">
+        <circle cx="199.8" cy="197.8" r="149" fill="currentColor" />
+        <g class="head-eyes">
+          <circle cx="108.6" cy="231.3" r="18" fill="#000000" />
+          <circle cx="291" cy="231.3" r="18" fill="#000000" />
+        </g>
+      </g>
+    </svg>
+    """
+  end
+
+  @doc """
   Renders a [Heroicon](https://heroicons.com).
 
   Heroicons come in three styles – outline, solid, and mini.

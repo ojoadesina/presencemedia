@@ -179,6 +179,28 @@ defmodule PresencemediaWeb.HomeLive do
       id="regions"
       class="fixed inset-0 z-0 bg-background-50 font-mono dark:bg-background-950"
     >
+      <%!-- THE MARK sits ABSOLUTELY, not in the flow, and that is the whole
+           trick of putting it here. The band's position is derived from the
+           list's — 37vh of lead, then 34% down the container — so anything
+           added above the heading would push the list down and take the band
+           with it. Out of flow, the mark cannot move the one piece of geometry
+           this screen is built on.
+
+           It shares the rows' 1.95rem inset rather than the container's, which
+           is what puts it on the same left edge as "19+", RELATIONSHIPS, and
+           every label below them. --%>
+      <div class="pointer-events-none absolute inset-x-0 top-8 z-10">
+        <div class="mx-auto w-full max-w-6xl px-4">
+          <a
+            href="/"
+            class="pointer-events-auto inline-block px-[1.95rem]"
+            aria-label="Presencemedia — home"
+          >
+            <.head class="h-9 text-primary-600 dark:text-primary-500" />
+          </a>
+        </div>
+      </div>
+
       <%!-- the OLD design's measure, kept: the same mx-auto max-w-6xl px-4 the
            slot grid sat in, so this surface lines up with what came before. --%>
       <div class="mx-auto h-full w-full max-w-6xl px-4">
@@ -293,7 +315,7 @@ defmodule PresencemediaWeb.HomeLive do
                        nobody can hit. --%>
                   <button
                     type="button"
-                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-background-950/35 text-background-50 transition-colors hover:bg-background-950/50 dark:bg-background-950/50 dark:hover:bg-background-950/65"
+                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-background-950/15 text-background-50 transition-colors hover:bg-background-950/30 dark:bg-background-950/25 dark:hover:bg-background-950/40"
                     aria-label="Play again"
                   >
                     <%!-- Inline rather than a heroicon: this is a three-quarter
