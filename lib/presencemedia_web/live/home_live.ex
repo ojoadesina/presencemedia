@@ -59,7 +59,10 @@ defmodule PresencemediaWeb.HomeLive do
          corner brackets, the two fade masks, the state rules — live under
          "THE RELATIONSHIP LIST" in app.css.
     --%>
-    <div id="regions" class="fixed inset-0 z-0 bg-black font-mono">
+    <div
+      id="regions"
+      class="fixed inset-0 z-0 bg-background-50 font-mono dark:bg-background-950"
+    >
       <%!-- the OLD design's measure, kept: the same mx-auto max-w-6xl px-4 the
            slot grid sat in, so this surface lines up with what came before. --%>
       <div class="mx-auto h-full w-full max-w-6xl px-4">
@@ -68,8 +71,10 @@ defmodule PresencemediaWeb.HomeLive do
                needs the room to be a line of prose. It shares only the rows'
                inset, which is what puts every left edge on one line. --%>
           <div class="max-w-2xl px-[1.95rem]">
-            <p class="text-[clamp(1.25rem,1rem+0.7vw,1.75rem)] leading-none text-white">19+</p>
-            <p class="mt-2 text-[clamp(1rem,0.85rem+0.38vw,1.25rem)] tracking-[0.15em] text-[#6f6f6f]">
+            <p class="text-[clamp(var(--text-4xl),1rem+0.7vw,var(--text-6xl))] leading-none text-background-950 dark:text-background-50">
+              19+
+            </p>
+            <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-background-600 dark:text-background-500">
               RELATIONSHIPS
             </p>
           </div>
@@ -90,12 +95,15 @@ defmodule PresencemediaWeb.HomeLive do
               <ul class="pt-[calc(17vh+4rem)] pb-[33vh]">
                 <li
                   :for={rel <- @relationships}
-                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(1rem,0.85rem+0.38vw,1.25rem)] tracking-[0.14em] text-[#e6e6e6] transition-colors duration-200"
+                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-background-900 transition-colors duration-200 dark:text-background-100"
                 >
                   <span>{rel.label}</span>
                   <%!-- their own name, quiet beside the label: it arrives only
-                       when the row is in the band, and never competes with it. --%>
-                  <span class="regions-name ml-3 text-[#585858] opacity-0 transition-opacity duration-200">
+                       when the row is in the band, and never competes with it.
+                       It keeps its own colour on purpose — the focused row turns
+                       terracotta, and the name staying muted is what stops the
+                       band reading as two labels shouting at once. --%>
+                  <span class="regions-name ml-3 text-background-300 opacity-0 transition-opacity duration-200 dark:text-background-700">
                     {rel.name}
                   </span>
                 </li>
@@ -112,13 +120,17 @@ defmodule PresencemediaWeb.HomeLive do
                  pinging out from under it. Both box and dot appear only on a
                  settled selection. --%>
             <div class="pointer-events-none absolute left-0 top-[34%] flex w-[calc(min(100vw,72rem)-2rem)] -translate-y-1/2 items-center">
-              <div class="focus-box relative flex h-[3.5rem] w-[32rem] shrink-0 items-center bg-[rgba(34,211,238,0.18)] px-[1.95rem]">
-                <span class="focus-empty text-[clamp(1rem,0.85rem+0.38vw,1.25rem)] tracking-[0.14em] text-[#22d3ee] opacity-0 transition-opacity duration-200">--</span>
+              <div class="focus-box relative flex h-[3.5rem] w-[32rem] shrink-0 items-center bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20">
+                <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
+                  --
+                </span>
               </div>
               <div class="focus-marker relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center opacity-0 transition-opacity duration-200">
                 <span class="relative flex size-3.5">
-                  <span class="presence-ping absolute inline-flex h-full w-full rounded-full bg-[#5ee9a0]"></span>
-                  <span class="presence-dot relative inline-flex size-3.5 rounded-full bg-[#5ee9a0]"></span>
+                  <span class="presence-ping absolute inline-flex h-full w-full rounded-full bg-secondary-600 dark:bg-secondary-300">
+                  </span>
+                  <span class="presence-dot relative inline-flex size-3.5 rounded-full bg-secondary-600 dark:bg-secondary-300">
+                  </span>
                 </span>
               </div>
             </div>

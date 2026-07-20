@@ -8,12 +8,22 @@ defmodule PresencemediaWeb.CoreComponents do
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
-  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
-  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
-  and themes. Here are useful references:
+  Styling is hand-written Tailwind against the house palette in `app.css` —
+  there is no component library underneath, so what you read here is what
+  renders. Four rules keep the set coherent:
 
-    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
-      started and see the available components.
+    * SURFACES come from the `background` ramp, read from opposite ends in
+      light and dark. Every colour utility therefore ships with a `dark:` twin.
+    * `primary` (terracotta) means ATTENTION — the pressed button, the invalid
+      field, the error flash. The palette carries no separate red, and it does
+      not need one.
+    * `secondary` (sage) means AFFIRMATION — the info flash. It is also the
+      presence dot's colour, so spend it sparingly.
+    * SIZES come from the custom type scale, which is tighter than Tailwind's
+      stock ramp — `text-md` here is 0.875rem, and `text-xl` is 1rem, not
+      1.25rem. Never assume a stock size means what it usually means.
+
+  Useful references:
 
     * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
       we build on. You will use it for layout, sizing, flexbox, grid, and
@@ -29,6 +39,34 @@ defmodule PresencemediaWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
+
+  # Every input type shares one shell, so a text field and a select can never
+  # drift apart on border, radius, focus ring or disabled treatment.
+  #
+  # These are FUNCTIONS, not module attributes, because inside ~H the `@name`
+  # form always means `assigns.name` — a module attribute referenced that way in
+  # a template silently becomes a missing-assign crash at render time.
+  defp input_base do
+    "w-full rounded-md border bg-background-50 px-3 py-2 text-md text-background-900 " <>
+      "placeholder:text-background-400 transition-colors outline-none " <>
+      "focus-visible:ring-2 focus-visible:ring-primary-500/40 " <>
+      "disabled:cursor-not-allowed disabled:opacity-50 " <>
+      "dark:bg-background-900 dark:text-background-100 dark:placeholder:text-background-600"
+  end
+
+  defp input_ok do
+    "border-background-200 focus-visible:border-primary-500 dark:border-background-800"
+  end
+
+  defp input_bad do
+    "border-primary-600 focus-visible:border-primary-600 dark:border-primary-500"
+  end
+
+  # The label above every field. One definition so a select and a text input can
+  # never disagree about weight or spacing.
+  defp field_label do
+    "mb-1 block text-sm font-medium text-background-700 dark:text-background-300"
+  end
 
   @doc """
   Renders flash notices.
@@ -55,22 +93,23 @@ defmodule PresencemediaWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class="toast toast-top toast-end z-50"
+      class="fixed top-4 right-4 z-50 w-80 cursor-pointer sm:w-96"
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
+        "flex items-start gap-3 rounded-lg border p-4 text-md shadow-lg text-wrap",
+        @kind == :info &&
+          "border-secondary-200 bg-secondary-50 text-secondary-900 dark:border-secondary-800 dark:bg-secondary-950 dark:text-secondary-100",
+        @kind == :error &&
+          "border-primary-200 bg-primary-50 text-primary-900 dark:border-primary-800 dark:bg-primary-950 dark:text-primary-100"
       ]}>
         <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
-        <div>
+        <div class="flex-1">
           <p :if={@title} class="font-semibold">{@title}</p>
           <p>{msg}</p>
         </div>
-        <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label="close">
+        <button type="button" class="group cursor-pointer self-start" aria-label="close">
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
@@ -93,11 +132,25 @@ defmodule PresencemediaWeb.CoreComponents do
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+    base =
+      "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 " <>
+        "text-md font-semibold transition-colors outline-none " <>
+        "focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-2 " <>
+        "focus-visible:ring-offset-background-50 dark:focus-visible:ring-offset-background-950 " <>
+        "disabled:pointer-events-none disabled:opacity-50"
+
+    # Solid carries the page's one primary action. Soft is the same colour at low
+    # ink, so a row of secondary actions reads as a group rather than as noise.
+    variants = %{
+      "primary" =>
+        "bg-primary-600 text-primary-50 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600",
+      nil =>
+        "bg-primary-100 text-primary-800 hover:bg-primary-150 dark:bg-primary-950 dark:text-primary-200 dark:hover:bg-primary-900"
+    }
 
     assigns =
       assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
+        [base, Map.fetch!(variants, assigns[:variant])]
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
@@ -204,8 +257,8 @@ defmodule PresencemediaWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="fieldset mb-2">
-      <label>
+    <div class="mb-2">
+      <label class="flex items-center gap-2 text-md text-background-900 dark:text-background-100">
         <input
           type="hidden"
           name={@name}
@@ -213,17 +266,20 @@ defmodule PresencemediaWeb.CoreComponents do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <span class="label">
-          <input
-            type="checkbox"
-            id={@id}
-            name={@name}
-            value="true"
-            checked={@checked}
-            class={@class || "checkbox checkbox-sm"}
-            {@rest}
-          />{@label}
-        </span>
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class={
+            @class ||
+              "size-4 shrink-0 cursor-pointer rounded border-background-300 accent-primary-600 " <>
+                "outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 " <>
+                "dark:border-background-700 dark:accent-primary-500"
+          }
+          {@rest}
+        />{@label}
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -232,13 +288,17 @@ defmodule PresencemediaWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class={field_label()}>{@label}</span>
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[
+            @class || [input_base(), "cursor-pointer"],
+            @errors == [] && !@class && input_ok(),
+            @errors != [] && (@error_class || input_bad())
+          ]}
           multiple={@multiple}
           {@rest}
         >
@@ -253,15 +313,16 @@ defmodule PresencemediaWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class={field_label()}>{@label}</span>
         <textarea
           id={@id}
           name={@name}
           class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
+            @class || [input_base(), "min-h-24"],
+            @errors == [] && !@class && input_ok(),
+            @errors != [] && (@error_class || input_bad())
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -274,17 +335,18 @@ defmodule PresencemediaWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class={field_label()}>{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class || input_base(),
+            @errors == [] && !@class && input_ok(),
+            @errors != [] && (@error_class || input_bad())
           ]}
           {@rest}
         />
@@ -297,7 +359,7 @@ defmodule PresencemediaWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+    <p class="mt-1.5 flex items-center gap-2 text-sm text-primary-700 dark:text-primary-400">
       <.icon name="hero-exclamation-circle" class="size-5" />
       {render_slot(@inner_block)}
     </p>
@@ -315,10 +377,10 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <h1 class="text-3xl font-semibold leading-8 text-background-900 dark:text-background-100">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="text-md text-background-600 dark:text-background-400">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -359,34 +421,53 @@ defmodule PresencemediaWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
-      <thead>
-        <tr>
-          <th :for={col <- @col}>{col[:label]}</th>
-          <th :if={@action != []}>
-            <span class="sr-only">Actions</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
-        <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
-          <td
-            :for={col <- @col}
-            phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
+    <%!-- The wrapper is what keeps a wide table from pushing the PAGE sideways:
+         it scrolls inside its own box instead. --%>
+    <div class="w-full overflow-x-auto">
+      <table class="w-full border-collapse text-left text-md">
+        <thead class="border-b border-background-200 dark:border-background-800">
+          <tr>
+            <th
+              :for={col <- @col}
+              class="p-3 text-sm font-semibold tracking-wide text-background-600 uppercase dark:text-background-400"
+            >
+              {col[:label]}
+            </th>
+            <th :if={@action != []} class="p-3">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          id={@id}
+          phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}
+          class="text-background-900 dark:text-background-100"
+        >
+          <%!-- Zebra striping by hand. nth-child on the ROW rather than a class on
+               each cell, so a stream insert cannot land on the wrong colour. --%>
+          <tr
+            :for={row <- @rows}
+            id={@row_id && @row_id.(row)}
+            class="border-b border-background-150 odd:bg-background-100/50 hover:bg-primary-50 dark:border-background-900 dark:odd:bg-background-900/40 dark:hover:bg-primary-950/40"
           >
-            {render_slot(col, @row_item.(row))}
-          </td>
-          <td :if={@action != []} class="w-0 font-semibold">
-            <div class="flex gap-4">
-              <%= for action <- @action do %>
-                {render_slot(action, @row_item.(row))}
-              <% end %>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td
+              :for={col <- @col}
+              phx-click={@row_click && @row_click.(row)}
+              class={["p-3", @row_click && "hover:cursor-pointer"]}
+            >
+              {render_slot(col, @row_item.(row))}
+            </td>
+            <td :if={@action != []} class="w-0 p-3 font-semibold">
+              <div class="flex gap-4">
+                <%= for action <- @action do %>
+                  {render_slot(action, @row_item.(row))}
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     """
   end
 
@@ -406,12 +487,12 @@ defmodule PresencemediaWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="list">
-      <li :for={item <- @item} class="list-row">
-        <div class="list-col-grow">
-          <div class="font-bold">{item.title}</div>
-          <div>{render_slot(item)}</div>
+    <ul class="divide-y divide-background-200 dark:divide-background-800">
+      <li :for={item <- @item} class="flex flex-col gap-1 py-4">
+        <div class="text-sm font-semibold tracking-wide text-background-600 uppercase dark:text-background-400">
+          {item.title}
         </div>
+        <div class="text-md text-background-900 dark:text-background-100">{render_slot(item)}</div>
       </li>
     </ul>
     """
