@@ -1,0 +1,210 @@
+/* See the Tailwind configuration guide for advanced usage
+   https://tailwindcss.com/docs/configuration */
+
+@import "tailwindcss" source(none);
+@source "../css";
+@source "../js";
+@source "../../lib/presencemedia_web";
+
+/* A Tailwind plugin that makes "hero-#{ICON}" classes available.
+   The heroicons installation itself is managed by your mix.exs */
+@plugin "../vendor/heroicons";
+
+/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:
+   curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
+   Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
+@plugin "../vendor/daisyui" {
+  themes: false;
+}
+
+/* daisyUI theme plugin. You can update this file by fetching the latest version with:
+  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
+  We ship with two themes, a light one inspired on Phoenix colors and a dark one inspired
+  on Elixir colors. Build your own at: https://daisyui.com/theme-generator/ */
+@plugin "../vendor/daisyui-theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: oklch(30.33% 0.016 252.42);
+  --color-base-200: oklch(25.26% 0.014 253.1);
+  --color-base-300: oklch(20.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: oklch(58% 0.233 277.117);
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(58% 0.233 277.117);
+  --color-secondary-content: oklch(96% 0.018 272.314);
+  --color-accent: oklch(60% 0.25 292.717);
+  --color-accent-content: oklch(96% 0.016 293.756);
+  --color-neutral: oklch(37% 0.044 257.287);
+  --color-neutral-content: oklch(98% 0.003 247.858);
+  --color-info: oklch(58% 0.158 241.966);
+  --color-info-content: oklch(97% 0.013 236.62);
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.21875rem;
+  --size-field: 0.21875rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "../vendor/daisyui-theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(98% 0 0);
+  --color-base-200: oklch(96% 0.001 286.375);
+  --color-base-300: oklch(92% 0.004 286.32);
+  --color-base-content: oklch(21% 0.006 285.885);
+  --color-primary: oklch(70% 0.213 47.604);
+  --color-primary-content: oklch(98% 0.016 73.684);
+  --color-secondary: oklch(55% 0.027 264.364);
+  --color-secondary-content: oklch(98% 0.002 247.839);
+  --color-accent: oklch(0% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(44% 0.017 285.786);
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: oklch(62% 0.214 259.815);
+  --color-info-content: oklch(97% 0.014 254.604);
+  --color-success: oklch(70% 0.14 182.503);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.21875rem;
+  --size-field: 0.21875rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Add variants based on LiveView classes */
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+/* Use the data attribute for dark mode  */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session], [data-phx-teleported-src] { display: contents }
+
+/* This file is for your main application CSS */
+
+/* ── THE RELATIONSHIP LIST ─────────────────────────────────────────────────────
+   Only what Tailwind cannot express lives here — the corner brackets, the two
+   fade masks, and the state rules the hook drives. Every size, colour and piece
+   of layout is a utility in world_live.ex.
+
+   THE BRACKETS take a length PER AXIS. One shared length was the old bug: arms
+   that read fine across a wide band all but sealed a short one shut. Vertical
+   arms are sized against the height they sit in. */
+#regions {
+  --rg-accent: #22d3ee;
+  --rg-bracket: #67e8f9;
+  --b: 3px; /* bracket weight */
+}
+.focus-box::before,
+.focus-marker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--ax) var(--b) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--b) var(--ay) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 100% 0 / var(--ax) var(--b) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 100% 0 / var(--b) var(--ay) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 0 100% / var(--ax) var(--b) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 0 100% / var(--b) var(--ay) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 100% 100% / var(--ax) var(--b) no-repeat,
+    linear-gradient(var(--rg-bracket) 0 0) 100% 100% / var(--b) var(--ay) no-repeat;
+}
+/* 61px square: 14px arms leave 33px open on every side. */
+.focus-marker::before {
+  --ax: 14px;
+  --ay: 14px;
+}
+/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. */
+.focus-box::before {
+  --ax: 24px;
+  --ay: 14px;
+}
+/* THE PRESENCE DOT. Tailwind's own ping tops out at 2x in 1s, which on a 12px
+   dot is a 24px flicker lost inside a 61px box — too small and too quick to
+   read as a heartbeat. This one travels 3.6x over nearly two seconds, so the
+   ring has somewhere to go and time to be seen going there, and the dot beneath
+   carries a glow so it stays lit BETWEEN beats rather than only during them. */
+.presence-ping {
+  animation: presence-ping 1.9s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes presence-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(3.6);
+    opacity: 0;
+  }
+}
+.presence-dot {
+  box-shadow:
+    0 0 10px rgba(94, 233, 160, 0.85),
+    0 0 3px rgba(94, 233, 160, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .presence-ping {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+/* The list fades out at BOTH ends rather than stopping at an edge, so rows
+   arrive and leave instead of appearing. (Tailwind ships no mask utilities.) */
+.regions-scroll {
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
+}
+
+/* A name too long for the band does not get cut off square or ellipsed — it
+   FADES OUT at the row's edge, so it reads as continuing rather than as broken.
+   The mask sits on the row, so it only ever bites text that actually reaches
+   the edge; a short name never touches it. */
+.regions-item {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
+/* The states regions.ts drives. The placeholder belongs to REST, not to motion:
+   while the list moves a row is passing through the band and the two would sit
+   on top of each other. The line and marker are the SETTLED choice made
+   visible, so they leave the instant the list moves. A relationship's own name
+   appears only while its row is IN the band — it is context, not a second
+   label, so it never travels with the row. */
+.regions-item.is-focused {
+  color: var(--rg-accent);
+}
+.regions-item.is-focused .regions-name {
+  opacity: 1;
+}
+#regions:not(.has-selection):not(.is-scrolling) .focus-empty {
+  opacity: 1;
+}
+#regions.has-selection .focus-marker {
+  opacity: 1;
+}

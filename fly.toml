@@ -1,0 +1,23 @@
+# presencemedia — the presence app. No database: the surface is fixture data for
+# now, and the app does not depend on Ecto at all, so there is nothing to attach.
+app = "presencemedia"
+primary_region = "fra"
+
+[build]
+
+[env]
+  PHX_HOST = "presencemedia.fly.dev"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
