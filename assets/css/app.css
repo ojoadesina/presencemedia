@@ -190,9 +190,18 @@ html[data-theme="dark"] {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
   --rg-dot: var(--color-secondary-600);
-  /* On cream, a glow is just haze — there is no darkness for light to bleed
-     into. Light mode gets a tight contact shadow instead, and dark mode gets
-     the real thing. */
+  /* THE PING IS NOT THE DOT'S COLOUR, and this is the whole reason it has a
+     variable of its own. A pulse reads as ALIVE because it looks like light
+     leaving the dot — on cocoa, a pale sage ring does exactly that. Inverted,
+     the logic does not survive: nothing can be lighter than cream, so reusing
+     the dot's dark green made the ring read as a stain spreading outwards
+     instead. Light mode therefore pings in a lighter, more saturated sage at
+     lower opacity, which dissolves into the page rather than smudging it. */
+  --rg-ping: var(--color-secondary-400);
+  --rg-ping-opacity: 0.5;
+  /* Same inversion, same reasoning: on cream a glow is just haze, because
+     there is no darkness for the light to bleed into. Light mode gets a tight
+     contact shadow and dark mode gets the real bloom. */
   --rg-glow-spread: 4px;
   --rg-glow-strength: 45%;
   --b: 3px; /* bracket weight */
@@ -202,6 +211,8 @@ html[data-theme="dark"] {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
   --rg-dot: var(--color-secondary-300);
+  --rg-ping: var(--color-secondary-300);
+  --rg-ping-opacity: 0.9;
   --rg-glow-spread: 10px;
   --rg-glow-strength: 85%;
 }
@@ -211,6 +222,8 @@ html[data-theme="dark"] {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
     --rg-dot: var(--color-secondary-300);
+    --rg-ping: var(--color-secondary-300);
+    --rg-ping-opacity: 0.9;
     --rg-glow-spread: 10px;
     --rg-glow-strength: 85%;
   }
@@ -249,13 +262,17 @@ html[data-theme="dark"] {
    read as a heartbeat. This one travels 3.6x over nearly two seconds, so the
    ring has somewhere to go and time to be seen going there, and the dot beneath
    carries a glow so it stays lit BETWEEN beats rather than only during them. */
+/* Colour and starting opacity live here rather than as utilities on the span,
+   because the ring's opacity is a KEYFRAME value — a utility would be
+   overwritten the moment the animation ran. */
 .presence-ping {
+  background-color: var(--rg-ping);
   animation: presence-ping 1.9s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 @keyframes presence-ping {
   0% {
     transform: scale(1);
-    opacity: 0.9;
+    opacity: var(--rg-ping-opacity);
   }
   70%,
   100% {
@@ -277,10 +294,20 @@ html[data-theme="dark"] {
 }
 
 /* The list fades out at BOTH ends rather than stopping at an edge, so rows
-   arrive and leave instead of appearing. (Tailwind ships no mask utilities.) */
+   arrive and leave instead of appearing. (Tailwind ships no mask utilities.)
+
+   THE SCROLLBAR IS HIDDEN, not disabled — the element still scrolls by wheel,
+   trackpad, touch and keyboard, and the band is what reports position. A bar
+   would only draw a hard vertical edge straight through the fade the mask
+   exists to create. Three declarations because three engines disagree. */
 .regions-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
   mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
+}
+.regions-scroll::-webkit-scrollbar {
+  display: none; /* WebKit / Blink */
 }
 
 /* A name too long for the band does not get cut off square or ellipsed — it
