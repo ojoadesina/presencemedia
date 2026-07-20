@@ -19,6 +19,57 @@ export const Regions = {
     const root = document.getElementById("regions");
     if (!root || !items.length) return;
 
+    // THE FRAME is ONE element that every row borrows in turn, rather than one
+    // frame per row: nineteen <video> tags would each hold a buffer for a
+    // picture nobody is looking at. The cost of sharing is that the media must
+    // be torn down on the way out as deliberately as it is set up on the way in.
+    const frame = document.getElementById("frame");
+    const video = frame?.querySelector<HTMLVideoElement>(".frame-video") ?? null;
+    const audio = frame?.querySelector<HTMLAudioElement>(".frame-audio") ?? null;
+
+    // Pausing alone leaves the last frame of the previous person frozen on
+    // screen and the file still downloading. Dropping the src and calling
+    // load() is what actually stops the transfer and blanks the picture.
+    const stopMedia = () => {
+      for (const m of [video, audio]) {
+        if (!m) continue;
+        m.pause();
+        if (m.getAttribute("src")) {
+          m.removeAttribute("src");
+          m.load();
+        }
+      }
+    };
+
+    const showFrame = (el: HTMLElement) => {
+      if (!frame) return;
+      const mode = el.dataset.frame || "empty";
+      const src = el.dataset.media || "";
+      const media = mode === "face" ? video : mode === "voice" ? audio : null;
+
+      // Re-selecting the row that is already playing must not restart it.
+      if (frame.dataset.mode === mode && frame.dataset.src === src) return;
+
+      stopMedia();
+      frame.dataset.mode = mode;
+      frame.dataset.src = src;
+      if (!media || !src) return;
+
+      media.src = src;
+      // Autoplay with sound needs a user activation. A scroll is not one, so
+      // the first selection of a session can legitimately be refused — that is
+      // the browser's policy, not a failure, and it must not throw an unhandled
+      // rejection. Any click on a row satisfies it from then on.
+      media.play().catch(() => {});
+    };
+
+    const hideFrame = () => {
+      if (!frame) return;
+      stopMedia();
+      frame.dataset.mode = "empty";
+      delete frame.dataset.src;
+    };
+
     let settleTimer: number | undefined;
     // A snap scrolls, which settles, which may snap again. Bounded, so a snap
     // the scroller cannot actually perform (already at either end) gives up
@@ -55,11 +106,14 @@ export const Regions = {
       // Out of reach — the band is genuinely empty and says so.
       if (!near || Math.abs(near.delta) > rowHeight()) {
         root.classList.remove("has-selection");
+        hideFrame();
         snaps = 0;
         return;
       }
 
       // In reach but off-centre — draw it in, and settle again when it lands.
+      // No media yet: the row is still travelling, and a clip that started here
+      // would be cut off by the next settle a few hundred milliseconds later.
       if (Math.abs(near.delta) > 1 && snaps < 3) {
         snaps++;
         scroll.scrollBy({ top: near.delta, behavior: "smooth" });
@@ -69,6 +123,7 @@ export const Regions = {
       snaps = 0;
       near.el.classList.add("is-focused");
       root.classList.add("has-selection");
+      showFrame(near.el);
     };
 
     scroll.addEventListener(
@@ -79,6 +134,9 @@ export const Regions = {
         root.classList.add("is-scrolling");
         root.classList.remove("has-selection");
         clear();
+        // The frame leaves with the selection. Sound continuing over a moving
+        // list would be a voice with nobody attached to it.
+        hideFrame();
         window.clearTimeout(settleTimer);
         settleTimer = window.setTimeout(settle, 140);
       },

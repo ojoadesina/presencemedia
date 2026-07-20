@@ -2,45 +2,129 @@ defmodule PresencemediaWeb.HomeLive do
   @moduledoc """
   The presence app's home.
 
-  A scroll of the relationships you hold, with a fixed band a third of the way
-  down that IS the selection: rows pass THROUGH it and whichever lands there is
-  chosen. The band shows your name for them with their own name beside it,
-  faded, and a live dot in the box at the far edge.
+  A scroll of the users you hold, with a fixed band a third of the way down that
+  IS the selection: rows pass THROUGH it and whichever lands there is chosen.
+  The band shows your name for them with their own name beside it, faded, and
+  the frame at the far edge comes alive with whatever they are sending.
 
-  The rows are FIXTURE DATA. This app has no database at all yet — it does not
+  The users are FIXTURE DATA. This app has no database at all yet — it does not
   even depend on Ecto — so nothing here is loaded, only rendered. That is
-  deliberate: the surface is being designed before the spine is built.
+  deliberate: the surface is being designed before the spine is built. The MEDIA
+  those fixtures point at is real, though, and fetched from Wikimedia Commons at
+  play time, so what you are looking at is the actual behaviour and not a mime
+  of it.
   """
   use PresencemediaWeb, :live_view
 
-  # Each is a label YOU gave them plus the name they came with. The label leads
-  # because it is how you actually think of them; the name follows, faded, and
-  # only once the row is in the band — see the focus rules in app.css.
-  @relationships [
-    %{label: "MUM", name: "SARAH"},
-    %{label: "DAD", name: "MICHAEL"},
-    %{label: "BIG BROTHER", name: "DANIEL OLUWASEUN"},
-    %{label: "BROTHER", name: "JOSEPH"},
-    %{label: "SISTER", name: "AMAKA"},
-    %{label: "GRANDMA", name: "ROSE"},
-    %{label: "COACH", name: "IBRAHIM"},
-    %{label: "BEST FRIEND", name: "TUNDE ADEBAYO"},
-    %{label: "NEIGHBOUR", name: "ELENA"},
-    %{label: "COUSIN", name: "KEMI"},
-    %{label: "UNCLE", name: "PETER"},
-    %{label: "AUNT", name: "BLESSING"},
-    %{label: "MENTOR", name: "ADEOLA"},
-    %{label: "ROOMMATE", name: "LUCAS"},
-    %{label: "BOSS", name: "HANNAH"},
-    %{label: "DOCTOR", name: "NGOZI"},
-    %{label: "BARBER", name: "FEMI"},
-    %{label: "PASTOR", name: "EMMANUEL"},
-    %{label: "TEAMMATE", name: "CHIDI"}
+  # Wikimedia Commons serves a permanent MP3/WebM transcode alongside every
+  # upload. We point at those rather than the .ogg and .webm originals for one
+  # blunt reason: Safari cannot play Ogg Vorbis at all, and the originals are
+  # 9–14 MB apiece for a screen that is forty-five pixels square. The 360p
+  # transcodes are roughly a tenth of that.
+  @commons "https://upload.wikimedia.org/wikipedia/commons/transcoded"
+
+  # A USER is a label YOU gave them, the name they came with, and what their
+  # frame is currently carrying. The label leads because it is how you actually
+  # think of them; the name follows, faded, and only once the row is in the band.
+  #
+  # FRAME is the state of the line to them, and it is deliberately three-valued
+  # rather than a boolean, because "nothing coming through" and "audio coming
+  # through" are different facts and the frame renders them differently:
+  #
+  #   "empty" — no signal. The screen sits still.
+  #   "voice" — audio only. The screen breathes, because there is nothing to
+  #             look at and the sound is the whole message.
+  #   "face"  — video. The screen holds still and shows it.
+  #
+  # THE MEDIA IS REAL, and chosen to match what this app is for. The voices come
+  # from Commons' Voice Intro Project, where people record a short introduction
+  # of themselves — the closest thing to a real first contact that exists under
+  # a free licence. The faces come from Wikitongues, whose recordings are single
+  # speakers talking to camera. Every clip is under a minute. Licences run CC0
+  # to CC BY-SA; attribution lives in ATTRIBUTION.md at the repo root.
+  @users [
+    %{
+      label: "MUM",
+      name: "SARAH",
+      frame: "voice",
+      media:
+        "#{@commons}/4/4f/Simone_Giertz_introducing_herself.ogg/" <>
+          "Simone_Giertz_introducing_herself.ogg.mp3"
+    },
+    %{
+      label: "DAD",
+      name: "MICHAEL",
+      frame: "face",
+      media:
+        "#{@commons}/6/67/WIKITONGUES-_Paulus_speaking_Mentuka.webm/" <>
+          "WIKITONGUES-_Paulus_speaking_Mentuka.webm.360p.vp9.webm"
+    },
+    %{
+      label: "BIG BROTHER",
+      name: "DANIEL OLUWASEUN",
+      frame: "voice",
+      media: "#{@commons}/0/0a/Charles_Duke_Intro.ogg/Charles_Duke_Intro.ogg.mp3"
+    },
+    %{label: "BROTHER", name: "JOSEPH", frame: "empty", media: nil},
+    %{
+      label: "SISTER",
+      name: "AMAKA",
+      frame: "face",
+      media:
+        "#{@commons}/0/01/WIKITONGUES-_Hermica_speaking_Bengape.webm/" <>
+          "WIKITONGUES-_Hermica_speaking_Bengape.webm.360p.vp9.webm"
+    },
+    %{
+      label: "GRANDMA",
+      name: "ROSE",
+      frame: "voice",
+      media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
+    },
+    %{label: "COACH", name: "IBRAHIM", frame: "empty", media: nil},
+    %{
+      label: "BEST FRIEND",
+      name: "TUNDE ADEBAYO",
+      frame: "face",
+      media:
+        "#{@commons}/3/31/WIKITONGUES-_C%C3%A9lestin_speaking_Kilega.webm/" <>
+          "WIKITONGUES-_C%C3%A9lestin_speaking_Kilega.webm.360p.vp9.webm"
+    },
+    %{label: "NEIGHBOUR", name: "ELENA", frame: "empty", media: nil},
+    %{
+      label: "COUSIN",
+      name: "KEMI",
+      frame: "voice",
+      media:
+        "#{@commons}/4/46/Dan_Barker_introducing_himself.ogg/" <>
+          "Dan_Barker_introducing_himself.ogg.mp3"
+    },
+    %{label: "UNCLE", name: "PETER", frame: "empty", media: nil},
+    %{
+      label: "AUNT",
+      name: "BLESSING",
+      frame: "face",
+      media:
+        "#{@commons}/0/04/WIKITONGUES-_Donald_speaking_Tswana.webm/" <>
+          "WIKITONGUES-_Donald_speaking_Tswana.webm.360p.vp9.webm"
+    },
+    %{
+      label: "MENTOR",
+      name: "ADEOLA",
+      frame: "voice",
+      media:
+        "#{@commons}/e/ed/Richard_Rogers_-_voice_-_en.ogg/Richard_Rogers_-_voice_-_en.ogg.mp3"
+    },
+    %{label: "ROOMMATE", name: "LUCAS", frame: "empty", media: nil},
+    %{label: "BOSS", name: "HANNAH", frame: "empty", media: nil},
+    %{label: "DOCTOR", name: "NGOZI", frame: "empty", media: nil},
+    %{label: "BARBER", name: "FEMI", frame: "empty", media: nil},
+    %{label: "PASTOR", name: "EMMANUEL", frame: "empty", media: nil},
+    %{label: "TEAMMATE", name: "CHIDI", frame: "empty", media: nil}
   ]
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, relationships: @relationships)}
+    {:ok, assign(socket, users: @users)}
   end
 
   @impl true
@@ -93,18 +177,24 @@ defmodule PresencemediaWeb.HomeLive do
                    leaves the band standing empty at rest — the unselected
                    state. --%>
               <ul class="pt-[calc(17vh+4rem)] pb-[33vh]">
+                <%!-- The row CARRIES its own frame, as data rather than as
+                     markup. One shared frame reads these on settle, which is
+                     why nineteen rows cost nineteen attributes instead of
+                     nineteen media elements. --%>
                 <li
-                  :for={rel <- @relationships}
+                  :for={user <- @users}
+                  data-frame={user.frame}
+                  data-media={user.media}
                   class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-background-900 transition-colors duration-200 dark:text-background-100"
                 >
-                  <span>{rel.label}</span>
+                  <span>{user.label}</span>
                   <%!-- their own name, quiet beside the label: it arrives only
                        when the row is in the band, and never competes with it.
                        It keeps its own colour on purpose — the focused row turns
                        terracotta, and the name staying muted is what stops the
                        band reading as two labels shouting at once. --%>
                   <span class="regions-name ml-3 text-background-300 opacity-0 transition-opacity duration-200 dark:text-background-700">
-                    {rel.name}
+                    {user.name}
                   </span>
                 </li>
               </ul>
@@ -135,11 +225,26 @@ defmodule PresencemediaWeb.HomeLive do
                    surface rather than a ring around the dot — a ring expands
                    past its own bounds, and a frame that will one day hold a
                    picture cannot have its contents leaking outside it. --%>
-              <div class="frame relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center opacity-0 transition-opacity duration-200">
-                <span class="frame-voice absolute inset-0 bg-primary-600/30 dark:bg-primary-500/35">
-                </span>
-                <span class="presence-dot relative z-[2] inline-flex size-3.5 rounded-full bg-secondary-600 dark:bg-secondary-300">
-                </span>
+              <div
+                id="frame"
+                data-mode="empty"
+                class="frame relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center p-2 opacity-0 transition-opacity duration-200"
+              >
+                <%!-- THE SCREEN is inset from the frame, so the brackets bracket
+                     the picture instead of cropping it, and it is square on
+                     every corner — a screen has corners, and rounding them
+                     would turn it into a widget. --%>
+                <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/30 dark:bg-primary-500/35">
+                  <video
+                    class="frame-video h-full w-full object-cover"
+                    playsinline
+                    preload="none"
+                  >
+                  </video>
+                </div>
+                <%!-- No controls, so the UA never renders it — the screen is the
+                     only thing a voice is allowed to look like. --%>
+                <audio class="frame-audio" preload="none"></audio>
               </div>
             </div>
           </div>

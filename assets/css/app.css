@@ -17,8 +17,9 @@
                   runs cream (50) to cocoa-black (950), so LIGHT and DARK are the
                   same ramp read from opposite ends rather than two palettes.
      primary    — terracotta. ATTENTION: the focused row, the band, the brackets.
-     secondary  — sage. PRESENCE: the connected dot, and nothing else. Keeping
-                  it to one job is what makes the dot mean something.
+     secondary  — sage. Held in reserve. It carried the presence dot until the
+                  frame took that job over, and it stays unspent rather than
+                  being scattered around for variety.
      neutral    — true greys, for chrome that must not pick up a temperature.
 
    The type scale is deliberately tighter than Tailwind's stock one — its xl is
@@ -189,30 +190,18 @@ html[data-theme="dark"] {
 #regions {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
-  --rg-dot: var(--color-secondary-600);
-  /* On cream a glow is just haze, because there is no darkness for the light to
-     bleed into. Light mode gets a tight contact shadow and dark mode gets the
-     real bloom. */
-  --rg-glow-spread: 4px;
-  --rg-glow-strength: 45%;
   --b: 3px; /* bracket weight */
 }
 
 [data-theme="dark"] #regions {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
-  --rg-dot: var(--color-secondary-300);
-  --rg-glow-spread: 10px;
-  --rg-glow-strength: 85%;
 }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) #regions {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
-    --rg-dot: var(--color-secondary-300);
-    --rg-glow-spread: 10px;
-    --rg-glow-strength: 85%;
   }
 }
 
@@ -247,32 +236,31 @@ html[data-theme="dark"] {
   --ax: 24px;
   --ay: 14px;
 }
-/* THE PRESENCE DOT. It stays lit rather than blinking, and the glow is what
-   keeps it lit — the dot says CONNECTED, which is a steady fact, while the
-   frame around it says SPEAKING, which is not. */
-.presence-dot {
-  box-shadow:
-    0 0 var(--rg-glow-spread)
-      color-mix(in oklab, var(--rg-dot) var(--rg-glow-strength), transparent),
-    0 0 3px var(--rg-dot);
-}
-
 /* ── THE FRAME ─────────────────────────────────────────────────────────────────
    One element, where there used to be a marker and a separate box. It is the
-   BOX'S TARGET — the brackets are what aim it at whoever the band has landed
-   on — and it is also the person: where their live frame renders once there is
-   one, and until then a surface that shows their voice.
+   BAND'S TARGET — the brackets are what aim it at whoever the band landed on —
+   and it is also the person: a SCREEN carrying their voice or their face.
 
-   VOICE IS THE FILL, not a ring around a dot. The old ping expanded outside its
-   own bounds, which is exactly wrong for something that will one day hold video:
-   a frame's contents cannot leak past its edge. So the whole surface breathes
-   instead, and the same element will carry a call with nothing about its shape
-   needing to change.
+   The brackets belong to the frame's outer edge and the screen is INSET from
+   it, so the arms bracket the picture rather than crop it. Nothing here is
+   rounded: a screen has corners, and rounding them would make it a widget.
 
-   The pulse is on a CHILD rather than on .frame itself, because .frame owns the
-   opacity that the selection fades in and out — animating both on one element
-   would have the heartbeat fighting the reveal. */
-.frame-voice {
+   VOICE IS THE SCREEN ITSELF, not a ring. A ring expands outside its own
+   bounds, which is exactly wrong for something that holds video — a frame's
+   contents cannot leak past its edge. So the surface breathes instead, and the
+   same element takes a face, or a call, with nothing about its shape changing.
+
+   The pulse rides the SCREEN rather than .frame, because .frame owns the
+   opacity the selection fades in and out — one element animating both would
+   have the heartbeat fighting the reveal. */
+/* THE MODE is a data attribute the hook writes, so all three states are one
+   element and switching between them is one assignment rather than a rebuild.
+
+   VOICE breathes, because there is nothing to look at and the sound is the
+   whole message. FACE holds still — a picture that pulsed would be a fault, not
+   a feature. EMPTY does neither and simply sits there, which is what "no signal"
+   should look like. */
+#frame[data-mode="voice"] .frame-screen {
   animation: frame-voice 1.5s ease-in-out infinite;
 }
 @keyframes frame-voice {
@@ -285,10 +273,19 @@ html[data-theme="dark"] {
   }
 }
 
+/* The video only exists once there is a face to put in it. Hidden rather than
+   removed, so the element keeps its buffer between selections. */
+.frame-video {
+  display: none;
+}
+#frame[data-mode="face"] .frame-video {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Held at the bright end, not the faint one: with the motion gone this is
      just a surface, and it should read as present rather than switched off. */
-  .frame-voice {
+  #frame[data-mode="voice"] .frame-screen {
     animation: none;
     opacity: 1;
   }
