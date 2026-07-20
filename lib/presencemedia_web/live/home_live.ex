@@ -47,16 +47,16 @@ defmodule PresencemediaWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <%!-- ── THE RELATIONSHIP LIST ──────────────────────────────────────────────
-         The reference overlay, MIRRORED: list left, dashed line running right,
-         marker at its end. No globe, no background grid.
+         The reference overlay, MIRRORED: list left, frame at the far right.
+         No globe, no background grid.
 
          A fixed band a third of the way down the list IS the selection: rows
          scroll THROUGH it and whichever lands there is chosen, snapping itself
-         to the centre. Band, line and marker are ONE flex row, so the three
-         cannot fall out of line. TYPE is responsive where the geometry is
-         fixed — one clamp ramp shared by the rows and the band's placeholder,
-         so those two can never disagree. Styles Tailwind cannot express — the
-         corner brackets, the two fade masks, the state rules — live under
+         to the centre. Band and frame are ONE flex row, so the two cannot fall
+         out of line. TYPE is responsive where the geometry is fixed — one clamp
+         ramp shared by the rows and the band's placeholder, so those two can
+         never disagree. Styles Tailwind cannot express — the corner brackets,
+         the two fade masks, the voice pulse, the state rules — live under
          "THE RELATIONSHIP LIST" in app.css.
     --%>
     <div
@@ -110,44 +110,36 @@ defmodule PresencemediaWeb.HomeLive do
               </ul>
             </div>
 
-            <%!-- band · box — two things in one row, so they cannot fall out
+            <%!-- band · frame — two things in one row, so they cannot fall out
                  of line with each other. The row spans the container's whole
-                 measure, and the box takes ml-auto to hold the far edge itself:
-                 the line used to be the flex-1 that pushed it there, and the
-                 line is not coming back.
+                 measure, and the frame takes ml-auto to hold the far edge
+                 itself: the line used to be the flex-1 that pushed it there,
+                 and the line is not coming back.
 
-                 THE MARKER lives inside the box: two circles, one solid and one
-                 pinging out from under it. Both box and dot appear only on a
-                 settled selection. --%>
+                 Both appear only on a settled selection — the band is the
+                 question and the frame is who answered it. --%>
             <div class="pointer-events-none absolute left-0 top-[34%] flex w-[calc(min(100vw,72rem)-2rem)] -translate-y-1/2 items-center">
               <div class="focus-box relative flex h-[3.5rem] w-[32rem] shrink-0 items-center bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20">
                 <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
                   --
                 </span>
               </div>
-              <%!-- THE FRAME, then the marker. One right-aligned group, so the
-                   gap between the two is fixed and neither can drift.
+              <%!-- THE FRAME — one element that is both the box's target and the
+                   person it landed on. The brackets aim it; the fill behind them
+                   is that person, and the fill's breathing is their VOICE, which
+                   is what presence sounds like before there is anything to see.
 
-                   The frame is the marker's box DUPLICATED and then emptied: the
-                   same 3.8rem square on the same horizontal line, but flat and
-                   faded instead of bracketed. It stands where a person's live
-                   frame will be rendered, and it pulsates rather than sitting
-                   still because that is the difference between a slot and a
-                   feed. Brackets are the language of TARGETING, which is the
-                   marker's job — the frame borrows the box's geometry and none
-                   of its furniture. --%>
-              <div class="ml-auto flex items-center gap-4">
-                <div class="frame h-[3.8rem] w-[3.8rem] shrink-0 bg-primary-600/15 dark:bg-primary-500/20">
-                </div>
-
-                <div class="focus-marker relative flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center opacity-0 transition-opacity duration-200">
-                  <span class="relative flex size-3.5">
-                    <span class="presence-ping absolute inline-flex h-full w-full rounded-full">
-                    </span>
-                    <span class="presence-dot relative inline-flex size-3.5 rounded-full bg-secondary-600 dark:bg-secondary-300">
-                    </span>
-                  </span>
-                </div>
+                   The same element takes a call later without changing shape:
+                   video replaces the fill, the brackets stay aiming, and the dot
+                   goes on meaning connected. That is why voice had to be the
+                   surface rather than a ring around the dot — a ring expands
+                   past its own bounds, and a frame that will one day hold a
+                   picture cannot have its contents leaking outside it. --%>
+              <div class="frame relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center opacity-0 transition-opacity duration-200">
+                <span class="frame-voice absolute inset-0 bg-primary-600/30 dark:bg-primary-500/35">
+                </span>
+                <span class="presence-dot relative z-[2] inline-flex size-3.5 rounded-full bg-secondary-600 dark:bg-secondary-300">
+                </span>
               </div>
             </div>
           </div>

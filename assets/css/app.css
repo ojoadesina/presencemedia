@@ -17,8 +17,8 @@
                   runs cream (50) to cocoa-black (950), so LIGHT and DARK are the
                   same ramp read from opposite ends rather than two palettes.
      primary    — terracotta. ATTENTION: the focused row, the band, the brackets.
-     secondary  — sage. PRESENCE: the live dot, and nothing else. Keeping it to
-                  one job is what makes the dot mean something.
+     secondary  — sage. PRESENCE: the connected dot, and nothing else. Keeping
+                  it to one job is what makes the dot mean something.
      neutral    — true greys, for chrome that must not pick up a temperature.
 
    The type scale is deliberately tighter than Tailwind's stock one — its xl is
@@ -190,18 +190,9 @@ html[data-theme="dark"] {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
   --rg-dot: var(--color-secondary-600);
-  /* THE PING IS NOT THE DOT'S COLOUR, and this is the whole reason it has a
-     variable of its own. A pulse reads as ALIVE because it looks like light
-     leaving the dot — on cocoa, a pale sage ring does exactly that. Inverted,
-     the logic does not survive: nothing can be lighter than cream, so reusing
-     the dot's dark green made the ring read as a stain spreading outwards
-     instead. Light mode therefore pings in a lighter, more saturated sage at
-     lower opacity, which dissolves into the page rather than smudging it. */
-  --rg-ping: var(--color-secondary-400);
-  --rg-ping-opacity: 0.5;
-  /* Same inversion, same reasoning: on cream a glow is just haze, because
-     there is no darkness for the light to bleed into. Light mode gets a tight
-     contact shadow and dark mode gets the real bloom. */
+  /* On cream a glow is just haze, because there is no darkness for the light to
+     bleed into. Light mode gets a tight contact shadow and dark mode gets the
+     real bloom. */
   --rg-glow-spread: 4px;
   --rg-glow-strength: 45%;
   --b: 3px; /* bracket weight */
@@ -211,8 +202,6 @@ html[data-theme="dark"] {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
   --rg-dot: var(--color-secondary-300);
-  --rg-ping: var(--color-secondary-300);
-  --rg-ping-opacity: 0.9;
   --rg-glow-spread: 10px;
   --rg-glow-strength: 85%;
 }
@@ -222,8 +211,6 @@ html[data-theme="dark"] {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
     --rg-dot: var(--color-secondary-300);
-    --rg-ping: var(--color-secondary-300);
-    --rg-ping-opacity: 0.9;
     --rg-glow-spread: 10px;
     --rg-glow-strength: 85%;
   }
@@ -233,10 +220,13 @@ html[data-theme="dark"] {
    that read fine across a wide band all but sealed a short one shut. Vertical
    arms are sized against the height they sit in. */
 .focus-box::before,
-.focus-marker::before {
+.frame::before {
   content: "";
   position: absolute;
   inset: 0;
+  /* Above the frame's voice fill, which is a real child and would otherwise
+     paint over a pseudo-element that shares its stacking level. */
+  z-index: 1;
   background:
     linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--ax) var(--b) no-repeat,
     linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--b) var(--ay) no-repeat,
@@ -248,7 +238,7 @@ html[data-theme="dark"] {
     linear-gradient(var(--rg-bracket) 0 0) 100% 100% / var(--b) var(--ay) no-repeat;
 }
 /* 61px square: 14px arms leave 33px open on every side. */
-.focus-marker::before {
+.frame::before {
   --ax: 14px;
   --ay: 14px;
 }
@@ -257,47 +247,38 @@ html[data-theme="dark"] {
   --ax: 24px;
   --ay: 14px;
 }
-/* THE PRESENCE DOT. Tailwind's own ping tops out at 2x in 1s, which on a 12px
-   dot is a 24px flicker lost inside a 61px box — too small and too quick to
-   read as a heartbeat. This one travels 3.6x over nearly two seconds, so the
-   ring has somewhere to go and time to be seen going there, and the dot beneath
-   carries a glow so it stays lit BETWEEN beats rather than only during them. */
-/* Colour and starting opacity live here rather than as utilities on the span,
-   because the ring's opacity is a KEYFRAME value — a utility would be
-   overwritten the moment the animation ran. */
-.presence-ping {
-  background-color: var(--rg-ping);
-  animation: presence-ping 1.9s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-@keyframes presence-ping {
-  0% {
-    transform: scale(1);
-    opacity: var(--rg-ping-opacity);
-  }
-  70%,
-  100% {
-    transform: scale(3.6);
-    opacity: 0;
-  }
-}
+/* THE PRESENCE DOT. It stays lit rather than blinking, and the glow is what
+   keeps it lit — the dot says CONNECTED, which is a steady fact, while the
+   frame around it says SPEAKING, which is not. */
 .presence-dot {
   box-shadow:
     0 0 var(--rg-glow-spread)
       color-mix(in oklab, var(--rg-dot) var(--rg-glow-strength), transparent),
     0 0 3px var(--rg-dot);
 }
-/* THE FRAME. Where a person's live frame gets rendered, standing in until there
-   is one. It breathes on the SAME 1.9s period as the ping, so the two read as
-   one heartbeat rather than two clocks running side by side — and it breathes
-   on opacity alone, never on scale, because a frame that changes size is a
-   frame that has moved rather than one that is live. */
-.frame {
-  animation: frame-pulse 1.9s ease-in-out infinite;
+
+/* ── THE FRAME ─────────────────────────────────────────────────────────────────
+   One element, where there used to be a marker and a separate box. It is the
+   BOX'S TARGET — the brackets are what aim it at whoever the band has landed
+   on — and it is also the person: where their live frame renders once there is
+   one, and until then a surface that shows their voice.
+
+   VOICE IS THE FILL, not a ring around a dot. The old ping expanded outside its
+   own bounds, which is exactly wrong for something that will one day hold video:
+   a frame's contents cannot leak past its edge. So the whole surface breathes
+   instead, and the same element will carry a call with nothing about its shape
+   needing to change.
+
+   The pulse is on a CHILD rather than on .frame itself, because .frame owns the
+   opacity that the selection fades in and out — animating both on one element
+   would have the heartbeat fighting the reveal. */
+.frame-voice {
+  animation: frame-voice 1.5s ease-in-out infinite;
 }
-@keyframes frame-pulse {
+@keyframes frame-voice {
   0%,
   100% {
-    opacity: 0.45;
+    opacity: 0.25;
   }
   50% {
     opacity: 1;
@@ -305,13 +286,9 @@ html[data-theme="dark"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .presence-ping {
-    animation: none;
-    opacity: 0.4;
-  }
   /* Held at the bright end, not the faint one: with the motion gone this is
-     just a box, and it should read as present rather than as switched off. */
-  .frame {
+     just a surface, and it should read as present rather than switched off. */
+  .frame-voice {
     animation: none;
     opacity: 1;
   }
@@ -346,8 +323,8 @@ html[data-theme="dark"] {
 
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:
    while the list moves a row is passing through the band and the two would sit
-   on top of each other. The line and marker are the SETTLED choice made
-   visible, so they leave the instant the list moves. A relationship's own name
+   on top of each other. The frame is the SETTLED choice made visible, so it
+   leaves the instant the list moves. A relationship's own name
    appears only while its row is IN the band — it is context, not a second
    label, so it never travels with the row. */
 .regions-item.is-focused {
@@ -359,6 +336,6 @@ html[data-theme="dark"] {
 #regions:not(.has-selection):not(.is-scrolling) .focus-empty {
   opacity: 1;
 }
-#regions.has-selection .focus-marker {
+#regions.has-selection .frame {
   opacity: 1;
 }
