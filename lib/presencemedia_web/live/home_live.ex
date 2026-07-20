@@ -38,15 +38,9 @@ defmodule PresencemediaWeb.HomeLive do
     %{label: "TEAMMATE", name: "CHIDI"}
   ]
 
-  # YOU. Fixture like everything else here, and a map rather than a bare string
-  # so the day this comes from a session it swaps at the assign and not in the
-  # markup. A monogram because the app has no avatar images and no account to
-  # take one from — the shape is what carries the meaning, not the glyph.
-  @self %{monogram: "ME"}
-
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, relationships: @relationships, self: @self)}
+    {:ok, assign(socket, relationships: @relationships)}
   end
 
   @impl true
@@ -131,26 +125,19 @@ defmodule PresencemediaWeb.HomeLive do
                   --
                 </span>
               </div>
-              <%!-- SELF, then the marker. The pair is ONE right-aligned group so
-                   the gap between them is fixed and neither can drift: you on
-                   the left, whoever is in the band on the right.
+              <%!-- THE FRAME, then the marker. One right-aligned group, so the
+                   gap between the two is fixed and neither can drift.
 
-                   Self does NOT wait for a selection — you are always present,
-                   and it keeps the far edge anchored while the band is empty.
-                   It carries the steady presence dot but never the ping: the
-                   pulse is how a CHOSEN relationship announces itself, and
-                   spending it twice would leave it meaning neither. --%>
+                   The frame is the marker's box DUPLICATED and then emptied: the
+                   same 3.8rem square on the same horizontal line, but flat and
+                   faded instead of bracketed. It stands where a person's live
+                   frame will be rendered, and it pulsates rather than sitting
+                   still because that is the difference between a slot and a
+                   feed. Brackets are the language of TARGETING, which is the
+                   marker's job — the frame borrows the box's geometry and none
+                   of its furniture. --%>
               <div class="ml-auto flex items-center gap-4">
-                <div class="relative flex size-[3.8rem] shrink-0 items-center justify-center rounded-full border border-background-300 bg-background-100 text-sm tracking-[0.14em] text-background-700 dark:border-background-800 dark:bg-background-900 dark:text-background-300">
-                  {@self.monogram}
-                  <%!-- Sat on the circle's 45° point rather than its bounding
-                       corner, which is where a round avatar actually has an
-                       edge. It lands just inside the rim, so the punch-out
-                       border is the AVATAR's fill and not the page's — matching
-                       the page would draw a ring in a colour nothing there
-                       actually is, and the two themes would disagree about it. --%>
-                  <span class="presence-dot absolute right-2 bottom-2 size-3.5 rounded-full border-2 border-background-100 bg-secondary-600 dark:border-background-900 dark:bg-secondary-300">
-                  </span>
+                <div class="frame h-[3.8rem] w-[3.8rem] shrink-0 bg-primary-600/15 dark:bg-primary-500/20">
                 </div>
 
                 <div class="focus-marker relative flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center opacity-0 transition-opacity duration-200">

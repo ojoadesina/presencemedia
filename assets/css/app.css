@@ -286,10 +286,34 @@ html[data-theme="dark"] {
       color-mix(in oklab, var(--rg-dot) var(--rg-glow-strength), transparent),
     0 0 3px var(--rg-dot);
 }
+/* THE FRAME. Where a person's live frame gets rendered, standing in until there
+   is one. It breathes on the SAME 1.9s period as the ping, so the two read as
+   one heartbeat rather than two clocks running side by side — and it breathes
+   on opacity alone, never on scale, because a frame that changes size is a
+   frame that has moved rather than one that is live. */
+.frame {
+  animation: frame-pulse 1.9s ease-in-out infinite;
+}
+@keyframes frame-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .presence-ping {
     animation: none;
     opacity: 0.4;
+  }
+  /* Held at the bright end, not the faint one: with the motion gone this is
+     just a box, and it should read as present rather than as switched off. */
+  .frame {
+    animation: none;
+    opacity: 1;
   }
 }
 
