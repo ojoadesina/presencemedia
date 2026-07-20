@@ -190,18 +190,25 @@ html[data-theme="dark"] {
 #regions {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
+  /* ABSENT is the one place neutral earns its keep. Terracotta is the colour of
+     someone being there, so absence cannot be a paler terracotta — that reads
+     as a weak signal rather than as nobody. Dropping the temperature entirely
+     is what makes it read as off. */
+  --rg-absent: color-mix(in oklab, var(--color-neutral-400) 22%, transparent);
   --b: 3px; /* bracket weight */
 }
 
 [data-theme="dark"] #regions {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
+  --rg-absent: color-mix(in oklab, var(--color-neutral-300) 14%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) #regions {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
+    --rg-absent: color-mix(in oklab, var(--color-neutral-300) 14%, transparent);
   }
 }
 
@@ -216,6 +223,11 @@ html[data-theme="dark"] {
   /* Above the frame's voice fill, which is a real child and would otherwise
      paint over a pseudo-element that shares its stacking level. */
   z-index: 1;
+  /* ...but never in the way of one. Lifting the brackets over the fill also
+     lifted them over the replay button underneath, and a decoration that
+     swallows the only control on the surface is a decoration with opinions it
+     has not earned. */
+  pointer-events: none;
   background:
     linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--ax) var(--b) no-repeat,
     linear-gradient(var(--rg-bracket) 0 0) 0 0 / var(--b) var(--ay) no-repeat,
@@ -273,6 +285,22 @@ html[data-theme="dark"] {
   }
 }
 
+/* ENDED stops the breathing. A pulse means a voice is arriving, so carrying on
+   after the clip has finished would be the interface lying about the line. It
+   settles at full opacity rather than mid-breath, so the surface the replay
+   control sits on is not itself a moving target. */
+#frame[data-ended] .frame-screen {
+  animation: none;
+  opacity: 1;
+}
+
+/* ABSENT drains the screen of temperature. It beats the utility on the element
+   because an id plus an attribute outranks a class, and because this rule is
+   unlayered while Tailwind's utilities are not. */
+#frame[data-state="absent"] .frame-screen {
+  background-color: var(--rg-absent);
+}
+
 /* The video only exists once there is a face to put in it. Hidden rather than
    removed, so the element keeps its buffer between selections. */
 .frame-video {
@@ -280,6 +308,29 @@ html[data-theme="dark"] {
 }
 #frame[data-mode="face"] .frame-video {
   display: block;
+}
+
+/* THE REPLAY CONTROL appears only once there is something to replay. It is a
+   real button rather than a click target painted on the screen, so it reaches
+   the keyboard and announces itself to a screen reader. */
+.frame-restart {
+  display: none;
+}
+#frame[data-ended] .frame-restart {
+  display: flex;
+}
+
+/* EXPANDED. The brackets are drawn in absolute pixels, so they do not scale
+   with the box the way a border would — at 18rem the 14px arms read as specks.
+   They grow to match, which is the whole reason this rule exists rather than
+   living inline with the sizes. */
+#frame[data-expanded]::before {
+  --ax: 42px;
+  --ay: 42px;
+}
+/* Above the list it now overlaps. */
+#frame[data-expanded] {
+  z-index: 10;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -26,6 +26,15 @@ export const Regions = {
     const frame = document.getElementById("frame");
     const video = frame?.querySelector<HTMLVideoElement>(".frame-video") ?? null;
     const audio = frame?.querySelector<HTMLAudioElement>(".frame-audio") ?? null;
+    const restart = frame?.querySelector<HTMLButtonElement>(".frame-restart") ?? null;
+
+    // Which element the current mode is actually driving. Everything that acts
+    // on "the media" goes through here, so play, replay and teardown can never
+    // disagree about what they are addressing.
+    const current = (): HTMLMediaElement | null => {
+      const mode = frame?.dataset.mode;
+      return mode === "face" ? video : mode === "voice" ? audio : null;
+    };
 
     // Pausing alone leaves the last frame of the previous person frozen on
     // screen and the file still downloading. Dropping the src and calling
@@ -45,14 +54,23 @@ export const Regions = {
       if (!frame) return;
       const mode = el.dataset.frame || "empty";
       const src = el.dataset.media || "";
-      const media = mode === "face" ? video : mode === "voice" ? audio : null;
+      const state = el.dataset.state || "present";
 
       // Re-selecting the row that is already playing must not restart it.
-      if (frame.dataset.mode === mode && frame.dataset.src === src) return;
+      if (frame.dataset.mode === mode && frame.dataset.src === src) {
+        frame.dataset.state = state;
+        return;
+      }
 
       stopMedia();
       frame.dataset.mode = mode;
       frame.dataset.src = src;
+      frame.dataset.state = state;
+      // A new person has arrived, so the previous one's finished-clip control
+      // must go with them.
+      delete frame.dataset.ended;
+
+      const media = current();
       if (!media || !src) return;
 
       media.src = src;
@@ -60,15 +78,65 @@ export const Regions = {
       // the first selection of a session can legitimately be refused — that is
       // the browser's policy, not a failure, and it must not throw an unhandled
       // rejection. Any click on a row satisfies it from then on.
-      media.play().catch(() => {});
+      //
+      // A REFUSAL IS TREATED AS ENDED. Sound is the default and staying muted
+      // is not on offer, so the honest thing when the browser says no is to
+      // show the replay control — one click both satisfies the policy and
+      // starts the clip, instead of leaving a dead frame with no way in.
+      media.play().catch(() => {
+        if (frame.dataset.src === src) frame.dataset.ended = "true";
+      });
     };
 
     const hideFrame = () => {
       if (!frame) return;
       stopMedia();
       frame.dataset.mode = "empty";
+      frame.dataset.state = "present";
       delete frame.dataset.src;
+      delete frame.dataset.ended;
     };
+
+    // A clip that runs out has not gone away — the person is still selected and
+    // the frame still theirs, so it keeps the last picture and offers the clip
+    // again rather than blanking.
+    for (const m of [video, audio]) {
+      m?.addEventListener("ended", () => {
+        if (frame) frame.dataset.ended = "true";
+      });
+    }
+
+    restart?.addEventListener("click", (e) => {
+      // The frame beneath toggles size on click. Replay is a different intent
+      // that happens to live inside it, so it must not also resize.
+      e.stopPropagation();
+      const media = current();
+      if (!media) return;
+      media.currentTime = 0;
+      media.play().catch(() => {});
+      if (frame) delete frame.dataset.ended;
+    });
+
+    // EXPAND is a toggle on the frame itself, so the size lives in one
+    // attribute and CSS decides what that is worth in pixels.
+    const toggleExpand = () => {
+      if (!frame) return;
+      if (frame.dataset.expanded === undefined) frame.dataset.expanded = "true";
+      else delete frame.dataset.expanded;
+      frame.setAttribute(
+        "aria-label",
+        frame.dataset.expanded === undefined ? "Expand frame" : "Collapse frame",
+      );
+    };
+
+    frame?.addEventListener("click", toggleExpand);
+    // role="button" earns a keyboard, and a keyboard expects both of these.
+    frame?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleExpand();
+      }
+    });
 
     let settleTimer: number | undefined;
     // A snap scrolls, which settles, which may snap again. Bounded, so a snap

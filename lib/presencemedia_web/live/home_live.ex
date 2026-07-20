@@ -27,6 +27,15 @@ defmodule PresencemediaWeb.HomeLive do
   # frame is currently carrying. The label leads because it is how you actually
   # think of them; the name follows, faded, and only once the row is in the band.
   #
+  # STATE and FRAME are two different questions and are kept apart on purpose.
+  # State asks whether the person is THERE; frame asks what is coming THROUGH.
+  # An absent user's frame drains to neutral rather than to a paler terracotta,
+  # because terracotta is the colour of someone being there and a weak version
+  # of it reads as a weak signal, not as nobody. Absence pairs with an empty
+  # frame here for the obvious reason — you cannot be away and talking — but
+  # nothing in the code enforces that, because a line can perfectly well carry
+  # a recording of someone who has since gone.
+  #
   # FRAME is the state of the line to them, and it is deliberately three-valued
   # rather than a boolean, because "nothing coming through" and "audio coming
   # through" are different facts and the frame renders them differently:
@@ -46,6 +55,7 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "MUM",
       name: "SARAH",
+      state: "present",
       frame: "voice",
       media:
         "#{@commons}/4/4f/Simone_Giertz_introducing_herself.ogg/" <>
@@ -54,6 +64,7 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "DAD",
       name: "MICHAEL",
+      state: "present",
       frame: "face",
       media:
         "#{@commons}/6/67/WIKITONGUES-_Paulus_speaking_Mentuka.webm/" <>
@@ -62,13 +73,15 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "BIG BROTHER",
       name: "DANIEL OLUWASEUN",
+      state: "present",
       frame: "voice",
       media: "#{@commons}/0/0a/Charles_Duke_Intro.ogg/Charles_Duke_Intro.ogg.mp3"
     },
-    %{label: "BROTHER", name: "JOSEPH", frame: "empty", media: nil},
+    %{label: "BROTHER", name: "JOSEPH", state: "absent", frame: "empty", media: nil},
     %{
       label: "SISTER",
       name: "AMAKA",
+      state: "present",
       frame: "face",
       media:
         "#{@commons}/0/01/WIKITONGUES-_Hermica_speaking_Bengape.webm/" <>
@@ -77,31 +90,35 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "GRANDMA",
       name: "ROSE",
+      state: "present",
       frame: "voice",
       media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
     },
-    %{label: "COACH", name: "IBRAHIM", frame: "empty", media: nil},
+    %{label: "COACH", name: "IBRAHIM", state: "present", frame: "empty", media: nil},
     %{
       label: "BEST FRIEND",
       name: "TUNDE ADEBAYO",
+      state: "present",
       frame: "face",
       media:
         "#{@commons}/3/31/WIKITONGUES-_C%C3%A9lestin_speaking_Kilega.webm/" <>
           "WIKITONGUES-_C%C3%A9lestin_speaking_Kilega.webm.360p.vp9.webm"
     },
-    %{label: "NEIGHBOUR", name: "ELENA", frame: "empty", media: nil},
+    %{label: "NEIGHBOUR", name: "ELENA", state: "absent", frame: "empty", media: nil},
     %{
       label: "COUSIN",
       name: "KEMI",
+      state: "present",
       frame: "voice",
       media:
         "#{@commons}/4/46/Dan_Barker_introducing_himself.ogg/" <>
           "Dan_Barker_introducing_himself.ogg.mp3"
     },
-    %{label: "UNCLE", name: "PETER", frame: "empty", media: nil},
+    %{label: "UNCLE", name: "PETER", state: "absent", frame: "empty", media: nil},
     %{
       label: "AUNT",
       name: "BLESSING",
+      state: "present",
       frame: "face",
       media:
         "#{@commons}/0/04/WIKITONGUES-_Donald_speaking_Tswana.webm/" <>
@@ -110,16 +127,17 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "MENTOR",
       name: "ADEOLA",
+      state: "present",
       frame: "voice",
       media:
         "#{@commons}/e/ed/Richard_Rogers_-_voice_-_en.ogg/Richard_Rogers_-_voice_-_en.ogg.mp3"
     },
-    %{label: "ROOMMATE", name: "LUCAS", frame: "empty", media: nil},
-    %{label: "BOSS", name: "HANNAH", frame: "empty", media: nil},
-    %{label: "DOCTOR", name: "NGOZI", frame: "empty", media: nil},
-    %{label: "BARBER", name: "FEMI", frame: "empty", media: nil},
-    %{label: "PASTOR", name: "EMMANUEL", frame: "empty", media: nil},
-    %{label: "TEAMMATE", name: "CHIDI", frame: "empty", media: nil}
+    %{label: "ROOMMATE", name: "LUCAS", state: "present", frame: "empty", media: nil},
+    %{label: "BOSS", name: "HANNAH", state: "absent", frame: "empty", media: nil},
+    %{label: "DOCTOR", name: "NGOZI", state: "present", frame: "empty", media: nil},
+    %{label: "BARBER", name: "FEMI", state: "absent", frame: "empty", media: nil},
+    %{label: "PASTOR", name: "EMMANUEL", state: "present", frame: "empty", media: nil},
+    %{label: "TEAMMATE", name: "CHIDI", state: "absent", frame: "empty", media: nil}
   ]
 
   @impl true
@@ -183,6 +201,7 @@ defmodule PresencemediaWeb.HomeLive do
                      nineteen media elements. --%>
                 <li
                   :for={user <- @users}
+                  data-state={user.state}
                   data-frame={user.frame}
                   data-media={user.media}
                   class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-background-900 transition-colors duration-200 dark:text-background-100"
@@ -225,10 +244,22 @@ defmodule PresencemediaWeb.HomeLive do
                    surface rather than a ring around the dot — a ring expands
                    past its own bounds, and a frame that will one day hold a
                    picture cannot have its contents leaking outside it. --%>
+              <%!-- pointer-events-auto: the row this sits in turns them off, so
+                   a moving list is never blocked by an overlay. The frame is
+                   the one thing in that row you are meant to reach.
+
+                   EXPANDING grows it in place rather than lifting it into a
+                   modal. ml-auto pins its right edge, so the extra width opens
+                   leftward into the empty half of the screen and the frame
+                   never leaves the line the band put it on. --%>
               <div
                 id="frame"
                 data-mode="empty"
-                class="frame relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 items-center justify-center p-2 opacity-0 transition-opacity duration-200"
+                data-state="present"
+                role="button"
+                tabindex="0"
+                aria-label="Expand frame"
+                class="frame group pointer-events-auto relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 cursor-pointer items-center justify-center p-2 opacity-0 transition-[opacity,width,height,padding] duration-300 data-expanded:h-[18rem] data-expanded:w-[18rem] data-expanded:p-4"
               >
                 <%!-- THE SCREEN is inset from the frame, so the brackets bracket
                      the picture instead of cropping it, and it is square on
@@ -241,6 +272,18 @@ defmodule PresencemediaWeb.HomeLive do
                     preload="none"
                   >
                   </video>
+
+                  <%!-- Sits ON the screen, covering it, because after a clip
+                       ends the screen is the only thing there — a control
+                       tucked into a corner of a 45px square would be a target
+                       nobody can hit. --%>
+                  <button
+                    type="button"
+                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-background-950/35 text-background-50 transition-colors hover:bg-background-950/50 dark:bg-background-950/50 dark:hover:bg-background-950/65"
+                    aria-label="Play again"
+                  >
+                    <.icon name="hero-arrow-path" class="size-4 group-data-expanded:size-10" />
+                  </button>
                 </div>
                 <%!-- No controls, so the UA never renders it — the screen is the
                      only thing a voice is allowed to look like. --%>
