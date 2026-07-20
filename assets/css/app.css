@@ -278,7 +278,38 @@ html[data-theme="dark"] {
 @keyframes frame-voice {
   0%,
   100% {
-    opacity: 0.25;
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── LIVE ──────────────────────────────────────────────────────────────────────
+   The third state, and the only one that says something about the LINE rather
+   than about the person at the other end of it. Present means reachable; live
+   means open right now.
+
+   It shows in two places at once. The SCREEN breathes even with nothing coming
+   through, which is the point — a live line with no voice and no face is still
+   a live line, and an empty screen sitting perfectly still could not say that.
+   It is scoped to the empty mode on purpose: a face that pulsed would look like
+   a fault, and voice already breathes for its own reasons.
+
+   The FRAME breathes with it, on the same period, so the two read as one thing
+   being alive rather than two things blinking. This is the only state that
+   touches the brackets at all — they otherwise mean "aimed", which is a fact
+   about the band and has nothing to do with the line. */
+#frame[data-state="live"][data-mode="empty"] .frame-screen {
+  animation: frame-voice 1.5s ease-in-out infinite;
+}
+#frame[data-state="live"]::before {
+  animation: frame-live 1.5s ease-in-out infinite;
+}
+@keyframes frame-live {
+  0%,
+  100% {
+    opacity: 0.4;
   }
   50% {
     opacity: 1;
@@ -334,9 +365,11 @@ html[data-theme="dark"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Held at the bright end, not the faint one: with the motion gone this is
-     just a surface, and it should read as present rather than switched off. */
-  #frame[data-mode="voice"] .frame-screen {
+  /* Held at the bright end, not the faint one: with the motion gone these are
+     just surfaces, and they should read as present rather than switched off. */
+  #frame[data-mode="voice"] .frame-screen,
+  #frame[data-state="live"][data-mode="empty"] .frame-screen,
+  #frame[data-state="live"]::before {
     animation: none;
     opacity: 1;
   }

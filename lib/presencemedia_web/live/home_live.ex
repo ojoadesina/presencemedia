@@ -28,13 +28,27 @@ defmodule PresencemediaWeb.HomeLive do
   # think of them; the name follows, faded, and only once the row is in the band.
   #
   # STATE and FRAME are two different questions and are kept apart on purpose.
-  # State asks whether the person is THERE; frame asks what is coming THROUGH.
-  # An absent user's frame drains to neutral rather than to a paler terracotta,
-  # because terracotta is the colour of someone being there and a weak version
-  # of it reads as a weak signal, not as nobody. Absence pairs with an empty
-  # frame here for the obvious reason — you cannot be away and talking — but
-  # nothing in the code enforces that, because a line can perfectly well carry
-  # a recording of someone who has since gone.
+  # State asks about the PERSON and the line to them; frame asks what is coming
+  # THROUGH it. The two are orthogonal, and every combination means something:
+  #
+  #   "absent"  — not reachable. The screen drains to neutral rather than to a
+  #               paler terracotta, because terracotta is the colour of someone
+  #               being there and a weak version of it reads as a weak signal
+  #               rather than as nobody.
+  #   "present" — reachable. The screen keeps its colour and sits still unless
+  #               there is media to move it.
+  #   "live"    — the line is open right now. The screen breathes EVEN WITH
+  #               NOTHING COMING THROUGH, which is the whole point of the state:
+  #               a live line with no voice and no face is still a live line,
+  #               and a still screen could not say so. The frame breathes with
+  #               it, on the same period, so the two read as one thing being
+  #               alive rather than two things blinking.
+  #
+  # Absence pairs with an empty frame here for the obvious reason — you cannot
+  # be away and talking — but nothing in the code enforces that, because a line
+  # can perfectly well carry a recording of someone who has since gone. Live is
+  # deliberately spread across all three frame modes below, so the empty case
+  # that proves the state is worth having actually appears.
   #
   # FRAME is the state of the line to them, and it is deliberately three-valued
   # rather than a boolean, because "nothing coming through" and "audio coming
@@ -81,7 +95,7 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "SISTER",
       name: "AMAKA",
-      state: "present",
+      state: "live",
       frame: "face",
       media:
         "#{@commons}/0/01/WIKITONGUES-_Hermica_speaking_Bengape.webm/" <>
@@ -90,11 +104,11 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "GRANDMA",
       name: "ROSE",
-      state: "present",
+      state: "live",
       frame: "voice",
       media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
     },
-    %{label: "COACH", name: "IBRAHIM", state: "present", frame: "empty", media: nil},
+    %{label: "COACH", name: "IBRAHIM", state: "live", frame: "empty", media: nil},
     %{
       label: "BEST FRIEND",
       name: "TUNDE ADEBAYO",
@@ -134,7 +148,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{label: "ROOMMATE", name: "LUCAS", state: "present", frame: "empty", media: nil},
     %{label: "BOSS", name: "HANNAH", state: "absent", frame: "empty", media: nil},
-    %{label: "DOCTOR", name: "NGOZI", state: "present", frame: "empty", media: nil},
+    %{label: "DOCTOR", name: "NGOZI", state: "live", frame: "empty", media: nil},
     %{label: "BARBER", name: "FEMI", state: "absent", frame: "empty", media: nil},
     %{label: "PASTOR", name: "EMMANUEL", state: "present", frame: "empty", media: nil},
     %{label: "TEAMMATE", name: "CHIDI", state: "absent", frame: "empty", media: nil}
@@ -265,7 +279,7 @@ defmodule PresencemediaWeb.HomeLive do
                      the picture instead of cropping it, and it is square on
                      every corner — a screen has corners, and rounding them
                      would turn it into a widget. --%>
-                <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/30 dark:bg-primary-500/35">
+                <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/15 dark:bg-primary-500/20">
                   <video
                     class="frame-video h-full w-full object-cover"
                     playsinline
@@ -282,7 +296,21 @@ defmodule PresencemediaWeb.HomeLive do
                     class="frame-restart absolute inset-0 hidden items-center justify-center bg-background-950/35 text-background-50 transition-colors hover:bg-background-950/50 dark:bg-background-950/50 dark:hover:bg-background-950/65"
                     aria-label="Play again"
                   >
-                    <.icon name="hero-arrow-path" class="size-4 group-data-expanded:size-10" />
+                    <%!-- Inline rather than a heroicon: this is a three-quarter
+                         arc with an arrowhead, which reads as "again" in a way
+                         heroicons' closed two-arrow loop does not — that one
+                         says "sync". Sized by class, not by the width/height
+                         the source carried, so it can grow with the frame. --%>
+                    <svg
+                      viewBox="0 0 1024 1024"
+                      fill="currentColor"
+                      stroke="currentColor"
+                      stroke-width="0"
+                      aria-hidden="true"
+                      class="size-4 group-data-expanded:size-10"
+                    >
+                      <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 0 0-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 0 1 655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 0 1 279 755.2a342.16 342.16 0 0 1-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 0 1 109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 0 0 3 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z" />
+                    </svg>
                   </button>
                 </div>
                 <%!-- No controls, so the UA never renders it — the screen is the
