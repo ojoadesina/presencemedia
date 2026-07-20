@@ -78,6 +78,16 @@
   --color-neutral-900: #333333;
   --color-neutral-950: #262626;
 
+  /* SKY. Pinned here rather than left to Tailwind's defaults so it is part of
+     the system and cannot be tree-shaken out from under a plain CSS rule that
+     asks for it by variable. It is the only cold colour on the surface, which
+     is precisely its job: SCOPE is a control you operate, not a person you are
+     reaching, and terracotta is spoken for by the second meaning. */
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+
   /* Custom Font Sizes */
   --text-xs: 0.6rem;
   --text-sm: 0.75rem;
@@ -247,7 +257,8 @@ html[data-theme="dark"] {
    that read fine across a wide band all but sealed a short one shut. Vertical
    arms are sized against the height they sit in. */
 .focus-box::before,
-.frame::before {
+.frame::before,
+.scope-box::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -278,6 +289,31 @@ html[data-theme="dark"] {
 .focus-box::before {
   --ax: 24px;
   --ay: 14px;
+}
+/* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
+   the shortest and its weight the lightest — 3px rules around a 12px label
+   would read as a fence rather than a frame. The arms are short enough that the
+   corners stay open even when the label shrinks from UNSCOPED to SCOPED.
+
+   It overrides --rg-bracket rather than getting a rule of its own, because the
+   bracket geometry above already reads that variable: setting it on the element
+   cascades into the pseudo-element for free. Sky, because scope is a control
+   you operate and terracotta already means a person you are reaching. */
+.scope-box {
+  --rg-bracket: var(--color-sky-600);
+  --b: 2px;
+}
+.scope-box::before {
+  --ax: 10px;
+  --ay: 7px;
+}
+[data-theme="dark"] .scope-box {
+  --rg-bracket: var(--color-sky-400);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .scope-box {
+    --rg-bracket: var(--color-sky-400);
+  }
 }
 /* ── THE FRAME ─────────────────────────────────────────────────────────────────
    One element, where there used to be a marker and a separate box. It is the

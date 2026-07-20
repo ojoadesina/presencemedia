@@ -156,7 +156,21 @@ defmodule PresencemediaWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, users: @users)}
+    {:ok, assign(socket, users: @users, scope: "SCOPED")}
+  end
+
+  # SCOPE is a label and nothing more at this point — it narrows no list and
+  # filters no user, because there is no spine yet for it to narrow anything
+  # against. It lives on the server rather than in the hook on purpose: the
+  # moment it does mean something, it will mean it here, and the toggle will not
+  # have to be moved to find out.
+  @impl true
+  def handle_event("toggle_scope", _params, socket) do
+    {:noreply,
+     update(socket, :scope, fn
+       "SCOPED" -> "UNSCOPED"
+       _ -> "SCOPED"
+     end)}
   end
 
   @impl true
@@ -189,14 +203,14 @@ defmodule PresencemediaWeb.HomeLive do
            It shares the rows' 1.95rem inset rather than the container's, which
            is what puts it on the same left edge as "19+", RELATIONSHIPS, and
            every label below them. --%>
-      <div class="pointer-events-none absolute inset-x-0 top-8 z-10">
+      <div class="pointer-events-none absolute inset-x-0 top-32 z-10">
         <div class="mx-auto w-full max-w-6xl px-4">
           <a
             href="/"
             class="pointer-events-auto inline-block px-[1.95rem]"
             aria-label="Presencemedia — home"
           >
-            <.head class="h-9 text-primary-600 dark:text-primary-500" />
+            <.head class="h-20 text-primary-600 dark:text-primary-500" />
           </a>
         </div>
       </div>
@@ -209,12 +223,30 @@ defmodule PresencemediaWeb.HomeLive do
                needs the room to be a line of prose. It shares only the rows'
                inset, which is what puts every left edge on one line. --%>
           <div class="max-w-2xl px-[1.95rem]">
-            <p class="text-[clamp(var(--text-4xl),1rem+0.7vw,var(--text-6xl))] leading-none text-background-950 dark:text-background-50">
-              19+
-            </p>
-            <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-background-600 dark:text-background-500">
-              RELATIONSHIPS
-            </p>
+            <%!-- w-fit is the whole mechanism, and it is load-bearing. A block
+                 <p> is as wide as its CONTAINER, not as its text, so anything
+                 right-aligned inside one lands at the container's edge and
+                 drifts away from the words the moment the copy changes length.
+                 Shrink-wrapping the pair means the box hangs off the end of the
+                 SENTENCE — shorten the line and the box comes with it, lengthen
+                 it and the box follows, with no measurement written down
+                 anywhere to go stale. --%>
+            <div class="w-fit">
+              <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-neutral-300 dark:text-neutral-200">
+                SO YOU DON'T DO LIFE ALONE
+              </p>
+
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  phx-click="toggle_scope"
+                  aria-pressed={to_string(@scope == "SCOPED")}
+                  class="scope-box relative mt-3 cursor-pointer px-3 py-1.5 text-sm tracking-[0.18em] text-sky-600 transition-colors outline-none hover:text-sky-500 focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:text-sky-400 dark:hover:text-sky-300"
+                >
+                  {@scope}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="relative mt-5 w-[32rem]">
