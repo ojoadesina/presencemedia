@@ -49,6 +49,9 @@ const decode = (url: string): Promise<number[]> => {
 
 export const Waveform = {
   mounted(this: { el: HTMLElement }) {
+    // The hook sits on the presence BOX itself, not on an inner shape holder:
+    // the box is the press target, so it is also the thing that knows how to
+    // play. There is no separate control to wire up.
     const el = this.el;
     const url = el.dataset.media;
     const base = el.querySelector<HTMLElement>(".wave-base");
@@ -80,7 +83,6 @@ export const Waveform = {
     // dropped into a chat column without anything above it coordinating.
     const audio = new Audio();
     audio.preload = "none";
-    const article = el.closest(".presence");
 
     const setPlayed = (ratio: number) =>
       el.style.setProperty("--played", `${Math.min(1, Math.max(0, ratio)) * 100}%`);
@@ -94,36 +96,55 @@ export const Waveform = {
     const play = () => {
       if (!audio.src) audio.src = url;
       audio.play().catch(() => {});
-      article?.classList.add("is-playing");
+      el.classList.add("is-playing");
       // Heard is not a thing you undo. Once played, the row stops asking.
-      article?.classList.remove("is-unheard");
+      el.classList.remove("is-unheard");
       raf = requestAnimationFrame(follow);
     };
     const pause = () => {
       audio.pause();
-      article?.classList.remove("is-playing");
+      el.classList.remove("is-playing");
       cancelAnimationFrame(raf);
     };
 
     this.toggle = () => (audio.paused ? play() : pause());
 
-    // Clicking the shape seeks to where you clicked, because a shape you can see
-    // the end of invites aiming at the middle of it.
+    // Pressing the box plays from where you pressed, because a shape you can see
+    // the end of invites aiming at the middle of it. Pause is Space rather than
+    // a second click: on a nine-second clip the dominant act is "play it", and
+    // making a second click mean "stop" would cost the ability to re-aim.
     el.addEventListener("click", (e) => {
       const r = el.getBoundingClientRect();
       const ratio = (e.clientX - r.left) / r.width;
       if (!audio.src) audio.src = url;
-      const seek = () => {
-        audio.currentTime = ratio * (audio.duration || 0);
+
+      const applySeek = () => {
+        if (!isFinite(audio.duration)) return;
+        audio.currentTime = ratio * audio.duration;
         setPlayed(ratio);
-        if (audio.paused) play();
       };
-      if (audio.readyState >= 1) seek();
-      else audio.addEventListener("loadedmetadata", seek, { once: true });
+
+      if (audio.readyState >= 1) {
+        applySeek();
+        if (audio.paused) play();
+      } else {
+        // preload="none" means assigning src does NOT start a metadata fetch —
+        // nothing loads until something asks to play. Waiting on loadedmetadata
+        // before calling play() therefore waited forever, and the first press
+        // of any presence did nothing at all. Ask first, seek when it arrives.
+        audio.addEventListener("loadedmetadata", applySeek, { once: true });
+        play();
+      }
     });
 
-    const button = article?.querySelector<HTMLButtonElement>(".presence-play");
-    button?.addEventListener("click", () => this.toggle());
+    // Space and Enter, because role="button" earns a keyboard and a box you can
+    // press with a mouse but not with a key is a button in costume only.
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        this.toggle();
+      }
+    });
 
     audio.addEventListener("ended", () => {
       pause();

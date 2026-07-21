@@ -562,35 +562,16 @@ defmodule PresencemediaWeb.HomeLive do
         id="panel"
         class="panel fixed inset-x-0 top-30 bottom-0 z-20 overflow-y-auto"
       >
+        <%!-- SAME MEASURE, SAME EDGE. The header's bracketed box starts at this
+             container's left, so the presence does too — no inner padding, no
+             max-w of its own, nothing that would put it on a different line
+             from the thing above it. One edge down the whole screen. --%>
         <div class="mx-auto w-full max-w-6xl px-4">
-          <div class="max-w-2xl px-[1.95rem] pb-16">
-            <%!-- The line the header cannot carry: what this person's line is
-                 doing right now, in the same three words the frame is drawn
-                 from. --%>
-            <p class="text-sm tracking-[0.18em] text-light-600 dark:text-dark-500">
-              {String.upcase(@current.state)}
-              <span class="mx-2 text-light-300 dark:text-dark-700">·</span>
-              {(@current.frame == "empty" && "NOTHING COMING THROUGH") ||
-                String.upcase(@current.frame)}
-            </p>
-
-            <p class="mt-12 text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
-              MOMENTS
-            </p>
-
-            <%!-- A COLUMN OF LEFT PRESENCES. Oldest at the top for now, because
-                 this is the content page and it reads in creation order; the
-                 inner view will stack the same rows the other way up. Nothing
-                 about the row itself changes between the two, which is the
-                 point of building it as one thing. --%>
-            <div class="mt-2 divide-y divide-light-200 dark:divide-dark-800">
-              <.presence
-                :for={{moment, i} <- Enum.with_index(@current.moments)}
-                id={"presence-#{@selected}-#{i}"}
-                presence={moment}
-              />
-            </div>
-          </div>
+          <.presence
+            :if={@current.moments != []}
+            id={"presence-#{@selected}"}
+            presence={hd(@current.moments)}
+          />
         </div>
       </div>
     </div>

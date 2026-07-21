@@ -447,7 +447,8 @@ html[data-theme="dark"] {
    arms are sized against the height they sit in. */
 .focus-box::before,
 .frame::before,
-.scope-box::before {
+.scope-box::before,
+.presence::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -474,8 +475,11 @@ html[data-theme="dark"] {
   --ax: 14px;
   --ay: 14px;
 }
-/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. */
-.focus-box::before {
+/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. The
+   left presence is the SAME BOX and therefore takes the same arms — that is the
+   whole idea rather than a coincidence worth factoring out. */
+.focus-box::before,
+.presence::before {
   --ax: 24px;
   --ay: 14px;
 }
@@ -780,54 +784,68 @@ html[data-theme="dark"] {
 }
 
 /* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
-   The atomic unit, and later the chat row. Everything here is about the one
-   distinction that matters: a LIVE presence is happening and therefore has no
-   shape, while a LEFT one is over and therefore has all of one.
+   The band's box with a recording in it. Same 32rem, same 3.5rem, same corner
+   brackets, same left edge — because the surface already has a shape for "a
+   person, here" and a left presence does not need a second one.
 
-   UNHEARD IS THE ONLY STATE IT CARRIES that a live presence cannot have — you
-   can miss a recording, and missing one should be visible from across the room.
-   It is terracotta, because terracotta is this surface's word for "look at
-   this", and it stops the moment you play it. Nothing marks a heard presence;
-   the absence of the call IS the mark. */
+   No play control, no name, no timestamp. A play triangle is what every
+   messaging app puts here and would be the only rounded, borrowed thing on a
+   surface with neither. The BOX is the press target, exactly as the band and
+   the frame are. */
 .presence {
-  --wave-idle: var(--color-light-300);
+  --wave-idle: var(--color-light-400);
   --wave-lit: var(--color-primary-600);
+  --played: 0%;
 }
 [data-theme="dark"] .presence {
-  --wave-idle: var(--color-dark-700);
+  --wave-idle: var(--color-dark-600);
   --wave-lit: var(--color-primary-500);
 }
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) .presence {
-    --wave-idle: var(--color-dark-700);
+    --wave-idle: var(--color-dark-600);
     --wave-lit: var(--color-primary-500);
   }
 }
-/* Unheard raises the RESTING bars rather than adding a badge, so the row itself
-   is the notice and there is no second thing to look at. */
+
+/* UNHEARD raises the resting peaks to terracotta rather than adding a dot or a
+   badge, so the row IS the notice and there is no second thing to look at. It
+   clears the moment you play. Nothing marks a heard presence — the absence of
+   the call is the mark. */
 .presence.is-unheard {
-  --wave-idle: color-mix(in srgb, var(--color-primary-600) 45%, transparent);
+  --wave-idle: color-mix(in srgb, var(--color-primary-600) 55%, transparent);
 }
 [data-theme="dark"] .presence.is-unheard,
-.presence.is-unheard:where(html:not([data-theme]) *) {
-  --wave-idle: color-mix(in srgb, var(--color-primary-500) 45%, transparent);
+html:not([data-theme]) .presence.is-unheard {
+  --wave-idle: color-mix(in srgb, var(--color-primary-500) 55%, transparent);
 }
 
-/* THE SHAPE. Two layers of identical bars, the lit one clipped to the playhead.
-   Recolouring seventy-two bars per frame would repaint the row constantly and
-   still move a bar at a time; clipping is continuous and costs one style
-   write. */
-.wave {
-  --played: 0%;
+/* THE FILL is the band's own wash for "this one", advancing. Not a progress bar
+   borrowed from a player — the surface's existing word for attention, moving.
+   Behind the peaks, so they stay readable across the boundary. */
+.presence-fill {
+  position: absolute;
+  inset: 0;
+  width: var(--played);
+  background-color: color-mix(in srgb, var(--color-primary-600) 15%, transparent);
 }
-.wave-layer {
+[data-theme="dark"] .presence-fill,
+html:not([data-theme]) .presence-fill {
+  background-color: color-mix(in srgb, var(--color-primary-500) 20%, transparent);
+}
+
+/* EDGE TO EDGE, running behind the bracket arms. Insetting the shape would put a
+   margin inside a box whose entire job is to have none. */
+.wave-base,
+.wave-lit {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   gap: 2px;
 }
-.wave-layer span {
+.wave-base span,
+.wave-lit span {
   flex: 1;
   min-height: 2px;
   /* Square ends. A rounded bar is a chart; this is a recording. */
@@ -840,43 +858,29 @@ html[data-theme="dark"] {
   color: var(--wave-lit);
   clip-path: inset(0 calc(100% - var(--played)) 0 0);
 }
-/* Nothing until the peaks are real. An empty row for a moment is better than a
-   placeholder shape that has to be replaced by a different one. */
-.wave:not(.is-drawn) {
-  opacity: 0;
+
+/* The one piece of text, and it is intrinsic rather than a label: how long the
+   thing is. Inside the box on the far edge, at the weight of the band's own
+   placeholder, so it reads as part of the box and not as a caption on it. */
+.presence-len {
+  position: absolute;
+  right: 1.1rem;
+  font-size: var(--text-sm);
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+  color: var(--wave-idle);
 }
-.wave {
+
+/* Nothing until the peaks are real. An empty box for a moment is better than a
+   placeholder shape that has to be swapped for a different one. */
+.presence .wave-base,
+.presence .wave-lit {
+  opacity: 0;
   transition: opacity 200ms ease-out;
 }
-
-/* THE PLAY CONTROL is a square that becomes a bar, which is the same shape
-   language as the bars beside it — no triangle, no circle, nothing borrowed
-   from a media player. */
-.presence-play-mark {
-  position: absolute;
-  inset: 0.5rem;
-  background: var(--wave-lit);
-  transition:
-    inset 180ms ease,
-    opacity 180ms ease;
-}
-.presence:not(.is-unheard) .presence-play-mark {
-  background: var(--wave-idle);
-}
-.presence.is-playing .presence-play-mark {
-  /* Narrower and taller while it runs: a thing in motion, not a thing at rest. */
-  inset: 0.35rem 0.75rem;
-  background: var(--wave-lit);
-}
-.presence-play:hover .presence-play-mark {
-  background: var(--wave-lit);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .presence-play-mark,
-  .wave {
-    transition: none;
-  }
+.presence.is-drawn .wave-base,
+.presence.is-drawn .wave-lit {
+  opacity: 1;
 }
 
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:
