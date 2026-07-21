@@ -368,10 +368,10 @@ html[data-theme="dark"] {
    the two surfaces is masked by the tint sitting over it. Softened, not
    hidden — which is the honest version of the effect. */
 .theme-wash[data-target="light"] {
-  background-color: color-mix(in srgb, var(--color-light-50) 58%, transparent);
+  background-color: color-mix(in srgb, var(--color-light-50) 85%, transparent);
 }
 .theme-wash[data-target="dark"] {
-  background-color: color-mix(in srgb, var(--color-dark-950) 58%, transparent);
+  background-color: color-mix(in srgb, var(--color-dark-950) 85%, transparent);
 }
 
 .head.is-animated .head-eyes {
