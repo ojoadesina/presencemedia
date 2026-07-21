@@ -205,13 +205,21 @@ defmodule PresencemediaWeb.HomeLive do
            every label below them. --%>
       <div class="pointer-events-none absolute inset-x-0 top-32 z-10">
         <div class="mx-auto w-full max-w-6xl px-4">
-          <a
-            href="/"
-            class="pointer-events-auto inline-block px-[1.95rem]"
-            aria-label="Presencemedia — home"
+          <%!-- A BUTTON, not a link. It used to point home, but home is this
+               page — there is only one route — so the click was doing nothing
+               and the affordance was lying. It flips the theme instead, and
+               replays its own entrance while doing it, so the thing you pressed
+               answers rather than the page just changing colour underneath
+               you. --%>
+          <button
+            id="logo"
+            type="button"
+            phx-hook="Head"
+            class="pointer-events-auto inline-block cursor-pointer px-[1.95rem] outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+            aria-label="Switch theme"
           >
             <.head class="h-20 text-primary-600 dark:text-primary-500" />
-          </a>
+          </button>
         </div>
       </div>
 
