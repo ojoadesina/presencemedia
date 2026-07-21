@@ -191,7 +191,7 @@ defmodule PresencemediaWeb.HomeLive do
     --%>
     <div
       id="regions"
-      class="fixed inset-0 z-0 bg-background-50 font-mono dark:bg-background-950"
+      class="fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-800"
     >
       <%!-- THE MARK sits ABSOLUTELY, not in the flow, and that is the whole
            trick of putting it here. The band's position is derived from the
@@ -282,7 +282,7 @@ defmodule PresencemediaWeb.HomeLive do
                   data-state={user.state}
                   data-frame={user.frame}
                   data-media={user.media}
-                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-background-900 transition-colors duration-200 dark:text-background-100"
+                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
                 >
                   <span>{user.label}</span>
                   <%!-- their own name, quiet beside the label: it arrives only
@@ -290,7 +290,7 @@ defmodule PresencemediaWeb.HomeLive do
                        It keeps its own colour on purpose — the focused row turns
                        terracotta, and the name staying muted is what stops the
                        band reading as two labels shouting at once. --%>
-                  <span class="regions-name ml-3 text-background-300 opacity-0 transition-opacity duration-200 dark:text-background-700">
+                  <span class="regions-name ml-3 text-light-300 opacity-0 transition-opacity duration-200 dark:text-dark-600">
                     {user.name}
                   </span>
                 </li>
@@ -357,7 +357,7 @@ defmodule PresencemediaWeb.HomeLive do
                        nobody can hit. --%>
                   <button
                     type="button"
-                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-background-950/15 text-background-50 transition-colors hover:bg-background-950/30 dark:bg-background-950/25 dark:hover:bg-background-950/40"
+                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-light-950/15 text-light-50 transition-colors hover:bg-light-950/30 dark:bg-dark-800/25 dark:hover:bg-dark-950/40"
                     aria-label="Play again"
                   >
                     <%!-- Inline rather than a heroicon: this is a three-quarter

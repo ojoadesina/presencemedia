@@ -12,8 +12,12 @@ defmodule PresencemediaWeb.CoreComponents do
   there is no component library underneath, so what you read here is what
   renders. Four rules keep the set coherent:
 
-    * SURFACES come from the `background` ramp, read from opposite ends in
-      light and dark. Every colour utility therefore ships with a `dark:` twin.
+    * SURFACES come from two ramps, not one: `light-*` (warm, cream to cocoa)
+      and `dark-*` (cool slate, lifted from daisyUI's own dark theme). Every
+      colour utility therefore ships with a `dark:` twin. Do NOT pair them by
+      number — light's page is `light-50` and dark's is `dark-800`, because
+      dark's ramp keeps `dark-900` and `dark-950` for the layers RECESSED below
+      the page rather than for the page itself.
     * `primary` (terracotta) means ATTENTION — the pressed button, the invalid
       field, the error flash. The palette carries no separate red, and it does
       not need one.
@@ -47,15 +51,15 @@ defmodule PresencemediaWeb.CoreComponents do
   # form always means `assigns.name` — a module attribute referenced that way in
   # a template silently becomes a missing-assign crash at render time.
   defp input_base do
-    "w-full rounded-md border bg-background-50 px-3 py-2 text-md text-background-900 " <>
-      "placeholder:text-background-400 transition-colors outline-none " <>
+    "w-full rounded-md border bg-light-50 px-3 py-2 text-md text-light-900 " <>
+      "placeholder:text-light-400 transition-colors outline-none " <>
       "focus-visible:ring-2 focus-visible:ring-primary-500/40 " <>
       "disabled:cursor-not-allowed disabled:opacity-50 " <>
-      "dark:bg-background-900 dark:text-background-100 dark:placeholder:text-background-600"
+      "dark:bg-dark-900 dark:text-dark-100 dark:placeholder:text-dark-500"
   end
 
   defp input_ok do
-    "border-background-200 focus-visible:border-primary-500 dark:border-background-800"
+    "border-light-200 focus-visible:border-primary-500 dark:border-dark-700"
   end
 
   defp input_bad do
@@ -65,7 +69,7 @@ defmodule PresencemediaWeb.CoreComponents do
   # The label above every field. One definition so a select and a text input can
   # never disagree about weight or spacing.
   defp field_label do
-    "mb-1 block text-sm font-medium text-background-700 dark:text-background-300"
+    "mb-1 block text-sm font-medium text-light-700 dark:text-dark-300"
   end
 
   @doc """
@@ -136,7 +140,7 @@ defmodule PresencemediaWeb.CoreComponents do
       "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 " <>
         "text-md font-semibold transition-colors outline-none " <>
         "focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-2 " <>
-        "focus-visible:ring-offset-background-50 dark:focus-visible:ring-offset-background-950 " <>
+        "focus-visible:ring-offset-light-50 dark:focus-visible:ring-offset-dark-800 " <>
         "disabled:pointer-events-none disabled:opacity-50"
 
     # Solid carries the page's one primary action. Soft is the same colour at low
@@ -258,7 +262,7 @@ defmodule PresencemediaWeb.CoreComponents do
 
     ~H"""
     <div class="mb-2">
-      <label class="flex items-center gap-2 text-md text-background-900 dark:text-background-100">
+      <label class="flex items-center gap-2 text-md text-light-900 dark:text-dark-100">
         <input
           type="hidden"
           name={@name}
@@ -274,9 +278,9 @@ defmodule PresencemediaWeb.CoreComponents do
           checked={@checked}
           class={
             @class ||
-              "size-4 shrink-0 cursor-pointer rounded border-background-300 accent-primary-600 " <>
+              "size-4 shrink-0 cursor-pointer rounded border-light-300 accent-primary-600 " <>
                 "outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 " <>
-                "dark:border-background-700 dark:accent-primary-500"
+                "dark:border-dark-600 dark:accent-primary-500"
           }
           {@rest}
         />{@label}
@@ -377,10 +381,10 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-3xl font-semibold leading-8 text-background-900 dark:text-background-100">
+        <h1 class="text-3xl font-semibold leading-8 text-light-900 dark:text-dark-100">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-md text-background-600 dark:text-background-400">
+        <p :if={@subtitle != []} class="text-md text-light-600 dark:text-dark-400">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -425,11 +429,11 @@ defmodule PresencemediaWeb.CoreComponents do
          it scrolls inside its own box instead. --%>
     <div class="w-full overflow-x-auto">
       <table class="w-full border-collapse text-left text-md">
-        <thead class="border-b border-background-200 dark:border-background-800">
+        <thead class="border-b border-light-200 dark:border-dark-700">
           <tr>
             <th
               :for={col <- @col}
-              class="p-3 text-sm font-semibold tracking-wide text-background-600 uppercase dark:text-background-400"
+              class="p-3 text-sm font-semibold tracking-wide text-light-600 uppercase dark:text-dark-400"
             >
               {col[:label]}
             </th>
@@ -441,14 +445,14 @@ defmodule PresencemediaWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}
-          class="text-background-900 dark:text-background-100"
+          class="text-light-900 dark:text-dark-100"
         >
           <%!-- Zebra striping by hand. nth-child on the ROW rather than a class on
                each cell, so a stream insert cannot land on the wrong colour. --%>
           <tr
             :for={row <- @rows}
             id={@row_id && @row_id.(row)}
-            class="border-b border-background-150 odd:bg-background-100/50 hover:bg-primary-50 dark:border-background-900 dark:odd:bg-background-900/40 dark:hover:bg-primary-950/40"
+            class="border-b border-light-150 odd:bg-light-100/50 hover:bg-primary-50 dark:border-dark-900 dark:odd:bg-dark-900/40 dark:hover:bg-primary-950/40"
           >
             <td
               :for={col <- @col}
@@ -487,12 +491,12 @@ defmodule PresencemediaWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="divide-y divide-background-200 dark:divide-background-800">
+    <ul class="divide-y divide-light-200 dark:divide-dark-700">
       <li :for={item <- @item} class="flex flex-col gap-1 py-4">
-        <div class="text-sm font-semibold tracking-wide text-background-600 uppercase dark:text-background-400">
+        <div class="text-sm font-semibold tracking-wide text-light-600 uppercase dark:text-dark-400">
           {item.title}
         </div>
-        <div class="text-md text-background-900 dark:text-background-100">{render_slot(item)}</div>
+        <div class="text-md text-light-900 dark:text-dark-100">{render_slot(item)}</div>
       </li>
     </ul>
     """
