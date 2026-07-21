@@ -225,31 +225,54 @@ html[data-theme="dark"] {
    is precisely why the handover is clean rather than a fight. */
 .head.is-animated .head-face {
   animation:
-    head-arrive 820ms cubic-bezier(0.34, 1.2, 0.64, 1) both,
-    head-breathe 3.6s ease-in-out 820ms infinite;
+    head-arrive 1500ms both,
+    head-breathe 3.6s ease-in-out 1500ms infinite;
 }
 
-/* Kicked from a long way off. It starts at a twentieth of its size and
-   transparent, overshoots hard, then rings down through two smaller bounces
-   the way something with mass actually settles. A single ease into place would
-   read as a zoom; the overshoot is what makes it read as ARRIVING. */
+/* HELD, THEN RELEASED. The shape of this is the whole point, and it is why the
+   easing lives on the keyframes instead of on the animation: one curve across
+   the whole thing can only accelerate or decelerate, and what is wanted here is
+   both, in that order.
+
+   For the first 44% it barely moves — 0.04 to 0.19 over two thirds of a second,
+   decelerating, straining against something. Then it is let go, and covers the
+   remaining 1.2x of scale in a fifth of the time. The restraint is what sells
+   the release; without the slow part the fast part is just a fast animation.
+
+   After that it rings down through four decaying bounces, alternating over and
+   under, the way something with mass actually settles rather than stopping
+   dead on arrival. */
 @keyframes head-arrive {
   0% {
-    transform: scale(0.05);
+    transform: scale(0.04);
     opacity: 0;
+    animation-timing-function: cubic-bezier(0.16, 0.62, 0.5, 0.86);
   }
-  50% {
-    transform: scale(1.22);
+  44% {
+    transform: scale(0.19);
+    opacity: 0.92;
+    animation-timing-function: cubic-bezier(0.08, 0.82, 0.28, 1);
+  }
+  60% {
+    transform: scale(1.42);
     opacity: 1;
+    animation-timing-function: ease-in-out;
   }
-  70% {
-    transform: scale(0.92);
+  72% {
+    transform: scale(0.85);
+    animation-timing-function: ease-in-out;
   }
-  85% {
-    transform: scale(1.05);
+  81% {
+    transform: scale(1.16);
+    animation-timing-function: ease-in-out;
   }
-  94% {
-    transform: scale(0.98);
+  89% {
+    transform: scale(0.93);
+    animation-timing-function: ease-in-out;
+  }
+  95% {
+    transform: scale(1.04);
+    animation-timing-function: ease-in-out;
   }
   100% {
     transform: scale(1);
@@ -265,8 +288,35 @@ html[data-theme="dark"] {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.075);
   }
+}
+
+/* ── THE THEME WASH ────────────────────────────────────────────────────────────
+   A disc of the INCOMING surface colour, opened from the middle of the mark
+   until it covers the screen. The theme is switched at the moment of full
+   coverage and the disc then fades, so what it uncovers is a page that has
+   already changed — the wash appears to have carried the colour out with it
+   rather than a repaint happening behind a curtain.
+
+   Its size and position are set from JS because both depend on where the mark
+   happens to be and how far the furthest corner is from it. Everything that is
+   not arithmetic lives here. */
+.theme-wash {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  /* Under the mark, over everything else: the colour has to look like it is
+     coming OUT of the logo, which it cannot do if it paints over the top of
+     it. */
+  z-index: 20;
+  will-change: transform, opacity;
+}
+.theme-wash[data-target="light"] {
+  background-color: var(--color-background-50);
+}
+.theme-wash[data-target="dark"] {
+  background-color: var(--color-background-950);
 }
 
 .head.is-animated .head-eyes {

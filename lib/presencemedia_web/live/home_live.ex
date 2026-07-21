@@ -203,7 +203,9 @@ defmodule PresencemediaWeb.HomeLive do
            It shares the rows' 1.95rem inset rather than the container's, which
            is what puts it on the same left edge as "19+", RELATIONSHIPS, and
            every label below them. --%>
-      <div class="pointer-events-none absolute inset-x-0 top-32 z-10">
+      <%!-- z-30 clears the theme wash at z-20. The colour has to look like it is
+           coming OUT of the mark, which it cannot do while painting over it. --%>
+      <div class="pointer-events-none absolute inset-x-0 top-32 z-30">
         <div class="mx-auto w-full max-w-6xl px-4">
           <%!-- A BUTTON, not a link. It used to point home, but home is this
                page — there is only one route — so the click was doing nothing
