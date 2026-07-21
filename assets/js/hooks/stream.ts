@@ -149,6 +149,17 @@ export const Stream = {
       }),
     );
 
+    // WHICH SENTENCES ACTUALLY OVERFLOW. The two-line fade splits at 50% of the
+    // box, so on a one-line row it would cut that single line in half — there
+    // is nothing below it to fade into. Only the rows that really run past two
+    // lines get masked.
+    const clamp = () =>
+      scroll.querySelectorAll<HTMLElement>(".stream-line").forEach((line) =>
+        line.classList.toggle("is-clamped", line.scrollHeight > line.clientHeight + 1),
+      );
+    clamp();
+    window.addEventListener("resize", clamp);
+
     window.addEventListener("resize", settle);
 
     // AFTER LAYOUT, not during mount. Every row now holds a card, and a card has

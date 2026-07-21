@@ -1,0 +1,179 @@
+defmodule Presencemedia.Fixtures do
+  @moduledoc """
+  The made-up data the surface is being designed against.
+
+  There is no database yet — no Ecto dependency at all — so nothing here is
+  loaded, only rendered. That is deliberate: the surface is being drawn before
+  the spine is built.
+
+  The MEDIA is real, though, and fetched from Wikimedia Commons at play time, so
+  what you are looking at is the actual behaviour rather than a mime of it. It
+  lives here rather than in a LiveView because two screens now read the same
+  presences, and a second copy would be a second thing to keep true.
+  """
+
+  # Commons serves a permanent MP3/WebM transcode alongside every upload. We
+  # point at those rather than the .ogg and .webm originals for one blunt
+  # reason: Safari cannot play Ogg Vorbis at all, and the sources are 9-14 MB
+  # apiece for a screen a few hundred pixels wide.
+  def commons, do: "https://upload.wikimedia.org/wikipedia/commons/transcoded"
+
+  @doc """
+  Every presence in the pool, newest last, each already carrying its creator.
+  """
+  def presences do
+    pool()
+    |> Enum.zip(creators())
+    |> Enum.map(fn {presence, by} -> Map.put(presence, :by, by) end)
+  end
+
+  # Real names on real clips. A presence belongs to whoever left it, so the
+  # creator is part of the fixture rather than something the page decides.
+  defp creators do
+    ~w(SARAH MICHAEL DANIEL AMAKA ROSE IBRAHIM TUNDE ELENA KEMI PETER BLESSING ADEOLA LUCAS HANNAH)
+  end
+
+  defp pool do
+    [
+      %{
+        kind: "voice",
+        when: "07:12",
+        len: "0:10",
+        from: "them",
+        heard: true,
+        note: "up early, thinking about what you said",
+        media: "#{commons()}/9/96/Andy_Mabbett_voice.ogg/Andy_Mabbett_voice.ogg.mp3"
+      },
+      %{
+        kind: "face",
+        when: "08:03",
+        len: "0:37",
+        from: "you",
+        heard: true,
+        note: "the light here is unbelievable",
+        media:
+          "#{commons()}/8/8e/WIKITONGUES-_Sedang_speaking_Iban.webm/" <>
+            "WIKITONGUES-_Sedang_speaking_Iban.webm.360p.vp9.webm"
+      },
+      %{
+        kind: "text",
+        when: "08:47",
+        len: nil,
+        from: "them",
+        heard: true,
+        note:
+          "the bakery on the corner closed. thought you would want to know before you walked down there again",
+        media: nil
+      },
+      %{
+        kind: "voice",
+        when: "09:41",
+        len: "0:15",
+        from: "them",
+        heard: true,
+        note: "found the thing you were looking for",
+        media: "#{commons()}/b/bb/Bettany_Hughes_voice.ogg/Bettany_Hughes_voice.ogg.mp3"
+      },
+      %{
+        kind: "voice",
+        when: "11:26",
+        len: "0:17",
+        from: "you",
+        heard: true,
+        note: "nothing urgent",
+        media: "#{commons()}/0/01/David_Lammy_voice.ogg/David_Lammy_voice.ogg.mp3"
+      },
+      %{
+        kind: "face",
+        when: "12:58",
+        len: "0:46",
+        from: "them",
+        heard: true,
+        note: "two minutes, then I have to go",
+        media:
+          "#{commons()}/2/26/WIKITONGUES-_Tarkhan_speaking_Jek.webm/" <>
+            "WIKITONGUES-_Tarkhan_speaking_Jek.webm.360p.vp9.webm"
+      },
+      %{
+        kind: "voice",
+        when: "14:07",
+        len: "0:16",
+        from: "them",
+        heard: true,
+        note: "listen to the end, it gets better",
+        media: "#{commons()}/e/ec/David_Harewood_voice.ogg/David_Harewood_voice.ogg.mp3"
+      },
+      %{
+        kind: "face",
+        when: "15:34",
+        len: "0:54",
+        from: "you",
+        heard: true,
+        note: "showing you rather than telling you",
+        media:
+          "#{commons()}/e/ea/WIKITONGUES-_Uladzislau_speaking_Belarusian.webm/" <>
+            "WIKITONGUES-_Uladzislau_speaking_Belarusian.webm.360p.vp9.webm"
+      },
+      %{
+        kind: "voice",
+        when: "17:19",
+        len: "0:18",
+        from: "them",
+        heard: true,
+        note: "you were right about the other thing",
+        media: "#{commons()}/0/0f/Alison_Balsom_voice.ogg/Alison_Balsom_voice.ogg.mp3"
+      },
+      %{
+        kind: "face",
+        when: "18:45",
+        len: "0:48",
+        from: "them",
+        heard: false,
+        note: "walked past the old place today",
+        media:
+          "#{commons()}/c/c9/WIKITONGUES-_Jeries_speaking_Syriac.webm/" <>
+            "WIKITONGUES-_Jeries_speaking_Syriac.webm.360p.vp9.webm"
+      },
+      %{
+        kind: "text",
+        when: "19:14",
+        len: nil,
+        from: "you",
+        heard: true,
+        note: "on my way",
+        media: nil
+      },
+      %{
+        kind: "voice",
+        when: "20:02",
+        len: "0:16",
+        from: "you",
+        heard: true,
+        note: "call me when you land",
+        media: "#{commons()}/f/fa/Brian_Schmidt_voice.ogg/Brian_Schmidt_voice.ogg.mp3"
+      },
+      %{
+        kind: "face",
+        when: "21:30",
+        len: "0:56",
+        from: "them",
+        heard: false,
+        note: "quick one before bed",
+        media:
+          "#{commons()}/2/20/WIKITONGUES-_Yernur_speaking_Kazakh.webm/" <>
+            "WIKITONGUES-_Yernur_speaking_Kazakh.webm.360p.vp9.webm"
+      },
+      %{
+        kind: "face",
+        when: "22:51",
+        len: "0:58",
+        from: "them",
+        heard: false,
+        note: "last one, promise",
+        media:
+          "#{commons()}/0/05/WIKITONGUES-_Rizki_speaking_Malay.webm/" <>
+            "WIKITONGUES-_Rizki_speaking_Malay.webm.360p.vp9.webm"
+      }
+    ]
+  end
+end

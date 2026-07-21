@@ -427,7 +427,8 @@ html[data-theme="dark"] {
    never mention a colour directly. Light is the default and dark restates them;
    the two branches mirror the dark variant above, because a plain stylesheet
    cannot call a Tailwind variant. */
-#regions {
+#regions,
+#presence-page {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
   /* ABSENT is the one place neutral earns its keep. Terracotta is the colour of
@@ -438,14 +439,16 @@ html[data-theme="dark"] {
   --b: 3px; /* bracket weight */
 }
 
-[data-theme="dark"] #regions {
+[data-theme="dark"] #regions,
+[data-theme="dark"] #presence-page {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
   --rg-absent: color-mix(in oklab, var(--color-neutral-300) 8%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme]) #regions {
+  html:not([data-theme]) #regions,
+  html:not([data-theme]) #presence-page {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
     --rg-absent: color-mix(in oklab, var(--color-neutral-300) 8%, transparent);
@@ -837,22 +840,56 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   display: none;
 }
 
+/* TWO LINES AT MOST, and at least one row's worth of height. A note that runs
+   long stops being a list item and becomes a wall, so the sentence is clamped —
+   and the fade takes TWO mask layers because one cannot do it: a vertical
+   gradient dims the whole second line evenly, a horizontal one dims the first
+   line too. Layer one is opaque across the top half and transparent below,
+   layer two fades rightward across the box; added together the first line is
+   untouched and only the second runs out. */
+.stream-line {
+  --stream-lh: 1.6em;
+  line-height: var(--stream-lh);
+  max-height: calc(var(--stream-lh) * 2);
+  overflow: hidden;
+  mask-image:
+    linear-gradient(to bottom, #000 0 50%, transparent 50%),
+    linear-gradient(to right, #000 calc(100% - 5rem), transparent 100%);
+  mask-composite: add;
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0 50%, transparent 50%),
+    linear-gradient(to right, #000 calc(100% - 5rem), transparent 100%);
+  -webkit-mask-composite: source-over;
+}
+
+/* A one-line sentence must not be masked at all — the bottom layer would fade a
+   line that has nothing below it. Only clamp what actually overflows. */
+.stream-line:not(.is-clamped) {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 /* The captured card hands its place to the box, which is holding the same
    presence with its cover off. Leaving it visible underneath would show the
    thing twice, once shut and once open. Its neighbours stay. */
-/* NO LEFT PADDING. The card is the full 32rem measure, so an inset here pushed
-   it past the container's right edge and broke the one edge the whole screen is
-   aligned to. The row's job is vertical rhythm only.
+/* SCOPED TO THE PANEL. These rows hold cards and are sized for them; the
+   /presence list uses the same class for rows that are sentences and size
+   themselves. An unscoped height here forced those to 248px and made a
+   sentence sit in the middle of a card's worth of air.
 
-   Taller than the card it holds, so cards have air between them rather than
-   stacking flush and reading as one block. */
-.stream-item {
+   No left padding: the card is the full 32rem measure, so an inset pushed it
+   past the container's right edge and broke the one edge the screen aligns to.
+   Taller than the card it holds, so cards have air between them. */
+#panel .stream-item {
   display: flex;
   height: 15.5rem;
   align-items: center;
   transition: opacity 200ms ease-out;
 }
-.stream-item.is-captured {
+/* Only in the panel, where the box holds the SAME presence with its cover off
+   and showing both would print it twice. On /presence the band is translucent
+   and the chosen line reads THROUGH it, exactly as a relationship does. */
+#panel .stream-item.is-captured {
   opacity: 0;
 }
 
