@@ -173,13 +173,7 @@ defmodule PresencemediaWeb.PresenceLive do
                     style={"--wash-h: #{presence.hue}"}
                   >
                     <p class="stream-line text-md tracking-[0.14em]">
-                      <span class={[
-                        "font-medium",
-                        presence.heard && "text-light-900 dark:text-dark-100",
-                        !presence.heard && "text-primary-600 dark:text-primary-500"
-                      ]}>
-                        {presence.by}
-                      </span>
+                      <span class="stream-name font-medium">{presence.by}</span>
                       <%!-- Lower case, because the name is the only thing in the
                            sentence entitled to raise its voice. --%>
                       <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
@@ -200,11 +194,10 @@ defmodule PresencemediaWeb.PresenceLive do
               </ul>
             </div>
 
-            <%!-- THE BAND wears the same wash as the box in the relationship
-                 list, over the top of whichever card has arrived under it. The
-                 brackets aim; the wash is what says CHOSEN. --%>
-            <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem] bg-primary-600/15 dark:bg-primary-500/20">
-            </div>
+            <%!-- THE BAND IS BRACKETS AND NOTHING ELSE now. The chosen row keeps
+                 its own colour — a wash laid over it would be two washes on one
+                 card — so all the band has to do is mark which card that is. --%>
+            <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem]"></div>
           </div>
         </div>
       </div>

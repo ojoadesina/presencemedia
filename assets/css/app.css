@@ -914,12 +914,23 @@ html:not([data-theme]) #presence-page .presence-row {
   }
 }
 
-/* THE CHOSEN ONE DROPS ITS OWN COLOUR. The band lays the relationship list's
-   wash over whatever has arrived under it, and two washes on one card is mud —
-   so the captured row gives its hue up for as long as it is the one being
-   watched, and takes it back on the way out. */
-#presence-page .stream-item.is-captured .presence-row {
-  background-color: transparent;
+/* THE NAME IS THE SAME COLOUR AS ITS CARD, at full strength. The field is that
+   hue washed almost to the page; the name is that hue taken dark and saturated
+   — one colour a few shades apart, so a person and their name read as belonging
+   to each other rather than the name being a separate ink dropped on top.
+   Lightness and chroma are fixed here too, so a strong name stays exactly as
+   loud whatever hue it happens to wear. */
+#presence-page .presence-row .stream-name {
+  color: oklch(0.5 0.13 var(--wash-h));
+}
+[data-theme="dark"] #presence-page .presence-row .stream-name,
+html:not([data-theme]) #presence-page .presence-row .stream-name {
+  color: oklch(0.82 0.13 var(--wash-h));
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) #presence-page .presence-row .stream-name {
+    color: oklch(0.5 0.13 var(--wash-h));
+  }
 }
 
 #panel .stream-item {
