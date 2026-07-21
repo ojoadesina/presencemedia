@@ -814,6 +814,14 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   }
 }
 
+/* A name too long for the header does not get cut off square, pushed wider or
+   spilled past the brackets — it FADES at the box's edge, the same way a row's
+   does, so one name reads identically in the list and in the header. */
+.focus-name {
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
 /* ── THE PRESENCE STREAM ───────────────────────────────────────────────────────
    The relationship list's mechanism, one level down, so the same three rules
    apply for the same reasons: the scrollbar is hidden because the box reports
@@ -827,6 +835,12 @@ html:not([data-theme]) .bar.is-picked .focus-box {
 }
 .stream-scroll::-webkit-scrollbar {
   display: none;
+}
+
+/* Two pixels. Thin enough that a column of them reads as rhythm rather than as
+   a chart, and square-ended like everything else here. */
+.stream-rule {
+  height: 2px;
 }
 
 /* The captured row hands its place to the box: the card covers it, so leaving

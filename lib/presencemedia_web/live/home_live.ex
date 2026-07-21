@@ -313,7 +313,26 @@ defmodule PresencemediaWeb.HomeLive do
       Enum.at(@presence_pool, rem(index * 4 + k, n))
     end
     |> Enum.sort_by(& &1.when)
-    |> Enum.map(&Map.put(&1, :by, (&1.from == "you" && "YOU") || user.name))
+    |> Enum.map(fn presence ->
+      presence
+      |> Map.put(:by, (presence.from == "you" && "YOU") || user.name)
+      |> Map.put(:rule, rule_width(presence.len))
+    end)
+  end
+
+  # HOW LONG, AS A LENGTH. A collapsed presence needs to say more than who left
+  # it, but a second line of text would clutter the list and a filled block would
+  # read as the captured card and make the screen argue with itself.
+  #
+  # A rule does neither. It is a line, so it cannot be confused with a
+  # rectangle, and its LENGTH is the duration — the same idea as a highlight
+  # running short on its last line: you read "this much" without reading a
+  # number. Floored well above zero so a ten-second presence is still a mark
+  # rather than a speck, and capped so a minute cannot run into the time.
+  defp rule_width(len) do
+    [minutes, seconds] = String.split(len, ":")
+    secs = String.to_integer(minutes) * 60 + String.to_integer(seconds)
+    "#{Float.round(1.5 + min(secs, 60) / 60 * 8.5, 2)}rem"
   end
 
   # SELECTION NOW REACHES THE SERVER. It used to live only in the hook, which was
@@ -539,7 +558,12 @@ defmodule PresencemediaWeb.HomeLive do
                   @selected && "cursor-pointer"
                 ]}
               >
-                <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
+                <%!-- ABSOLUTE, not merely transparent. It was opacity-0 and
+                     still in flow, so its 27px of width sat in front of the
+                     header's label and pushed the text to 59px from the box
+                     edge where the list's rows start at 31px. Invisible is not
+                     the same as absent. --%>
+                <span class="focus-empty absolute text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
                   --
                 </span>
                 <%!-- THE BAR TAKES OVER THE TEXT at the moment of the pick, and
@@ -554,9 +578,14 @@ defmodule PresencemediaWeb.HomeLive do
                      below it, and terracotta is this surface's word for "look
                      here". Spending it on the header would leave the content
                      arguing with its own title. --%>
+                <%!-- min-w-0 so the flex child may actually shrink, and the
+                     fade so a name too long for the box FADES OUT at its edge
+                     rather than pushing the box wider or spilling past the
+                     brackets. Same treatment the rows already use, so a long
+                     name reads identically in either place. --%>
                 <span
                   :if={@mode == :open && @current}
-                  class="flex items-baseline whitespace-nowrap text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+                  class="focus-name flex min-w-0 flex-1 items-baseline overflow-hidden whitespace-nowrap text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
                   {@current.label}
                   <span class="ml-3 text-light-500 dark:text-dark-500">{@current.name}</span>
@@ -684,14 +713,37 @@ defmodule PresencemediaWeb.HomeLive do
               <%!-- Lead and trail are what let the first and last presence
                    REACH the box. --%>
               <ul class="pt-[calc(34%+2rem)] pb-[60%]">
+                <%!-- WHO, HOW LONG, AND WHEN — and the middle one is a line
+                     rather than a number. A second line of text would clutter
+                     the list; a filled block would read as the captured card
+                     and set the screen arguing with itself. A rule is neither:
+                     its LENGTH is the duration and its COLOUR is the kind, so
+                     one mark carries two facts and adds no furniture. --%>
                 <li
                   :for={presence <- @current.presences}
-                  class="stream-item flex h-54 cursor-pointer items-center px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
+                  class={[
+                    "stream-item flex h-54 cursor-pointer items-center gap-5 px-[1.95rem]",
+                    "text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]",
+                    "transition-colors duration-200",
+                    presence.heard && "text-light-900 dark:text-dark-100",
+                    !presence.heard && "text-primary-600 dark:text-primary-500"
+                  ]}
                 >
-                  <%!-- Collapsed, a presence is only who left it — the same way
-                       a relationship row is only the name you gave them. The
-                       box supplies the rest. --%>
-                  <span>{presence.by}</span>
+                  <span class="shrink-0 whitespace-nowrap">{presence.by}</span>
+
+                  <span
+                    class={[
+                      "stream-rule shrink-0",
+                      presence.kind == "face" && "bg-primary-600 dark:bg-primary-500",
+                      presence.kind == "voice" && "bg-light-300 dark:bg-dark-700"
+                    ]}
+                    style={"width: #{presence.rule}"}
+                  >
+                  </span>
+
+                  <span class="ml-auto shrink-0 text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
+                    {presence.when}
+                  </span>
                 </li>
               </ul>
             </div>
