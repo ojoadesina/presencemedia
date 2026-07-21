@@ -17,6 +17,15 @@ defmodule PresencemediaWeb.PresenceLive do
   It is at least as tall as a relationship row and never taller than two lines,
   so a long note does not turn a list into a wall.
 
+  ## The chosen one rises
+
+  The box sits at the TOP of this list rather than a third of the way down. A
+  presence is chosen in order to be watched, and what is being watched belongs
+  directly beneath the screen watching it — so the selection is always the first
+  row, with the rest queued below it. The relationship list keeps its third:
+  there you are looking along a row of people, and a person at the top of the
+  screen would have no one either side of them.
+
   ## The screen belongs to the selection
 
   Under the band sits a screen, and its HEIGHT is the kind. A face gets the full
@@ -81,7 +90,9 @@ defmodule PresencemediaWeb.PresenceLive do
                rows under the band, change what is captured, change the kind,
                change the height again — a loop the interface would never settle
                out of. Reserved, it cannot. Anchored low, the screen always
-               meets the list's top edge whatever it is showing. --%>
+               meets the list's top edge whatever it is showing — and now that
+               the box is the first row, the selection really does sit directly
+               under it with nothing in between. --%>
           <div class="mt-6 flex h-54 w-[32rem] items-end">
             <div
               :if={@current && @current.kind != "text"}
@@ -121,9 +132,12 @@ defmodule PresencemediaWeb.PresenceLive do
               id="stream-scroll"
               phx-hook="Stream"
               phx-update="ignore"
+              data-anchor="top"
               class="stream-scroll h-[46vh] overflow-y-auto overscroll-contain"
             >
-              <ul>
+              <%!-- Gapped, so each presence is its own object rather than one
+                   ruled sheet. The gap is smaller than the border is quiet. --%>
+              <ul class="space-y-3">
                 <%!-- THE ITEM IS THE BOX. A bordered rectangle with the sentence
                      inside it — creator, then kind, then the words — at one size
                      throughout, separated only by ink. No highlight behind the
@@ -142,7 +156,11 @@ defmodule PresencemediaWeb.PresenceLive do
                       ]}>
                         {presence.by}
                       </span>
-                      <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
+                      <%!-- Sky is the label ink everywhere else in this app —
+                           SCOPED/UNSCOPED wears it, the brackets are drawn in
+                           it — and the kind is a label, not part of the
+                           sentence. --%>
+                      <span :if={presence.kind != "text"} class="text-sky-600 dark:text-sky-400">
                         {String.upcase(presence.kind)}
                       </span>
                       <span :if={presence.note} class="text-light-300 dark:text-dark-700">
@@ -157,8 +175,7 @@ defmodule PresencemediaWeb.PresenceLive do
             <%!-- THE BAND, brackets only. The cards carry their own edges now,
                  so a filled band over one would be a second rectangle on top of
                  a rectangle. Aiming is all that is left for it to do. --%>
-            <div class="band pointer-events-none absolute top-[34%] left-0 h-30 w-[32rem] -translate-y-1/2">
-            </div>
+            <div class="band pointer-events-none absolute top-0 left-0 h-30 w-[32rem]"></div>
           </div>
         </div>
       </div>

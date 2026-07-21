@@ -3,6 +3,14 @@
 // rather than being clicked. Whichever settles there is captured, and the box
 // shows everything the row was holding back.
 //
+// WHERE THE BOX SITS IS THE LIST'S BUSINESS, not the mechanism's, so it comes
+// in as `data-anchor`. On /presence it is "top": a presence is chosen in order
+// to be watched, and what is watched belongs directly under the screen showing
+// it, so the chosen row rises to first position and the rest queue below. The
+// panel inside a relationship keeps the default third — there the stream is one
+// element among several and a box pinned to its top edge would read as a
+// heading rather than as a sight.
+//
 // This is deliberately a copy of `regions.ts` rather than a shared abstraction.
 // The two lists sit at different levels of the same app and will drift — one
 // chooses a person, the other chooses a moment — and a base class that has to
@@ -26,30 +34,32 @@ export const Stream = {
     // instead of retrying forever.
     let snaps = 0;
 
+    // A third of the way down unless the list asks for its own top edge.
+    const at = scroll.dataset.anchor === "top" ? 0 : 0.34;
+
     const rowHeight = () => items[0].getBoundingClientRect().height;
 
     // THE LEAD AND TRAIL ARE MEASURED, not written in the markup, because they
-    // cannot be written there: the box sits at 34% of the scroller's HEIGHT,
-    // and a percentage padding resolves against WIDTH. Any figure hard-coded in
-    // the template is therefore right at exactly one viewport size and wrong
-    // everywhere else — which is why the first row sat 31px above the band and
-    // the snap then tried to scroll up from zero to fix it.
+    // cannot be written there: the box sits at a fraction of the scroller's
+    // HEIGHT, and a percentage padding resolves against WIDTH. Any figure
+    // hard-coded in the template is therefore right at exactly one viewport size
+    // and wrong everywhere else — which is why the first row once sat 31px above
+    // the band and the snap then tried to scroll up from zero to fix it.
     //
     // Computed here, the first row lands ON the band at rest and the last one
-    // can still reach it.
+    // can still reach it. Anchored at the top the lead falls out to nothing: the
+    // list starts already aimed, with nothing above it to scroll past.
     const lead = () => {
       const list = scroll.querySelector<HTMLElement>("ul");
       if (!list) return;
       const h = scroll.clientHeight;
       const half = rowHeight() / 2;
-      list.style.paddingTop = `${Math.max(0, h * 0.34 - half)}px`;
-      list.style.paddingBottom = `${Math.max(0, h * 0.66 - half)}px`;
+      list.style.paddingTop = `${Math.max(0, h * at - half)}px`;
+      list.style.paddingBottom = `${Math.max(0, h * (1 - at) - half)}px`;
     };
     const bandCentre = () => {
       const r = scroll.getBoundingClientRect();
-      // The box sits at 34% of the list, not its middle — the same third the
-      // relationship list uses, so the two screens rhyme.
-      return r.top + r.height * 0.34;
+      return r.top + Math.max(r.height * at, rowHeight() / 2);
     };
 
     const nearest = (): { el: HTMLElement; delta: number } | null => {
