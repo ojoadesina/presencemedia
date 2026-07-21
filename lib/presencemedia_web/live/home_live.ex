@@ -325,6 +325,16 @@ defmodule PresencemediaWeb.HomeLive do
   defp presences_for(user, index) do
     n = length(@presence_pool)
 
+    # A CONVERSATION HAS TWO COLOURS, always maximally apart. Where /presence is
+    # a feed of many creators each holding their own hue, a relationship's stream
+    # is between exactly two people — you and them — so it reads as two tones
+    # rather than a spread. The person's hue comes off their place in the roster
+    # by the golden angle, and YOU take its complement, 180 degrees round, so
+    # whoever you are talking to your two sides of the exchange never blur into
+    # each other.
+    person_hue = index |> Kernel.*(137.508) |> round() |> Integer.mod(360)
+    you_hue = Integer.mod(person_hue + 180, 360)
+
     # Rotated so no two people's streams are identical, then SORTED, because a
     # rotation would otherwise leave the times out of order — and a stream that
     # is not chronological is not a stream.
@@ -335,6 +345,7 @@ defmodule PresencemediaWeb.HomeLive do
     |> Enum.map(fn presence ->
       presence
       |> Map.put(:by, (presence.from == "you" && "YOU") || user.name)
+      |> Map.put(:hue, (presence.from == "you" && you_hue) || person_hue)
       |> Map.put(:rule, rule_width(presence.len))
     end)
   end
@@ -388,11 +399,11 @@ defmodule PresencemediaWeb.HomeLive do
   # into the box rather than by pressing it, exactly as a relationship is — the
   # hook decides who lands there, the server holds which one it was.
   def handle_event("capture_presence", %{"index" => index}, socket) do
-    {:noreply, assign(socket, captured: index)}
+    {:noreply, socket |> assign(captured: index) |> put_captured()}
   end
 
   def handle_event("release_presence", _params, socket) do
-    {:noreply, assign(socket, captured: nil)}
+    {:noreply, socket |> assign(captured: nil) |> put_captured()}
   end
 
   def handle_event("toggle_scope", _params, socket) do
@@ -408,10 +419,27 @@ defmodule PresencemediaWeb.HomeLive do
   # LiveView's change tracking off for that whole block — the panel would then be
   # re-sent on every unrelated update.
   defp put_current(socket) do
-    assign(
-      socket,
+    socket
+    |> assign(
       :current,
       socket.assigns.selected && Enum.at(socket.assigns.users, socket.assigns.selected)
+    )
+    |> put_captured()
+  end
+
+  # The captured presence resolved once and stored, for the same reason `current`
+  # is: the screen reads it, and reaching into `current.presences` from the
+  # template would call a function with `assigns` and switch change tracking off
+  # for the whole panel. Re-run whenever either the selection or the capture
+  # moves, so the screen above the list always shows what the box is holding.
+  defp put_captured(socket) do
+    current = socket.assigns.current
+    captured = socket.assigns.captured
+
+    assign(
+      socket,
+      :captured_presence,
+      current && captured && Enum.at(current.presences, captured)
     )
   end
 
@@ -716,55 +744,90 @@ defmodule PresencemediaWeb.HomeLive do
         class="panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
         <div class="mx-auto h-full w-full max-w-6xl px-4">
-          <%!-- THE SAME MECHANISM AS THE LIST ABOVE IT, one level down. A box
-               fixed a third of the way in, and presences that scroll THROUGH
-               it — whichever settles there is captured, and the box shows
-               everything the row was holding back. Same third, same settle,
-               same snap, so the two screens rhyme rather than merely coexist.
+          <%!-- THE SAME SURFACE AS /presence, now that /presence is what a
+               presence stream is. A screen at the top that plays whatever is
+               chosen, the list beneath it with the chosen row lifted to its top
+               edge, and every row a filled-wash sentence. The one difference is
+               the data: there the feed is many creators, here it is one
+               conversation, so the washes come in two tones instead of a
+               spread. --%>
+          <div class="flex h-full flex-col pt-4">
+            <%!-- THE SCREEN keeps its full room whatever it holds, so scrolling
+                 the list never re-lays the page out under the reader. Face at
+                 the recorder's measure, voice a hairline centred in the space,
+                 text nothing at all. The slot stands even for text, with a
+                 stable id, so a presence that has no screen does not delete the
+                 element and re-slot the list — which would reset its scroll. --%>
+            <div id="screen-slot" class="h-54 w-[32rem]">
+              <div
+                :if={@captured_presence && @captured_presence.kind != "text"}
+                id={"screen-#{@selected}-#{@captured}"}
+                phx-hook="Screen"
+                phx-update="ignore"
+                data-media={@captured_presence.media}
+                data-kind={@captured_presence.kind}
+                class="screen relative flex h-full w-[32rem] flex-col justify-center"
+              >
+                <div
+                  :if={@captured_presence.kind == "face"}
+                  class="relative h-full w-full overflow-hidden bg-black"
+                >
+                  <video
+                    class="screen-video absolute inset-0 h-full w-full object-cover"
+                    playsinline
+                    preload="none"
+                  >
+                  </video>
+                  <div class="absolute bottom-4 left-8">
+                    <span class="screen-time text-sm text-dark-400">0:00</span>
+                  </div>
+                </div>
 
-               phx-update="ignore" for the same reason the relationship list
-               carries it: the hook owns the scroll position and the capture
-               class, and a patch must never wipe either. --%>
-          <div class="relative h-full w-[32rem]">
-            <div
-              id="stream-scroll"
-              phx-hook="Stream"
-              phx-update="ignore"
-              class="stream-scroll h-full overflow-y-auto overscroll-contain"
-            >
-              <%!-- Lead and trail are set by the hook, not here: the box sits
-                   at 34% of the scroller's HEIGHT and a percentage padding
-                   resolves against WIDTH, so any figure written here is right
-                   at one viewport size and wrong at every other. --%>
-              <ul>
-                <%!-- EVERY ITEM IS A CARD NOW. The row used to be a sentence
-                     and the box held the card; that made the media something
-                     you had to dig for twice. The card is the resting state,
-                     the box is where it plays, and nothing is hidden on the way
-                     between them.
-
-                     A card in the list does NOT swipe: there is nothing behind
-                     it to reach, and a scroller that scrolls nowhere is a
-                     promise the interface cannot keep. --%>
-                <li :for={{presence, i} <- Enum.with_index(@current.presences)} class="stream-item">
-                  <.presence id={"card-#{@selected}-#{i}"} presence={presence} by={presence.by} />
-                </li>
-              </ul>
+                <div :if={@captured_presence.kind == "voice"} class="relative w-full">
+                  <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
+                    <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)">
+                    </div>
+                  </div>
+                  <span class="screen-time absolute top-3 left-0 text-sm text-light-500 dark:text-dark-500">
+                    0:00
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <%!-- THE BOX. Fixed at the same 34%, holding the card. Its id
-                 carries the captured index so a new capture REPLACES the
-                 element rather than patching it — which is what resets the
-                 media cleanly, where a patch would leave the previous clip's
-                 src behind. --%>
-            <div class="pointer-events-none absolute top-[34%] left-0 w-[32rem] -translate-y-1/2">
-              <.presence
-                :if={@captured && Enum.at(@current.presences, @captured)}
-                id={"captured-#{@selected}-#{@captured}"}
-                presence={Enum.at(@current.presences, @captured)}
-                by={Enum.at(@current.presences, @captured).by}
-                variant={:open}
-              />
+            <%!-- THE LIST takes the rest of the panel. phx-update="ignore" and
+                 data-anchor="top" for the same reasons /presence carries them:
+                 the hook owns the scroll and the capture class, and the chosen
+                 presence belongs directly under the screen showing it. --%>
+            <div id="stream-slot" class="relative mt-8 min-h-0 w-[32rem] flex-1">
+              <div
+                id="stream-scroll"
+                phx-hook="Stream"
+                phx-update="ignore"
+                data-anchor="top"
+                class="stream-scroll h-full overflow-y-auto overscroll-contain"
+              >
+                <ul class="space-y-5">
+                  <li :for={presence <- @current.presences} class="stream-item">
+                    <div
+                      class="presence-row h-27 w-[32rem] p-[1.95rem]"
+                      style={"--wash-h: #{presence.hue}"}
+                    >
+                      <p class="stream-line text-md tracking-[0.14em]">
+                        <span class="stream-name font-semibold">{presence.by}</span>
+                        <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
+                          {presence.kind}
+                        </span>
+                        <span :if={presence.note} class="text-neutral-800 dark:text-neutral-200">
+                          {presence.note}
+                        </span>
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem]"></div>
             </div>
           </div>
         </div>

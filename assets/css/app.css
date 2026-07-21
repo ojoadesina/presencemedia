@@ -905,15 +905,17 @@ html:not([data-theme]) .bar.is-picked .focus-box {
    The hue itself arrives from the server as --wash-h, spread evenly over the
    whole circle by how many creators there are, so the palette grows with the
    roster instead of running out of buckets and repeating. */
-#presence-page .presence-row {
+/* Unscoped from the page on purpose: /presence and the relationship panel are
+   the same surface now, and .presence-row appears on nothing else. */
+.presence-row {
   background-color: oklch(0.958 0.024 var(--wash-h));
 }
-[data-theme="dark"] #presence-page .presence-row,
-html:not([data-theme]) #presence-page .presence-row {
+[data-theme="dark"] .presence-row,
+html:not([data-theme]) .presence-row {
   background-color: oklch(0.185 0.03 var(--wash-h));
 }
 @media (prefers-color-scheme: light) {
-  html:not([data-theme]) #presence-page .presence-row {
+  html:not([data-theme]) .presence-row {
     background-color: oklch(0.958 0.024 var(--wash-h));
   }
 }
@@ -924,36 +926,22 @@ html:not([data-theme]) #presence-page .presence-row {
    to each other rather than the name being a separate ink dropped on top.
    Lightness and chroma are fixed here too, so a strong name stays exactly as
    loud whatever hue it happens to wear. */
-#presence-page .presence-row .stream-name {
+.presence-row .stream-name {
   color: oklch(0.5 0.13 var(--wash-h));
 }
-[data-theme="dark"] #presence-page .presence-row .stream-name,
-html:not([data-theme]) #presence-page .presence-row .stream-name {
+[data-theme="dark"] .presence-row .stream-name,
+html:not([data-theme]) .presence-row .stream-name {
   color: oklch(0.82 0.13 var(--wash-h));
 }
 @media (prefers-color-scheme: light) {
-  html:not([data-theme]) #presence-page .presence-row .stream-name {
+  html:not([data-theme]) .presence-row .stream-name {
     color: oklch(0.5 0.13 var(--wash-h));
   }
 }
 
-#panel .stream-item {
-  display: flex;
-  height: 15.5rem;
-  align-items: center;
-  transition: opacity 200ms ease-out;
-}
-/* Only in the panel, where the box holds the SAME presence with its cover off
-   and showing both would print it twice. On /presence the band is translucent
-   and the chosen line reads THROUGH it, exactly as a relationship does. */
-#panel .stream-item.is-captured {
-  opacity: 0;
-}
-
-/* The card is reachable even though the box it sits in is not — same trick the
-   band uses, so a moving list is never blocked by an overlay. */
-.stream-item,
-#stream-scroll ~ div .presence {
+/* The rows are reachable even where an overlay sits over them — a click travels
+   to the box and the box decides, so a moving list is never blocked. */
+.stream-item {
   pointer-events: auto;
 }
 
