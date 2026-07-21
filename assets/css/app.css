@@ -225,8 +225,8 @@ html[data-theme="dark"] {
    is precisely why the handover is clean rather than a fight. */
 .head.is-animated .head-face {
   animation:
-    head-arrive 1500ms both,
-    head-breathe 3.6s ease-in-out 1500ms infinite;
+    head-arrive 1150ms both,
+    head-breathe 3.6s ease-in-out 1150ms infinite;
 }
 
 /* HELD, THEN RELEASED. The shape of this is the whole point, and it is why the
@@ -234,10 +234,14 @@ html[data-theme="dark"] {
    the whole thing can only accelerate or decelerate, and what is wanted here is
    both, in that order.
 
-   For the first 44% it barely moves — 0.04 to 0.19 over two thirds of a second,
-   decelerating, straining against something. Then it is let go, and covers the
-   remaining 1.2x of scale in a fifth of the time. The restraint is what sells
-   the release; without the slow part the fast part is just a fast animation.
+   For the first 30% it barely moves — 0.04 to 0.16 in a third of a second,
+   decelerating, straining against something. Then it is let go: the release
+   curve is front-loaded almost to the point of being a step, so it does not
+   ramp up to speed but leaves at speed, covering the remaining 1.3x of scale in
+   a sixth of the total. The restraint is what sells it; without the slow part
+   the fast part is just a fast animation. But the hold is a wind-up, not an
+   interlude — long enough to feel resisted, short enough that you are never
+   waiting for it.
 
    After that it rings down through four decaying bounces, alternating over and
    under, the way something with mass actually settles rather than stopping
@@ -246,32 +250,37 @@ html[data-theme="dark"] {
   0% {
     transform: scale(0.04);
     opacity: 0;
-    animation-timing-function: cubic-bezier(0.16, 0.62, 0.5, 0.86);
+    animation-timing-function: cubic-bezier(0.18, 0.66, 0.44, 0.9);
   }
-  44% {
-    transform: scale(0.19);
-    opacity: 0.92;
-    animation-timing-function: cubic-bezier(0.08, 0.82, 0.28, 1);
+  30% {
+    transform: scale(0.16);
+    opacity: 0.95;
+    /* Front-loaded, but not to the point of being a cut. At its most extreme
+       this covered 0.16 to 1.2 inside three frames, which the eye reads as a
+       jump rather than as travel — a spring you cannot see spring is just a
+       pop. Pulled back enough to leave a visible arc, still fast enough that
+       nothing about it feels eased into place. */
+    animation-timing-function: cubic-bezier(0.12, 0.74, 0.24, 1);
   }
-  60% {
-    transform: scale(1.42);
+  48% {
+    transform: scale(1.45);
     opacity: 1;
     animation-timing-function: ease-in-out;
   }
-  72% {
-    transform: scale(0.85);
+  63% {
+    transform: scale(0.83);
     animation-timing-function: ease-in-out;
   }
-  81% {
-    transform: scale(1.16);
+  75% {
+    transform: scale(1.18);
     animation-timing-function: ease-in-out;
   }
-  89% {
-    transform: scale(0.93);
+  85% {
+    transform: scale(0.92);
     animation-timing-function: ease-in-out;
   }
-  95% {
-    transform: scale(1.04);
+  93% {
+    transform: scale(1.05);
     animation-timing-function: ease-in-out;
   }
   100% {
@@ -312,11 +321,22 @@ html[data-theme="dark"] {
   z-index: 20;
   will-change: transform, opacity;
 }
+/* TRANSLUCENT, and that is the correction. An opaque disc technically hid the
+   repaint, but what it actually did was blank the page: for two thirds of a
+   second there was nothing on screen but a colour, and a transition that
+   deletes the content it is transitioning is worse than no transition. At just
+   over half strength the incoming colour is unmistakable while the rows, the
+   strapline and the frame stay legible the whole way through — you watch the
+   theme arrive over the page rather than instead of it.
+
+   The swap underneath is still softened, because most of the difference between
+   the two surfaces is masked by the tint sitting over it. Softened, not
+   hidden — which is the honest version of the effect. */
 .theme-wash[data-target="light"] {
-  background-color: var(--color-background-50);
+  background-color: color-mix(in srgb, var(--color-background-50) 58%, transparent);
 }
 .theme-wash[data-target="dark"] {
-  background-color: var(--color-background-950);
+  background-color: color-mix(in srgb, var(--color-background-950) 58%, transparent);
 }
 
 .head.is-animated .head-eyes {
