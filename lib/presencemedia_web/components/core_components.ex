@@ -549,9 +549,6 @@ defmodule PresencemediaWeb.CoreComponents do
       aria-label={"Play #{@presence.len} recording"}
       class={["presence", !@presence.heard && "is-unheard"]}
     >
-      <div class="presence-inner">
-        <div class="presence-fill"></div>
-      </div>
     </div>
     """
   end

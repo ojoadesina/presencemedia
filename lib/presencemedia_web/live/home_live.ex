@@ -452,12 +452,17 @@ defmodule PresencemediaWeb.HomeLive do
                      them here only once open means the handover happens while
                      the two are still exactly on top of each other, so there is
                      nothing to see. --%>
+                <%!-- Neutral, not terracotta. Once this is a header it is no
+                     longer the thing being chosen — it is the label on what is
+                     below it, and terracotta is this surface's word for "look
+                     here". Spending it on the header would leave the content
+                     arguing with its own title. --%>
                 <span
                   :if={@mode == :open && @current}
-                  class="flex items-baseline whitespace-nowrap text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 dark:text-primary-500"
+                  class="flex items-baseline whitespace-nowrap text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
                   {@current.label}
-                  <span class="ml-3 text-light-400 dark:text-dark-600">{@current.name}</span>
+                  <span class="ml-3 text-light-500 dark:text-dark-500">{@current.name}</span>
                 </span>
               </div>
               <%!-- THE FRAME — one element that is both the box's target and the

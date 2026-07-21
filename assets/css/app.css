@@ -706,6 +706,28 @@ html[data-theme="dark"] {
   z-index: 40;
 }
 
+/* ── THE HEADER STANDS DOWN ────────────────────────────────────────────────────
+   A picked bar has stopped being the thing being chosen and become the label on
+   what is underneath it. So it gives up everything that was asking for
+   attention: the brackets, which mean AIMING and have nothing left to aim at
+   once the choice is made, and the terracotta, which is this surface's word for
+   "look here" and cannot be spent on a title and its contents at once.
+
+   The same weight as the fill it replaces — 15% and 20% — but drawn from the
+   surface ramp, so the header reads as a shelf the content sits under rather
+   than as a second thing competing with it. */
+.bar.is-picked .focus-box::before,
+.bar.is-picked .frame::before {
+  display: none;
+}
+.bar.is-picked .focus-box {
+  background-color: color-mix(in srgb, var(--color-light-600) 15%, transparent);
+}
+[data-theme="dark"] .bar.is-picked .focus-box,
+html:not([data-theme]) .bar.is-picked .focus-box {
+  background-color: color-mix(in srgb, var(--color-dark-500) 20%, transparent);
+}
+
 /* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
    what the page's top BECOMES, so the mark and the strapline leave with the
    list rather than being covered by the thing arriving. They go faster than the
@@ -780,63 +802,65 @@ html[data-theme="dark"] {
 }
 
 /* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
-   An outer rectangle holding an inner one. The inner rectangle is not a
-   highlight behind something else — it IS the content, and it carries the
-   colour. For voice it is also the player: it fills left to right as the
-   recording runs, so what you are looking at and what tells you where you are
-   in it are one object rather than two stacked.
+   One filled rectangle. No border, no ring, no inner block — the fill IS the
+   thing, carrying the colour the inner rectangle used to. Removing the outline
+   is what lets it read as a solid object on the surface rather than as a card
+   containing one.
 
-   Square, because nothing on this surface is rounded. Same 32rem measure and
-   the same left edge as the header's box, so one line runs down the screen. */
+   IT PULSES RATHER THAN FILLING while it plays. A progress fill answers "how
+   far through am I", which is a question about a bar; a pulse answers "is this
+   running", which is a question about a presence. Same 32rem measure and left
+   edge as the header above it, so one line still runs down the screen. */
 .presence {
-  --presence-edge: var(--color-light-200);
-  --presence-track: color-mix(in srgb, var(--color-primary-600) 12%, transparent);
-  --presence-lit: color-mix(in srgb, var(--color-primary-600) 38%, transparent);
-  --played: 0%;
+  --presence-body: color-mix(in srgb, var(--color-primary-600) 12%, transparent);
 
   width: 32rem;
-  padding: 1.25rem;
-  border: 1px solid var(--presence-edge);
+  height: 7.5rem;
+  background-color: var(--presence-body);
   cursor: pointer;
 }
 [data-theme="dark"] .presence,
 html:not([data-theme]) .presence {
-  --presence-edge: var(--color-dark-800);
-  --presence-track: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
-  --presence-lit: color-mix(in srgb, var(--color-primary-500) 45%, transparent);
+  --presence-body: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
 }
 
-/* UNHEARD deepens the resting rectangle rather than adding a badge, so the block
-   itself is the notice and there is no second thing to look at. It clears the
-   moment you play; nothing marks a heard presence, because the absence of the
-   call is the mark. */
+/* UNHEARD deepens the rectangle rather than adding a badge, so the block itself
+   is the notice and there is no second thing to look at. It clears the moment
+   you play; nothing marks a heard presence, because the absence of the call is
+   the mark. */
 .presence.is-unheard {
-  --presence-track: color-mix(in srgb, var(--color-primary-600) 26%, transparent);
+  --presence-body: color-mix(in srgb, var(--color-primary-600) 26%, transparent);
 }
 [data-theme="dark"] .presence.is-unheard,
 html:not([data-theme]) .presence.is-unheard {
-  --presence-track: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+  --presence-body: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
 }
 
-.presence-inner {
-  position: relative;
-  height: 5rem;
-  background-color: var(--presence-track);
-  overflow: hidden;
+.presence.is-playing {
+  animation: presence-pulse 1.5s ease-in-out infinite;
 }
-
-/* THE FILL is the inner rectangle's own colour at full strength, advancing.
-   Not a progress bar laid over the top — the same block, further along. */
-.presence-fill {
-  position: absolute;
-  inset: 0;
-  width: var(--played);
-  background-color: var(--presence-lit);
+@keyframes presence-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .presence:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Held at the bright end, so a running presence still reads as present rather
+     than as switched off. */
+  .presence.is-playing {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:
