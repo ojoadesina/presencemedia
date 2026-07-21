@@ -837,10 +837,36 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   display: none;
 }
 
-/* Two pixels. Thin enough that a column of them reads as rhythm rather than as
-   a chart, and square-ended like everything else here. */
+/* THE INK IS A VARIABLE and the shape is a background, so the two never fight.
+   Setting a background-COLOUR here and a gradient on the face variant meant the
+   gaps between ticks were filled by the colour underneath, in the same ink —
+   the gradient rendered correctly and looked exactly like a solid line. A
+   passing test and an invisible difference. One `background` per kind now, and
+   nothing beneath it. */
 .stream-rule {
+  --rule-ink: var(--color-light-300);
   height: 2px;
+  background: var(--rule-ink);
+}
+[data-theme="dark"] .stream-rule,
+html:not([data-theme]) .stream-rule {
+  --rule-ink: var(--color-dark-700);
+}
+
+/* A VOICE IS CONTINUOUS and draws as one line. A FACE IS FRAMES, so it draws as
+   ticks — and taller ones, because at two pixels a dashed line reads as a
+   rendering artefact rather than as a decision. The difference has to survive
+   being glanced at. */
+.stream-rule.is-face {
+  height: 7px;
+  background: repeating-linear-gradient(to right, var(--rule-ink) 0 3px, transparent 3px 8px);
+}
+
+/* The words of a text presence fade at the row's edge rather than being cut
+   square or ellipsed, the same way every other overlong line here does. */
+.stream-note {
+  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent 100%);
 }
 
 /* The captured row hands its place to the box: the card covers it, so leaving

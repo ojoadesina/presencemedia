@@ -186,6 +186,16 @@ defmodule PresencemediaWeb.HomeLive do
           "WIKITONGUES-_Sedang_speaking_Iban.webm.360p.vp9.webm"
     },
     %{
+      kind: "text",
+      when: "08:47",
+      len: nil,
+      from: "them",
+      heard: true,
+      note:
+        "the bakery on the corner closed. thought you would want to know before you walked down there again",
+      media: nil
+    },
+    %{
       kind: "voice",
       when: "09:41",
       len: "0:15",
@@ -253,6 +263,15 @@ defmodule PresencemediaWeb.HomeLive do
       media:
         "#{@commons}/c/c9/WIKITONGUES-_Jeries_speaking_Syriac.webm/" <>
           "WIKITONGUES-_Jeries_speaking_Syriac.webm.360p.vp9.webm"
+    },
+    %{
+      kind: "text",
+      when: "19:14",
+      len: nil,
+      from: "you",
+      heard: true,
+      note: "on my way",
+      media: nil
     },
     %{
       kind: "voice",
@@ -329,6 +348,9 @@ defmodule PresencemediaWeb.HomeLive do
   # running short on its last line: you read "this much" without reading a
   # number. Floored well above zero so a ten-second presence is still a mark
   # rather than a speck, and capped so a minute cannot run into the time.
+  # Text has no duration, so it gets no rule at all rather than an invented one.
+  defp rule_width(nil), do: nil
+
   defp rule_width(len) do
     [minutes, seconds] = String.split(len, ":")
     secs = String.to_integer(minutes) * 60 + String.to_integer(seconds)
@@ -731,14 +753,32 @@ defmodule PresencemediaWeb.HomeLive do
                 >
                   <span class="shrink-0 whitespace-nowrap">{presence.by}</span>
 
+                  <%!-- FORM CARRIES THE KIND, not colour — colour is already
+                       spoken for on this row, where terracotta means unheard.
+                       Two meanings on one channel is one too many.
+
+                       A voice is a continuous stream of sound, so it draws as
+                       an unbroken line. A face is frames, so it draws as ticks.
+                       The shapes describe what they stand for, which a colour
+                       cannot do without a legend. --%>
                   <span
-                    class={[
-                      "stream-rule shrink-0",
-                      presence.kind == "face" && "bg-primary-600 dark:bg-primary-500",
-                      presence.kind == "voice" && "bg-light-300 dark:bg-dark-700"
-                    ]}
+                    :if={presence.rule}
+                    class={["stream-rule shrink-0", presence.kind == "face" && "is-face"]}
                     style={"width: #{presence.rule}"}
                   >
+                  </span>
+
+                  <%!-- TEXT HAS NO SHAPE TO STAND IN FOR IT, because the words
+                       ARE the presence — there is nothing to play and nothing
+                       to time. So the row shows them, faded at the end like
+                       every other overlong line here. A rule in their place
+                       would be hiding the one thing that could simply be
+                       read. --%>
+                  <span
+                    :if={presence.kind == "text"}
+                    class="stream-note min-w-0 flex-1 overflow-hidden text-sm leading-5 tracking-[0.14em] whitespace-nowrap text-light-500 dark:text-dark-500"
+                  >
+                    {presence.note}
                   </span>
 
                   <span class="ml-auto shrink-0 text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">

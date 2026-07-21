@@ -583,25 +583,38 @@ defmodule PresencemediaWeb.CoreComponents do
                   <span class="text-primary-600 dark:text-primary-400">{@by},</span>
                   <span class="text-neutral-400">{@presence.when}</span>
                 </div>
-                <span class="text-sm tracking-[0.14em] text-neutral-400">{@presence.len}</span>
+                <span :if={@presence.len} class="text-sm tracking-[0.14em] text-neutral-400">
+                  {@presence.len}
+                </span>
               </div>
             </div>
 
             <div class="flex-1"></div>
 
+            <%!-- No arrow on a text presence: there is nothing behind it to
+                 swipe to, and an instruction that leads nowhere is worse than
+                 none. --%>
             <div>
-              <span class="presence-hint text-lg text-neutral-400">→</span>
+              <span :if={@presence.kind != "text"} class="presence-hint text-lg text-neutral-400">
+                →
+              </span>
             </div>
 
             <%!-- THE NOTE — words attached to the recording, not a field to fill
                  in. This is not a recorder. --%>
-            <p class="presence-note text-sm leading-5 tracking-[0.14em] text-primary-700 dark:text-primary-300">
+            <p class={[
+              "presence-note text-sm leading-5 tracking-[0.14em] text-primary-700 dark:text-primary-300",
+              @presence.kind == "text" && "line-clamp-4"
+            ]}>
               {@presence.note}
             </p>
           </div>
         </div>
 
-        <div class="presence-audio-trigger w-[95%] shrink-0 snap-end">
+        <%!-- A TEXT PRESENCE HAS NO LAYERS BENEATH IT. The words are the whole
+             of it — nothing plays, so nothing is uncovered, and the cover has
+             no trailing panel to slide towards. --%>
+        <div :if={@presence.kind != "text"} class="presence-audio-trigger w-[95%] shrink-0 snap-end">
           <div class="presence-inner no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
             <div class="presence-audio w-full shrink-0 snap-start">
               <div class="h-full w-full bg-secondary-500/60">
