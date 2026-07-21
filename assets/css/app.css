@@ -731,14 +731,14 @@ html[data-theme="dark"] {
   display: none;
 }
 .bar.is-picked .focus-box {
-  background-color: var(--color-light-200);
+  background-color: var(--color-light-100);
 }
-/* dark-800 rather than dark-200: the two ramps run in opposite directions, so
-   the counterpart of "a solid step up from the page" is a low number in light
-   and a high one in dark. Pairing them by number would put #bdbdbd on black. */
+/* dark-900 rather than dark-100: the two ramps run in opposite directions, so
+   the counterpart of "one gentle step off the page" is a low number in light
+   and a high one in dark. Pairing them by number would put #e6e6e6 on black. */
 [data-theme="dark"] .bar.is-picked .focus-box,
 html:not([data-theme]) .bar.is-picked .focus-box {
-  background-color: var(--color-dark-800);
+  background-color: var(--color-dark-900);
 }
 
 /* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
@@ -815,47 +815,19 @@ html:not([data-theme]) .bar.is-picked .focus-box {
 }
 
 /* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
-   The recorder's two-layer card, turned around: there the swipe armed a stream,
-   here it uncovers one. Same 32rem measure and left edge as the header, so one
-   line still runs down the screen. */
-.presence {
-  --presence-body: color-mix(in srgb, var(--color-primary-600) 12%, transparent);
-}
-[data-theme="dark"] .presence,
-html:not([data-theme]) .presence {
-  --presence-body: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
-}
+   The recorder's three layers, run backwards. Almost nothing is needed here:
+   the cover, the audio pane and the screen all carry their colour inline, as
+   they did in the original. What is left is the one state and the one hint. */
 
-/* UNHEARD deepens the card rather than adding a badge, so the thing itself is
+/* UNHEARD deepens the cover rather than adding a badge, so the card itself is
    the notice. It clears the moment you play; nothing marks a heard presence,
    because the absence of the call is the mark. */
-.presence.is-unheard {
-  --presence-body: color-mix(in srgb, var(--color-primary-600) 26%, transparent);
+.presence.is-unheard .presence-cover {
+  background-color: var(--color-primary-150);
 }
-[data-theme="dark"] .presence.is-unheard,
-html:not([data-theme]) .presence.is-unheard {
-  --presence-body: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
-}
-
-/* Opaque, not the wash. The card has to HIDE the screen underneath it — a
-   translucent one would show the picture through its own text and give the
-   swipe nothing to reveal. It is the page colour with the wash laid over it,
-   which is the same tone the block had while it was one flat rectangle. */
-.presence-card {
-  background-color: var(--color-light-50);
-  background-image: linear-gradient(var(--presence-body), var(--presence-body));
-}
-[data-theme="dark"] .presence-card,
-html:not([data-theme]) .presence-card {
-  background-color: var(--color-dark-950);
-}
-
-/* The screen shows a picture only when there is one to show. */
-.presence-video {
-  display: none;
-}
-.presence[data-kind="face"].is-playing .presence-video {
-  display: block;
+[data-theme="dark"] .presence.is-unheard .presence-cover,
+html:not([data-theme]) .presence.is-unheard .presence-cover {
+  background-color: var(--color-primary-900);
 }
 
 /* The arrow is the only instruction on the card, so it says its piece and stops

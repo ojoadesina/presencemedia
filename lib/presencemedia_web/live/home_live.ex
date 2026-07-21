@@ -167,7 +167,8 @@ defmodule PresencemediaWeb.HomeLive do
   @moment_pool [
     %{
       kind: "voice",
-      when: "TODAY 09:14",
+      when: "09:14",
+      note: "found the thing you were looking for",
       len: "0:09",
       from: "them",
       heard: false,
@@ -177,7 +178,8 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "YESTERDAY 21:02",
+      when: "21:02",
+      note: "call me when you land",
       len: "0:22",
       from: "you",
       heard: true,
@@ -186,7 +188,8 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "YESTERDAY 08:40",
+      when: "08:40",
+      note: "listen to the end, it gets better",
       len: "0:13",
       from: "them",
       heard: true,
@@ -196,15 +199,39 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "TUESDAY 19:55",
+      when: "19:55",
+      note: "nothing urgent",
       len: "0:18",
       from: "them",
       heard: true,
       media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
     },
     %{
+      kind: "face",
+      when: "21:40",
+      note: "the light here is unbelievable",
+      len: "0:37",
+      from: "them",
+      heard: true,
+      media:
+        "#{@commons}/6/67/WIKITONGUES-_Paulus_speaking_Mentuka.webm/" <>
+          "WIKITONGUES-_Paulus_speaking_Mentuka.webm.360p.vp9.webm"
+    },
+    %{
+      kind: "face",
+      when: "07:26",
+      note: "two minutes, then I have to go",
+      len: "0:35",
+      from: "you",
+      heard: false,
+      media:
+        "#{@commons}/0/01/WIKITONGUES-_Hermica_speaking_Bengape.webm/" <>
+          "WIKITONGUES-_Hermica_speaking_Bengape.webm.360p.vp9.webm"
+    },
+    %{
       kind: "voice",
-      when: "MONDAY 12:31",
+      when: "12:31",
+      note: "you were right about the other thing",
       len: "0:09",
       from: "you",
       heard: true,

@@ -506,23 +506,28 @@ defmodule PresencemediaWeb.CoreComponents do
   @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
-  ## Borrowed from the recorder
+  ## The old recorder's three layers, run backwards
 
-  The shape is the old recorder's, turned around. There, a card sat on top of a
-  black panel and swiping it aside ARMED the stream; here the same swipe REVEALS
-  the playback. The gesture that uncovers the media is the gesture that starts
-  it — which is the recorder's actual invention, that a swipe is transport
-  rather than navigation, and it reads the same backwards.
+  The structure is the recorder's, unchanged: a screen underneath, and over it a
+  cover, an audio layer and a video layer, each trailing panel 95% wide so the
+  next always peeks. There, sliding armed a stream. Here it uncovers one — the
+  gesture that reveals the media is the gesture that starts it, which is the
+  same invention read in reverse.
 
-  So there are two layers and no button. The card carries who, when, how long and
-  what they wrote; underneath it the screen plays, saying `playing voice` or
-  `playing face` with a clock that counts up.
+  THE LAYERS ARE NOT DECORATION. The audio layer is a translucent wash over the
+  screen, and that is the point of it: voice has nothing to look at, so what you
+  land on is a tinted pane rather than a picture. Face has something to look at,
+  so the system carries you one layer further and the pane slides off the video.
+  Collapsing the two into one cover loses exactly that distinction.
 
-  ## Face slots into the same card
+  A voice presence therefore has no video layer at all, rather than an empty
+  one — there is nothing behind it to reach.
 
-  The panel beneath is a screen either way. Voice leaves it black and lets the
-  status line carry the message; face fills it with the picture. Nothing about
-  the card, the swipe or the transport changes between them.
+  ## The note
+
+  This is not a recorder, so the field is not an input. It is a NOTE: the words
+  someone attached to what they recorded. A voice can carry one and so can a
+  face.
 
   ## Examples
 
@@ -540,37 +545,34 @@ defmodule PresencemediaWeb.CoreComponents do
       phx-update="ignore"
       data-media={@presence.media}
       data-kind={@presence.kind}
-      class={["presence relative w-[32rem]", !@presence.heard && "is-unheard"]}
+      class={["presence relative h-54 w-[32rem] shrink-0", !@presence.heard && "is-unheard"]}
     >
-      <%!-- THE SCREEN, underneath and always there. You only see it once the
-           card above has been slid away — which is also the moment it starts. --%>
-      <div class="presence-entry absolute inset-0 overflow-hidden bg-light-950 dark:bg-dark-900">
-        <video
-          class="presence-video absolute inset-0 h-full w-full object-cover"
-          playsinline
-          preload="none"
-        >
-        </video>
-        <div class="absolute bottom-4 left-8 flex flex-col space-y-4">
-          <p class="presence-status text-sm tracking-[0.14em] text-sky-400"></p>
-          <span class="presence-elapsed text-sm tracking-[0.14em] text-light-400 dark:text-dark-500">
-            0:00
-          </span>
+      <%!-- THE SCREEN, underneath and always there. --%>
+      <div class="presence-entry absolute inset-0 w-full overflow-hidden">
+        <div class="relative h-full w-full bg-black">
+          <video
+            class="presence-video absolute inset-0 hidden h-full w-full object-cover"
+            playsinline
+            preload="none"
+          >
+          </video>
+
+          <div class="absolute bottom-4 left-8 flex flex-col space-y-4">
+            <p class="presence-status text-sm tracking-[0.14em] text-sky-400"></p>
+            <span class="presence-elapsed text-sm tracking-[0.14em] text-neutral-400">0:00</span>
+          </div>
         </div>
       </div>
 
-      <%!-- THE CARD, on top. Its trailing panel is 95% wide, so the screen
-           beneath always peeks and the card never fully leaves — it is still
-           there to come back to, which is what makes the swipe feel reversible
-           rather than final. --%>
-      <div class="presence-layer no-scrollbar relative flex min-h-[13.5rem] snap-x snap-mandatory overflow-x-auto">
-        <div class="presence-card relative w-full shrink-0 snap-start">
+      <%!-- THE COVER. --%>
+      <div class="presence-layer no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
+        <div class="presence-cover relative h-full w-full shrink-0 snap-start bg-primary-100 transition-colors duration-200 dark:bg-primary-950">
           <div class="relative flex h-full w-full flex-col space-y-4 px-4 py-4">
             <div class="flex items-start justify-between">
               <%!-- Kept from the original, job still undecided. --%>
               <button
                 type="button"
-                class="presence-plus cursor-pointer text-primary-600 transition hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400"
+                class="presence-plus cursor-pointer text-primary-500 transition hover:text-primary-600"
                 aria-label="Unassigned"
               >
                 <.icon name="hero-plus" class="h-5 w-5" />
@@ -578,32 +580,46 @@ defmodule PresencemediaWeb.CoreComponents do
 
               <div class="text-right">
                 <div class="flex items-center justify-end gap-1 text-sm tracking-[0.14em]">
-                  <span class="text-primary-600 dark:text-primary-500">{@by},</span>
-                  <span class="text-light-500 dark:text-dark-500">{@presence.when}</span>
+                  <span class="text-primary-600 dark:text-primary-400">{@by},</span>
+                  <span class="text-neutral-400">{@presence.when}</span>
                 </div>
-                <span class="text-sm tracking-[0.14em] text-light-400 dark:text-dark-600">
-                  {@presence.len}
-                </span>
+                <span class="text-sm tracking-[0.14em] text-neutral-400">{@presence.len}</span>
               </div>
             </div>
 
             <div class="flex-1"></div>
 
             <div>
-              <span class="presence-hint text-lg text-light-500 dark:text-dark-500">→</span>
+              <span class="presence-hint text-lg text-neutral-400">→</span>
             </div>
 
-            <%!-- rows="1" and grown by the hook, not by a fixed row count: the
-                 field should be as tall as what is in it and no taller. --%>
-            <textarea
-              class="presence-text w-full resize-none overflow-hidden border-0 bg-transparent text-sm tracking-[0.14em] text-light-900 placeholder:text-light-400 focus:ring-0 focus:outline-none dark:text-dark-100 dark:placeholder:text-dark-600"
-              placeholder="type here......."
-              rows="1"
-            ></textarea>
+            <%!-- THE NOTE — words attached to the recording, not a field to fill
+                 in. This is not a recorder. --%>
+            <p class="presence-note text-sm leading-5 tracking-[0.14em] text-primary-700 dark:text-primary-300">
+              {@presence.note}
+            </p>
           </div>
         </div>
 
-        <div class="presence-trigger w-[95%] shrink-0 snap-end"></div>
+        <div class="presence-audio-trigger w-[95%] shrink-0 snap-end">
+          <div class="presence-inner no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
+            <div class="presence-audio w-full shrink-0 snap-start">
+              <div class="h-full w-full bg-secondary-500/60">
+                <div class="absolute bottom-20 px-2">
+                  <span :if={@presence.kind == "face"} class="text-lg text-neutral-300">→</span>
+                </div>
+              </div>
+            </div>
+            <%!-- No video layer for a voice: there is nothing behind it to
+                 reach, and an empty panel would invite a swipe that arrives
+                 nowhere. --%>
+            <div
+              :if={@presence.kind == "face"}
+              class="presence-video-trigger w-[95%] shrink-0 snap-end"
+            >
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     """
