@@ -13,9 +13,17 @@
 /* ── THE THEME ─────────────────────────────────────────────────────────────────
    The house palette. Three families carry meaning and one stays mute:
 
-     background — the surface, and every weight of text that sits on it. The ramp
-                  runs cream (50) to cocoa-black (950), so LIGHT and DARK are the
-                  same ramp read from opposite ends rather than two palettes.
+     background — the surface, and every weight of text that sits on it. LIGHT
+                  and DARK are the same ramp read from opposite ends rather than
+                  two palettes to keep in sync.
+
+                  It TURNS at 700. Cream through to 600 is warm; from 700 down
+                  it is the cool slate the app wore under daisyUI, whose three
+                  base values live on here verbatim as 800, 900 and 950 — same
+                  colours, same names, no component library. The turn is
+                  deliberate: warmth is what light is FOR, and a warm dark just
+                  reads as brown. Nothing is called "slate" or "dusk", so
+                  nothing has to be renamed if the tail is ever retuned again.
      primary    — terracotta. ATTENTION: the focused row, the band, the brackets.
      secondary  — sage. Held in reserve. It carried the presence dot until the
                   frame took that job over, and it stays unspent rather than
@@ -34,10 +42,10 @@
   --color-background-400: #b8967f;
   --color-background-500: #aa7d65;
   --color-background-600: #9c6c5a;
-  --color-background-700: #82594c;
-  --color-background-800: #6a4a42;
-  --color-background-900: #573d37;
-  --color-background-950: #2e1f1c;
+  --color-background-700: #414952;
+  --color-background-800: #292f37;
+  --color-background-900: #1e2329;
+  --color-background-950: #13171c;
 
   --color-primary-50: #fdf5f3;
   --color-primary-100: #fbeae5;
