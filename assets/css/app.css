@@ -528,7 +528,7 @@ html[data-theme="dark"] {
    whole message. FACE holds still — a picture that pulsed would be a fault, not
    a feature. EMPTY does neither and simply sits there, which is what "no signal"
    should look like. */
-#frame[data-mode="voice"] .frame-screen {
+.frame.is-voice .frame-screen {
   animation: frame-voice 1.5s ease-in-out infinite;
 }
 @keyframes frame-voice {
@@ -556,7 +556,7 @@ html[data-theme="dark"] {
    being alive rather than two things blinking. This is the only state that
    touches the brackets at all — they otherwise mean "aimed", which is a fact
    about the band and has nothing to do with the line. */
-#frame[data-state="live"][data-mode="empty"] .frame-screen {
+.frame.is-live.is-empty .frame-screen {
   animation: frame-voice 1.5s ease-in-out infinite;
 }
 /* THE RETICLE. The arms travel OUTWARD and close back onto the frame, over and
@@ -568,7 +568,7 @@ html[data-theme="dark"] {
 
    It closes SHARPLY and opens gently — ease-in on the way home, with the locked
    position held to 100% — so the moment of acquiring is the part you notice. */
-#frame[data-state="live"]::before {
+.frame.is-live::before {
   animation: frame-live 1.9s cubic-bezier(0.33, 0, 0.2, 1) infinite;
 }
 @keyframes frame-live {
@@ -591,7 +591,7 @@ html[data-theme="dark"] {
    after the clip has finished would be the interface lying about the line. It
    settles at full opacity rather than mid-breath, so the surface the replay
    control sits on is not itself a moving target. */
-#frame[data-ended] .frame-screen {
+.frame.is-ended .frame-screen {
   animation: none;
   opacity: 1;
 }
@@ -599,7 +599,7 @@ html[data-theme="dark"] {
 /* ABSENT drains the screen of temperature. It beats the utility on the element
    because an id plus an attribute outranks a class, and because this rule is
    unlayered while Tailwind's utilities are not. */
-#frame[data-state="absent"] .frame-screen {
+.frame.is-absent .frame-screen {
   background-color: var(--rg-absent);
 }
 
@@ -608,7 +608,7 @@ html[data-theme="dark"] {
 .frame-video {
   display: none;
 }
-#frame[data-mode="face"] .frame-video {
+.frame.is-face .frame-video {
   display: block;
 }
 
@@ -618,7 +618,7 @@ html[data-theme="dark"] {
 .frame-restart {
   display: none;
 }
-#frame[data-ended] .frame-restart {
+.frame.is-ended .frame-restart {
   display: flex;
 }
 
@@ -626,21 +626,35 @@ html[data-theme="dark"] {
    with the box the way a border would — at 18rem the 14px arms read as specks.
    They grow to match, which is the whole reason this rule exists rather than
    living inline with the sizes. */
-#frame[data-expanded]::before {
+.frame.is-expanded::before {
   --ax: 42px;
   --ay: 42px;
 }
 /* Above the list it now overlaps. */
-#frame[data-expanded] {
+/* The size lives here rather than inline with the rest of the frame's classes,
+   and that is forced rather than chosen: every piece of the frame's state had to
+   leave `data-*` behind. LiveView merges data attributes onto an ignored element
+   from the SERVER's copy and deletes any the client added — so a hook-set
+   data-mode would survive exactly until the next patch. Classes are untouched by
+   that merge, so the frame's whole state is expressed in them, and the sizes
+   that keyed off `data-expanded:` had to come with it. */
+.frame.is-expanded {
   z-index: 10;
+  width: 18rem;
+  height: 18rem;
+  padding: 1rem;
+}
+.frame.is-expanded .frame-restart svg {
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* Held at the bright end, not the faint one: with the motion gone these are
      just surfaces, and they should read as present rather than switched off. */
-  #frame[data-mode="voice"] .frame-screen,
-  #frame[data-state="live"][data-mode="empty"] .frame-screen,
-  #frame[data-state="live"]::before {
+  .frame.is-voice .frame-screen,
+  .frame.is-live.is-empty .frame-screen,
+  .frame.is-live::before {
     animation: none;
     opacity: 1;
     /* Back on the frame, not stranded wherever the sweep was cancelled. */
@@ -675,6 +689,80 @@ html[data-theme="dark"] {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
 }
 
+/* ── THE PICK ──────────────────────────────────────────────────────────────────
+   The bar carries the item out of the list and up to the top. Only `transform`
+   is animated, and that is a hard requirement rather than a preference: the
+   frame riding along inside it may be mid-sentence, and moving a <video> in the
+   DOM pauses it. Nothing about this reparents anything.
+
+   The distance is measured in the hook, because it is a fact about the viewport.
+   What lives here is only what a class can say. */
+.bar {
+  transition: transform 640ms cubic-bezier(0.22, 0.61, 0.24, 1);
+}
+.bar.is-picked {
+  /* Over the rows it passes, and over the mark at 30 — which is the whole point
+     of the gesture: the item leaves the list rather than sliding within it. */
+  z-index: 40;
+}
+
+/* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
+   what the page's top BECOMES, so the mark and the strapline leave with the
+   list rather than being covered by the thing arriving. They go faster than the
+   bar travels, so the space is already clear when it lands. */
+#regions.is-open .mark-slot,
+#regions.is-open .lede {
+  opacity: 0;
+  pointer-events: none;
+}
+.mark-slot,
+.lede {
+  transition: opacity 220ms ease-out;
+}
+
+/* THE LIST STANDS DOWN rather than leaving. Fading keeps the box, and the box is
+   what the bar is positioned against — a container that collapsed would drag the
+   header off its own line halfway through the flight. It is also what makes the
+   return free: same scroll offset, same focused row, nothing rebuilt.
+
+   Faster out than the bar's travel, so the two do not read as one movement: the
+   list is getting out of the way, not being carried. */
+.regions-scroll {
+  transition: opacity 220ms ease-out;
+}
+.list-away .regions-scroll {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* THE PANEL arrives after the bar has landed, not with it. Two things moving at
+   once would be a transition; one thing moving and then another appearing is a
+   sequence, and a sequence is what "it became a header, and here is what is
+   under it" actually looks like. */
+.panel {
+  animation: panel-in 380ms 260ms ease-out both;
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .regions-scroll {
+    transition: none;
+  }
+  .panel {
+    animation: none;
+  }
+}
+
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:
    while the list moves a row is passing through the band and the two would sit
    on top of each other. The frame is the SETTLED choice made visible, so it
@@ -687,9 +775,9 @@ html[data-theme="dark"] {
 .regions-item.is-focused .regions-name {
   opacity: 1;
 }
-#regions:not(.has-selection):not(.is-scrolling) .focus-empty {
+#regions-scroll:not(.has-selection):not(.is-scrolling) ~ .bar .focus-empty {
   opacity: 1;
 }
-#regions.has-selection .frame {
+#regions-scroll.has-selection ~ .bar .frame {
   opacity: 1;
 }

@@ -28,6 +28,50 @@ defmodule PresencemediaWeb.HomeLiveTest do
     assert html =~ ~r/data-state="live" data-frame="empty"/
   end
 
+  test "picking an item lifts it into a header and opens its panel", %{conn: conn} do
+    {:ok, live, html} = live(conn, ~p"/")
+
+    # Nothing is picked until something is selected, and the band says nothing.
+    refute html =~ "id=\"panel\""
+    refute has_element?(live, "#bar.is-picked")
+
+    # Clicking the band with no selection must be inert — there is no item to
+    # pick up, and inventing one would be worse than doing nothing.
+    live |> element(".focus-box") |> render_click()
+    refute has_element?(live, "#bar.is-picked")
+
+    # The hook is what decides WHO; here we stand in for it.
+    render_hook(live, "select", %{"index" => 1})
+    refute has_element?(live, "#bar.is-picked")
+
+    opened = live |> element(".focus-box") |> render_click()
+    assert has_element?(live, "#bar.is-picked")
+    assert has_element?(live, "#regions.is-open")
+    assert has_element?(live, "#panel")
+    # The bar now carries its own label, which is what lets it fly without
+    # leaving its words behind in the list.
+    assert opened =~ "DAD"
+    assert opened =~ "MICHAEL"
+
+    closed = live |> element(".focus-box") |> render_click()
+    refute has_element?(live, "#bar.is-picked")
+    refute has_element?(live, "#panel")
+    refute closed =~ "id=\"panel\""
+  end
+
+  test "losing the selection closes the panel with it", %{conn: conn} do
+    {:ok, live, _html} = live(conn, ~p"/")
+
+    render_hook(live, "select", %{"index" => 0})
+    live |> element(".focus-box") |> render_click()
+    assert has_element?(live, "#panel")
+
+    # Scrolling the band empty must not leave an open view of nobody.
+    render_hook(live, "deselect", %{})
+    refute has_element?(live, "#panel")
+    refute has_element?(live, "#bar.is-picked")
+  end
+
   test "scope toggles between its two labels and back", %{conn: conn} do
     {:ok, live, html} = live(conn, ~p"/")
 

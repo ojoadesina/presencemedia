@@ -154,23 +154,82 @@ defmodule PresencemediaWeb.HomeLive do
     %{label: "TEAMMATE", name: "CHIDI", state: "absent", frame: "empty", media: nil}
   ]
 
+  # PAST MOMENTS. The same verified clips again, standing in as a history —
+  # every user gets a deterministic slice, so the panel is never empty and never
+  # shuffles between renders. This is the shape a stream will take later: a list
+  # of things that happened, newest first, each one playable.
+  @moment_pool [
+    %{kind: "voice", when: "TODAY 09:14", len: "0:09"},
+    %{kind: "face", when: "YESTERDAY 21:02", len: "0:37"},
+    %{kind: "voice", when: "YESTERDAY 08:40", len: "0:13"},
+    %{kind: "face", when: "TUESDAY 19:55", len: "0:35"},
+    %{kind: "voice", when: "MONDAY 12:31", len: "0:22"},
+    %{kind: "face", when: "LAST WEEK", len: "0:47"}
+  ]
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, users: @users, scope: "SCOPED")}
+    users =
+      @users
+      |> Enum.with_index()
+      |> Enum.map(fn {user, i} -> Map.put(user, :moments, moments(i)) end)
+
+    {:ok,
+     socket
+     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list)
+     |> put_current()}
   end
 
-  # SCOPE is a label and nothing more at this point — it narrows no list and
-  # filters no user, because there is no spine yet for it to narrow anything
-  # against. It lives on the server rather than in the hook on purpose: the
-  # moment it does mean something, it will mean it here, and the toggle will not
-  # have to be moved to find out.
+  defp moments(index) do
+    n = length(@moment_pool)
+    for k <- 0..2, do: Enum.at(@moment_pool, rem(index * 2 + k, n))
+  end
+
+  # SELECTION NOW REACHES THE SERVER. It used to live only in the hook, which was
+  # enough for a highlight and nowhere near enough for a panel: the open view is
+  # real content about a real person, so the process that owns the data has to
+  # know which person that is. The hook still decides WHO — it is the only thing
+  # that can, since it owns the scroll — and reports the answer here.
   @impl true
+  def handle_event("select", %{"index" => index}, socket) do
+    {:noreply, socket |> assign(selected: index) |> put_current()}
+  end
+
+  def handle_event("deselect", _params, socket) do
+    # Losing the selection closes the panel with it. There is no such thing as an
+    # open view of nobody.
+    {:noreply, socket |> assign(selected: nil, mode: :list) |> put_current()}
+  end
+
+  # One event for both directions, because the band is one target and which way
+  # it goes is a fact the server already holds. Clicking it with nothing selected
+  # does nothing at all — there is no item to pick up.
+  def handle_event("toggle_open", _params, socket) do
+    case {socket.assigns.selected, socket.assigns.mode} do
+      {nil, _} -> {:noreply, socket}
+      {_, :open} -> {:noreply, assign(socket, mode: :list)}
+      {_, :list} -> {:noreply, assign(socket, mode: :open)}
+    end
+  end
+
   def handle_event("toggle_scope", _params, socket) do
     {:noreply,
      update(socket, :scope, fn
        "SCOPED" -> "UNSCOPED"
        _ -> "SCOPED"
      end)}
+  end
+
+  # The chosen user is resolved ONCE, here, and stored. Looking it up inside the
+  # template would mean calling a function with `assigns`, which switches
+  # LiveView's change tracking off for that whole block — the panel would then be
+  # re-sent on every unrelated update.
+  defp put_current(socket) do
+    assign(
+      socket,
+      :current,
+      socket.assigns.selected && Enum.at(socket.assigns.users, socket.assigns.selected)
+    )
   end
 
   @impl true
@@ -191,7 +250,10 @@ defmodule PresencemediaWeb.HomeLive do
     --%>
     <div
       id="regions"
-      class="fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-950"
+      class={[
+        "fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-950",
+        @mode == :open && "is-open"
+      ]}
     >
       <%!-- THE MARK sits ABSOLUTELY, not in the flow, and that is the whole
            trick of putting it here. The band's position is derived from the
@@ -205,7 +267,7 @@ defmodule PresencemediaWeb.HomeLive do
            every label below them. --%>
       <%!-- z-30 clears the theme wash at z-20. The colour has to look like it is
            coming OUT of the mark, which it cannot do while painting over it. --%>
-      <div class="pointer-events-none absolute inset-x-0 top-32 z-30">
+      <div class="mark-slot pointer-events-none absolute inset-x-0 top-32 z-30">
         <div class="mx-auto w-full max-w-6xl px-4">
           <%!-- A BUTTON, not a link. It used to point home, but home is this
                page — there is only one route — so the click was doing nothing
@@ -232,7 +294,7 @@ defmodule PresencemediaWeb.HomeLive do
           <%!-- The heading is NOT held to the list's width — a line of prose
                needs the room to be a line of prose. It shares only the rows'
                inset, which is what puts every left edge on one line. --%>
-          <div class="max-w-2xl px-[1.95rem]">
+          <div class="lede max-w-2xl px-[1.95rem]">
             <%!-- w-fit is the whole mechanism, and it is load-bearing. A block
                  <p> is as wide as its CONTAINER, not as its text, so anything
                  right-aligned inside one lands at the container's edge and
@@ -259,7 +321,13 @@ defmodule PresencemediaWeb.HomeLive do
             </div>
           </div>
 
-          <div class="relative mt-5 w-[32rem]">
+          <%!-- The list steps aside for the panel by FADING, never by
+               unmounting. The bar is positioned against this box, so a
+               container that collapsed would drag the header off its own line
+               halfway through the flight — and keeping the DOM is also what
+               makes the return free: same scroll offset, same focused row,
+               because nothing was ever destroyed. --%>
+          <div class={["relative mt-5 w-[32rem]", @mode == :open && "list-away"]}>
             <%!-- phx-update="ignore": the hook marks the focused row with a
                  class, and a patch must never wipe it. --%>
             <div
@@ -305,10 +373,46 @@ defmodule PresencemediaWeb.HomeLive do
 
                  Both appear only on a settled selection — the band is the
                  question and the frame is who answered it. --%>
-            <div class="pointer-events-none absolute left-0 top-[34%] flex w-[calc(min(100vw,72rem)-2rem)] -translate-y-1/2 items-center">
-              <div class="focus-box relative flex h-[3.5rem] w-[32rem] shrink-0 items-center bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20">
+            <div
+              id="bar"
+              phx-hook="Bar"
+              class={[
+                "bar pointer-events-none absolute left-0 top-[34%] flex w-[calc(min(100vw,72rem)-2rem)] -translate-y-1/2 items-center",
+                @mode == :open && "is-picked"
+              ]}
+            >
+              <%!-- THE LEFT HALF IS THE HANDLE. Clicking here picks the whole
+                   bar up and carries it to the top; clicking the frame at the
+                   other end still only resizes the frame. Two targets, two
+                   jobs, one bar — which is why neither had to be given up.
+
+                   pointer-events-auto against the row's none: the bar as a whole
+                   must let a moving list through, but this half of it is the one
+                   thing in that row you are meant to press. --%>
+              <div
+                phx-click="toggle_open"
+                class={[
+                  "focus-box pointer-events-auto relative flex h-[3.5rem] w-[32rem] shrink-0 items-center",
+                  "bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20",
+                  @selected && "cursor-pointer"
+                ]}
+              >
                 <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
                   --
+                </span>
+                <%!-- THE BAR TAKES OVER THE TEXT at the moment of the pick, and
+                     not before. In the list the words you read are the ROW's,
+                     showing through a translucent band — lift the bar then and
+                     it would fly away leaving its own label behind. Rendering
+                     them here only once open means the handover happens while
+                     the two are still exactly on top of each other, so there is
+                     nothing to see. --%>
+                <span
+                  :if={@mode == :open && @current}
+                  class="flex items-baseline whitespace-nowrap text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 dark:text-primary-500"
+                >
+                  {@current.label}
+                  <span class="ml-3 text-light-400 dark:text-dark-600">{@current.name}</span>
                 </span>
               </div>
               <%!-- THE FRAME — one element that is both the box's target and the
@@ -330,14 +434,26 @@ defmodule PresencemediaWeb.HomeLive do
                    modal. ml-auto pins its right edge, so the extra width opens
                    leftward into the empty half of the screen and the frame
                    never leaves the line the band put it on. --%>
+              <%!-- phx-update="ignore" IS LOAD-BEARING HERE, and for the media
+                   rather than for the styling. Without it a patch rewrites this
+                   subtree and strips the src the hook put on the <video>, which
+                   stops a face mid-sentence. With it, LiveView leaves the
+                   children alone entirely.
+
+                   Its state is all in CLASSES for the matching reason: on an
+                   ignored element LiveView still merges data-* from the server's
+                   copy and deletes any the client added, so hook-set data
+                   attributes would survive only until the next patch. Classes it
+                   does not touch. The frame is therefore wholly client-owned,
+                   which is honest — a playing media element cannot be driven
+                   from the server anyway. --%>
               <div
                 id="frame"
-                data-mode="empty"
-                data-state="present"
+                phx-update="ignore"
                 role="button"
                 tabindex="0"
                 aria-label="Expand frame"
-                class="frame group pointer-events-auto relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 cursor-pointer items-center justify-center p-2 opacity-0 transition-[opacity,width,height,padding] duration-300 data-expanded:h-[18rem] data-expanded:w-[18rem] data-expanded:p-4"
+                class="frame is-empty pointer-events-auto relative ml-auto flex h-[3.8rem] w-[3.8rem] shrink-0 cursor-pointer items-center justify-center p-2 opacity-0 transition-[opacity,width,height,padding] duration-300"
               >
                 <%!-- THE SCREEN is inset from the frame, so the brackets bracket
                      the picture instead of cropping it, and it is square on
@@ -371,7 +487,7 @@ defmodule PresencemediaWeb.HomeLive do
                       stroke="currentColor"
                       stroke-width="0"
                       aria-hidden="true"
-                      class="size-4 group-data-expanded:size-10"
+                      class="size-4"
                     >
                       <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 0 0-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 0 1 655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 0 1 279 755.2a342.16 342.16 0 0 1-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 0 1 109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 0 0 3 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z" />
                     </svg>
@@ -382,6 +498,63 @@ defmodule PresencemediaWeb.HomeLive do
                 <audio class="frame-audio" preload="none"></audio>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- ── THE PANEL ────────────────────────────────────────────────────────
+           What opens under the header once an item has been picked up. It is a
+           SIBLING of the list rather than a child, and fixed rather than in
+           flow, because the list must keep its geometry while hidden: the bar
+           is positioned against the list's box, so a collapsing container would
+           drag the header off its own line mid-flight.
+
+           It starts below where the bar comes to rest and runs to the bottom of
+           the screen, so the picked item reads as a heading with its own
+           contents beneath it rather than as a card floating over a page. --%>
+      <div
+        :if={@mode == :open && @current}
+        id="panel"
+        class="panel fixed inset-x-0 top-30 bottom-0 z-20 overflow-y-auto"
+      >
+        <div class="mx-auto w-full max-w-6xl px-4">
+          <div class="max-w-2xl px-[1.95rem] pb-16">
+            <%!-- The line the header cannot carry: what this person's line is
+                 doing right now, in the same three words the frame is drawn
+                 from. --%>
+            <p class="text-sm tracking-[0.18em] text-light-600 dark:text-dark-500">
+              {String.upcase(@current.state)}
+              <span class="mx-2 text-light-300 dark:text-dark-700">·</span>
+              {(@current.frame == "empty" && "NOTHING COMING THROUGH") ||
+                String.upcase(@current.frame)}
+            </p>
+
+            <p class="mt-12 text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
+              MOMENTS
+            </p>
+
+            <%!-- The shape a stream will take: a list of things that happened,
+                 newest first. Each one is a row in the same measure and rhythm
+                 as the list behind it, so the panel reads as the same surface
+                 opened up rather than as a different screen. --%>
+            <ul class="mt-4 divide-y divide-light-200 dark:divide-dark-800">
+              <li
+                :for={moment <- @current.moments}
+                class="flex items-baseline gap-4 py-4 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+              >
+                <span class={[
+                  "w-16 shrink-0 text-sm tracking-[0.18em]",
+                  moment.kind == "face" && "text-primary-600 dark:text-primary-500",
+                  moment.kind == "voice" && "text-light-500 dark:text-dark-500"
+                ]}>
+                  {String.upcase(moment.kind)}
+                </span>
+                <span class="flex-1">{moment.when}</span>
+                <span class="text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
+                  {moment.len}
+                </span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

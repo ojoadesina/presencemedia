@@ -12,9 +12,20 @@
 // within one row's reach; beyond that the band stands genuinely empty, which is
 // what lets the list rest unselected at the top instead of magnetising the
 // first row in.
+type HookCtx = { el: HTMLElement; pushEvent: (event: string, payload: object) => void };
+
 export const Regions = {
-  mounted(this: { el: HTMLElement }) {
+  mounted(this: HookCtx) {
     const scroll = this.el;
+    const push = this.pushEvent.bind(this);
+    // THE TRANSIENT CLASSES LIVE ON THE SCROLLER, not on #regions, and that is
+    // not a preference. #regions is the LiveView root: every patch rewrites its
+    // class attribute back to whatever the server rendered, so a hook-set
+    // `has-selection` survived only until the next update — which is why the
+    // frame vanished and the placeholder came back the moment an item was
+    // picked. The scroller carries phx-update="ignore", so it is the one
+    // element in the tree LiveView will not touch. The CSS reaches the bar from
+    // here with a sibling combinator.
     const items = Array.from(scroll.querySelectorAll<HTMLElement>(".regions-item"));
     const root = document.getElementById("regions");
     if (!root || !items.length) return;
@@ -28,13 +39,30 @@ export const Regions = {
     const audio = frame?.querySelector<HTMLAudioElement>(".frame-audio") ?? null;
     const restart = frame?.querySelector<HTMLButtonElement>(".frame-restart") ?? null;
 
+    // THE FRAME'S STATE IS CLASSES, NOT DATA ATTRIBUTES, and that is forced by
+    // LiveView rather than chosen: on a patched element it strips a client-set
+    // src, and on an ignored one it still merges data-* from the server's copy
+    // and deletes any the client added. Classes it leaves alone in both cases,
+    // so the frame keeps its own mind across a re-render. `mode` is tracked in a
+    // plain variable because reading it back out of a class list would be
+    // guessing at what we ourselves wrote.
+    const MODES = ["is-empty", "is-voice", "is-face"];
+    const STATES = ["is-present", "is-live", "is-absent"];
+    let mode = "empty";
+    let src = "";
+
+    const setFrame = (nextMode: string, nextState: string) => {
+      if (!frame) return;
+      frame.classList.remove(...MODES, ...STATES);
+      frame.classList.add(`is-${nextMode}`, `is-${nextState}`);
+      mode = nextMode;
+    };
+
     // Which element the current mode is actually driving. Everything that acts
     // on "the media" goes through here, so play, replay and teardown can never
     // disagree about what they are addressing.
-    const current = (): HTMLMediaElement | null => {
-      const mode = frame?.dataset.mode;
-      return mode === "face" ? video : mode === "voice" ? audio : null;
-    };
+    const current = (): HTMLMediaElement | null =>
+      mode === "face" ? video : mode === "voice" ? audio : null;
 
     // Pausing alone leaves the last frame of the previous person frozen on
     // screen and the file still downloading. Dropping the src and calling
@@ -52,28 +80,27 @@ export const Regions = {
 
     const showFrame = (el: HTMLElement) => {
       if (!frame) return;
-      const mode = el.dataset.frame || "empty";
-      const src = el.dataset.media || "";
-      const state = el.dataset.state || "present";
+      const nextMode = el.dataset.frame || "empty";
+      const nextSrc = el.dataset.media || "";
+      const nextState = el.dataset.state || "present";
 
       // Re-selecting the row that is already playing must not restart it.
-      if (frame.dataset.mode === mode && frame.dataset.src === src) {
-        frame.dataset.state = state;
+      if (mode === nextMode && src === nextSrc) {
+        setFrame(nextMode, nextState);
         return;
       }
 
       stopMedia();
-      frame.dataset.mode = mode;
-      frame.dataset.src = src;
-      frame.dataset.state = state;
+      setFrame(nextMode, nextState);
+      src = nextSrc;
       // A new person has arrived, so the previous one's finished-clip control
       // must go with them.
-      delete frame.dataset.ended;
+      frame.classList.remove("is-ended");
 
       const media = current();
-      if (!media || !src) return;
+      if (!media || !nextSrc) return;
 
-      media.src = src;
+      media.src = nextSrc;
       // Autoplay with sound needs a user activation. A scroll is not one, so
       // the first selection of a session can legitimately be refused — that is
       // the browser's policy, not a failure, and it must not throw an unhandled
@@ -84,26 +111,23 @@ export const Regions = {
       // show the replay control — one click both satisfies the policy and
       // starts the clip, instead of leaving a dead frame with no way in.
       media.play().catch(() => {
-        if (frame.dataset.src === src) frame.dataset.ended = "true";
+        if (src === nextSrc) frame.classList.add("is-ended");
       });
     };
 
     const hideFrame = () => {
       if (!frame) return;
       stopMedia();
-      frame.dataset.mode = "empty";
-      frame.dataset.state = "present";
-      delete frame.dataset.src;
-      delete frame.dataset.ended;
+      setFrame("empty", "present");
+      src = "";
+      frame.classList.remove("is-ended");
     };
 
     // A clip that runs out has not gone away — the person is still selected and
     // the frame still theirs, so it keeps the last picture and offers the clip
     // again rather than blanking.
     for (const m of [video, audio]) {
-      m?.addEventListener("ended", () => {
-        if (frame) frame.dataset.ended = "true";
-      });
+      m?.addEventListener("ended", () => frame?.classList.add("is-ended"));
     }
 
     restart?.addEventListener("click", (e) => {
@@ -114,19 +138,15 @@ export const Regions = {
       if (!media) return;
       media.currentTime = 0;
       media.play().catch(() => {});
-      if (frame) delete frame.dataset.ended;
+      frame?.classList.remove("is-ended");
     });
 
     // EXPAND is a toggle on the frame itself, so the size lives in one
     // attribute and CSS decides what that is worth in pixels.
     const toggleExpand = () => {
       if (!frame) return;
-      if (frame.dataset.expanded === undefined) frame.dataset.expanded = "true";
-      else delete frame.dataset.expanded;
-      frame.setAttribute(
-        "aria-label",
-        frame.dataset.expanded === undefined ? "Expand frame" : "Collapse frame",
-      );
+      const open = frame.classList.toggle("is-expanded");
+      frame.setAttribute("aria-label", open ? "Collapse frame" : "Expand frame");
     };
 
     frame?.addEventListener("click", toggleExpand);
@@ -166,15 +186,29 @@ export const Regions = {
 
     const clear = () => items.forEach((i) => i.classList.remove("is-focused"));
 
+    // WHO IS SELECTED NOW BELONGS TO THE SERVER. The hook is still the only
+    // thing that can DECIDE it — it owns the scroll, and the answer is a
+    // question about pixels — but the panel is real content about a real
+    // person, so the process holding the data has to be told. Sent only on
+    // change: a settle that lands on the row already chosen is not news.
+    let reported: number | null = null;
+    const report = (index: number | null) => {
+      if (index === reported) return;
+      reported = index;
+      if (index === null) push("deselect", {});
+      else push("select", { index });
+    };
+
     const settle = () => {
-      root.classList.remove("is-scrolling");
+      scroll.classList.remove("is-scrolling");
       clear();
       const near = nearest();
 
       // Out of reach — the band is genuinely empty and says so.
       if (!near || Math.abs(near.delta) > rowHeight()) {
-        root.classList.remove("has-selection");
+        scroll.classList.remove("has-selection");
         hideFrame();
+        report(null);
         snaps = 0;
         return;
       }
@@ -190,8 +224,9 @@ export const Regions = {
 
       snaps = 0;
       near.el.classList.add("is-focused");
-      root.classList.add("has-selection");
+      scroll.classList.add("has-selection");
       showFrame(near.el);
+      report(items.indexOf(near.el));
     };
 
     scroll.addEventListener(
@@ -199,8 +234,8 @@ export const Regions = {
       () => {
         // Moving: no selection, no line, and no placeholder either — a row is
         // passing through the band and they would collide.
-        root.classList.add("is-scrolling");
-        root.classList.remove("has-selection");
+        scroll.classList.add("is-scrolling");
+        scroll.classList.remove("has-selection");
         clear();
         // The frame leaves with the selection. Sound continuing over a moving
         // list would be a voice with nobody attached to it.
