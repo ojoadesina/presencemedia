@@ -18,6 +18,9 @@ defmodule PresencemediaWeb.Router do
     pipe_through :browser
 
     live "/", HomeLive
+    # A reference exhibit of the old recorder UI, kept only while it is being
+    # mined for ideas. Not a feature; delete the route with the module.
+    live "/recorder", RecorderLive
   end
 
   # Other scopes may use custom stacks.
