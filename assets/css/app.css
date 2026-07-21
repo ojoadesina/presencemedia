@@ -488,16 +488,20 @@ html[data-theme="dark"] {
   --ax: 14px;
   --ay: 14px;
 }
-/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. The
-   band on /presence is taller but the same width, so it keeps the horizontal
-   arms and grows the vertical ones to match its own height. */
+/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. */
 .focus-box::before {
   --ax: 24px;
   --ay: 14px;
 }
+/* THE BAND is a bigger box — 512x108 — and the temptation was to grow the arms
+   with it. Wrong instinct: an arm is a CORNER MARK, and a corner does not get
+   more corner by being longer. Held short, the same 18px both ways, the
+   brackets tick the four corners of a wide filled card instead of drawing three
+   sides of a box around it. Long arms on a tight card read as a frame with
+   nothing to frame. */
 .band::before {
-  --ax: 24px;
-  --ay: 22px;
+  --ax: 18px;
+  --ay: 18px;
 }
 /* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
    the shortest and its weight the lightest — 3px rules around a 12px label

@@ -173,7 +173,7 @@ defmodule PresencemediaWeb.PresenceLive do
                     style={"--wash-h: #{presence.hue}"}
                   >
                     <p class="stream-line text-md tracking-[0.14em]">
-                      <span class="stream-name font-medium">{presence.by}</span>
+                      <span class="stream-name font-semibold">{presence.by}</span>
                       <%!-- Lower case, because the name is the only thing in the
                            sentence entitled to raise its voice. --%>
                       <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
