@@ -506,32 +506,29 @@ defmodule PresencemediaWeb.CoreComponents do
   @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
-  ## It is the band, again
+  ## The shape
 
-  The surface already has a shape for "a person, here": the bracketed 32rem box
-  the band is made of, and the frame is the square version of the same idea. A
-  left presence is not a new object needing new furniture — it is that box with
-  a recording in it. Same width, same height, same brackets, same left edge. The
-  screen is one shape repeated: live at the top, left below.
+  An outer rectangle holding an inner one. The inner rectangle is not a
+  highlight sitting behind something else — it IS the content, and it carries
+  the colour. For voice it doubles as the player: it fills left to right as the
+  recording runs, so the thing you are looking at and the thing telling you
+  where you are in it are the same object rather than a bar bolted underneath.
 
-  That is also why there is no play button, no name and no timestamp. A play
-  triangle is what every messaging app in the world puts here, and it would be
-  the only rounded, borrowed thing on a surface that has neither. The BOX is the
-  target — exactly as the band is, and the frame is. You press the thing itself.
+  Square corners, because nothing on this surface is rounded — the reference this
+  came from is rounded, and that is the one detail deliberately not carried over.
 
   ## Left is not live
 
-  The live frame breathes: no duration, no shape, because you cannot see the
-  length of something still happening. A left presence is finished, so it has
-  both. Playing FILLS it left to right with the same wash the band uses to say
-  "this one" — so the fill is not a progress bar borrowed from elsewhere, it is
-  this surface's existing word for attention, moving.
+  The frame in the list carries a LIVE presence: no duration, no shape, only
+  breathing, because you cannot see the length of something still happening. A
+  left presence is finished, so it has both — and the fill is what having a
+  length looks like.
 
-  ## Face slots into the same box
+  ## Face slots into the same rectangle
 
-  The middle is a SHAPE REGION. Voice fills it with real decoded peaks; face
-  will fill it with a still. The box, the brackets, the fill and the press
-  target do not change when the middle does.
+  The inner rectangle is a REGION. Voice fills it with colour advancing; face
+  will fill it with a still. The outer rectangle, the press target and the fill
+  that tracks position do not change when its contents do.
 
   ## Examples
 
@@ -550,22 +547,11 @@ defmodule PresencemediaWeb.CoreComponents do
       role="button"
       tabindex="0"
       aria-label={"Play #{@presence.len} recording"}
-      class={[
-        "presence relative flex h-[3.5rem] w-[32rem] cursor-pointer items-center",
-        !@presence.heard && "is-unheard"
-      ]}
+      class={["presence", !@presence.heard && "is-unheard"]}
     >
-      <%!-- The wash the band uses for "this one", advancing. Behind the shape,
-           so the peaks stay readable across the boundary rather than being
-           painted over as it passes. --%>
-      <div class="presence-fill"></div>
-
-      <%!-- Edge to edge, running behind the bracket arms. Insetting it would put
-           a margin inside a box whose whole job is to have none. --%>
-      <div class="wave-base"></div>
-      <div class="wave-lit"></div>
-
-      <span class="presence-len">{@presence.len}</span>
+      <div class="presence-inner">
+        <div class="presence-fill"></div>
+      </div>
     </div>
     """
   end
