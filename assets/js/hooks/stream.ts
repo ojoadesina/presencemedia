@@ -172,6 +172,13 @@ export const Stream = {
 
     window.addEventListener("resize", settle);
 
+    // THE SCROLLER'S OWN HEIGHT CHANGES WITHOUT THE WINDOW'S. It takes what the
+    // screen above it leaves, so capturing a face shortens it by a screen's
+    // worth — and the trail padding, which is measured from that height, would
+    // go on describing the list it used to be. Then the last presence cannot
+    // reach the box. No resize event fires for this; only the element knows.
+    new ResizeObserver(() => lead()).observe(scroll);
+
     // AFTER LAYOUT, not during mount. Every row now holds a card, and a card has
     // an icon in it — so at mount time the rows can still measure zero, which
     // makes rowHeight() zero, which makes every row further than one row away,

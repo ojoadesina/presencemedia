@@ -76,15 +76,13 @@ defmodule PresencemediaWeb.PresenceLive do
     ~H"""
     <div id="presence-page" class="fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-950">
       <div class="mx-auto h-full w-full max-w-6xl px-4">
-        <div class="pt-[max(1rem,calc(37vh-84px))]">
-          <div class="max-w-2xl px-[1.95rem]">
-            <p class="text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-light-500 dark:text-dark-500">
-              PRESENCE
-            </p>
-          </div>
-
-          <%!-- THE SCREEN SITS BETWEEN THE HEADING AND THE LIST, at exactly the
-               size of what it is showing and no larger.
+        <%!-- The list takes whatever is left. Pulling the screen to the top of
+             the device only moved the empty page to the bottom; given the rest
+             of the height it becomes rows instead. --%>
+        <div class="flex h-full flex-col pt-4">
+          <%!-- THE SCREEN IS THE TOP OF THE PAGE, at exactly the size of what
+               it is showing and no larger. Nothing is titled: a page with one
+               thing on it does not need to announce which thing.
 
                THE SLOT ALWAYS EXISTS, and carries an id, even for text where it
                holds nothing and stands zero pixels tall. Not for layout — it
@@ -101,46 +99,44 @@ defmodule PresencemediaWeb.PresenceLive do
               phx-update="ignore"
               data-media={@current.media}
               data-kind={@current.kind}
-              class={[
-                "screen relative mt-6 w-[32rem] overflow-hidden",
-                @current.kind == "face" && "h-54 bg-black",
-                @current.kind == "voice" && "h-[3px] bg-secondary-500/30"
-              ]}
+              class="screen relative mt-4 w-[32rem]"
             >
-              <video
-                :if={@current.kind == "face"}
-                class="screen-video absolute inset-0 h-full w-full object-cover"
-                playsinline
-                preload="none"
-              >
-              </video>
-
-              <%!-- THE COUNT, where the old recorder kept it: bottom left, over
-                   the picture, counting up. It is the one thing the frame
-                   cannot say for itself — how far into someone you are. --%>
-              <div :if={@current.kind == "face"} class="absolute bottom-4 left-8">
-                <span class="screen-time text-sm text-dark-400">0:00</span>
+              <%!-- A FACE. Black, the recorder's own measure, with the count
+                   over the picture bottom left where the old one kept it. --%>
+              <div :if={@current.kind == "face"} class="relative h-54 w-full overflow-hidden bg-black">
+                <video
+                  class="screen-video absolute inset-0 h-full w-full object-cover"
+                  playsinline
+                  preload="none"
+                >
+                </video>
+                <div class="absolute bottom-4 left-8">
+                  <span class="screen-time text-sm text-dark-400">0:00</span>
+                </div>
               </div>
 
-              <%!-- At a hairline there is no room for a count and none is
-                   needed: the row already said VOICE, so the only thing left to
-                   say is how far along. --%>
-              <div
-                :if={@current.kind == "voice"}
-                class="screen-fill h-full bg-secondary-500"
-                style="width: var(--played, 0%)"
-              >
+              <%!-- A VOICE. A hairline, and the count below it at the left —
+                   there is no picture to lay it over, so it sits under the bar
+                   on the same line the list starts from. --%>
+              <div :if={@current.kind == "voice"}>
+                <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
+                  <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)">
+                  </div>
+                </div>
+                <span class="screen-time mt-2 block text-sm text-light-500 dark:text-dark-500">
+                  0:00
+                </span>
               </div>
             </div>
           </div>
 
-          <div id="stream-slot" class="relative mt-8 w-[32rem]">
+          <div id="stream-slot" class="relative mt-8 min-h-0 w-[32rem] flex-1">
             <div
               id="stream-scroll"
               phx-hook="Stream"
               phx-update="ignore"
               data-anchor="top"
-              class="stream-scroll h-[46vh] overflow-y-auto overscroll-contain"
+              class="stream-scroll h-full overflow-y-auto overscroll-contain"
             >
               <%!-- Gapped, so each presence is its own object rather than one
                    ruled sheet. The gap is smaller than the border is quiet. --%>
@@ -158,15 +154,24 @@ defmodule PresencemediaWeb.PresenceLive do
                   <div class="presence-row h-27 w-[32rem] border border-light-200 p-[1.95rem] dark:border-dark-800">
                     <p class="stream-line text-md tracking-[0.14em]">
                       <span class={[
+                        "font-medium",
                         presence.heard && "text-light-900 dark:text-dark-100",
                         !presence.heard && "text-primary-600 dark:text-primary-500"
                       ]}>
                         {presence.by}
                       </span>
+                      <%!-- Lower case, because the name is the only thing in the
+                           sentence entitled to raise its voice. --%>
                       <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
-                        {String.upcase(presence.kind)}
+                        {presence.kind}
                       </span>
-                      <span :if={presence.note} class="text-light-300 dark:text-dark-700">
+                      <%!-- GREY, and dark enough to actually read. The content is
+                           the reason the row exists; it was set two steps paler
+                           than the label announcing it, which had the sentence
+                           fading out exactly where it started to matter. Grey
+                           rather than a step up the warm ramp, so it reads as
+                           body text and not as a quieter kind of heading. --%>
+                      <span :if={presence.note} class="text-neutral-800 dark:text-neutral-200">
                         {presence.note}
                       </span>
                     </p>
@@ -175,10 +180,11 @@ defmodule PresencemediaWeb.PresenceLive do
               </ul>
             </div>
 
-            <%!-- THE BAND, brackets only. The cards carry their own edges now,
-                 so a filled band over one would be a second rectangle on top of
-                 a rectangle. Aiming is all that is left for it to do. --%>
-            <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem]"></div>
+            <%!-- THE BAND wears the same wash as the box in the relationship
+                 list, over the top of whichever card has arrived under it. The
+                 brackets aim; the wash is what says CHOSEN. --%>
+            <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem] bg-primary-600/15 dark:bg-primary-500/20">
+            </div>
           </div>
         </div>
       </div>
