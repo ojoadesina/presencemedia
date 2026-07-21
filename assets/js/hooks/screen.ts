@@ -14,6 +14,7 @@ export const Screen = {
 
     const video = el.querySelector<HTMLVideoElement>(".screen-video");
     const fill = el.querySelector<HTMLElement>(".screen-fill");
+    const clock = el.querySelector<HTMLElement>(".screen-time");
 
     // A face plays in the screen itself. A voice has nothing to look at, so it
     // plays through an Audio element and the strip is all there is to see.
@@ -25,10 +26,16 @@ export const Screen = {
     // it. requestAnimationFrame rather than timeupdate, which fires about four
     // times a second and would make a 10-second clip visibly step.
     let raf = 0;
+    // The old recorder counted UP from zero rather than down to the end, and
+    // that is the right way round here too: a presence is a length of someone's
+    // time, not a countdown to being finished with them.
+    const clockFace = (t: number) =>
+      `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
     const follow = () => {
       if (fill && media.duration) {
         el.style.setProperty("--played", `${(media.currentTime / media.duration) * 100}%`);
       }
+      if (clock) clock.textContent = clockFace(media.currentTime);
       raf = requestAnimationFrame(follow);
     };
 
@@ -36,7 +43,7 @@ export const Screen = {
     // so there always is one — but a refusal is policy rather than a fault and
     // must not throw.
     media.play().catch(() => {});
-    if (fill) raf = requestAnimationFrame(follow);
+    if (fill || clock) raf = requestAnimationFrame(follow);
 
     media.addEventListener("ended", () => {
       cancelAnimationFrame(raf);

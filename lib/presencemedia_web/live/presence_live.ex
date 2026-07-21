@@ -83,17 +83,17 @@ defmodule PresencemediaWeb.PresenceLive do
             </p>
           </div>
 
-          <%!-- THE SCREEN SITS BETWEEN THE HEADING AND THE LIST, in a slot of
-               fixed height with its contents pinned to the BOTTOM. The slot is
-               fixed because the screen is not: a face is 216px and a voice is
-               6px, and letting that difference move the list would shift the
-               rows under the band, change what is captured, change the kind,
-               change the height again — a loop the interface would never settle
-               out of. Reserved, it cannot. Anchored low, the screen always
-               meets the list's top edge whatever it is showing — and now that
-               the box is the first row, the selection really does sit directly
-               under it with nothing in between. --%>
-          <div class="mt-6 flex h-54 w-[32rem] items-end">
+          <%!-- THE SCREEN SITS BETWEEN THE HEADING AND THE LIST, at exactly the
+               size of what it is showing and no larger.
+
+               THE SLOT ALWAYS EXISTS, and carries an id, even for text where it
+               holds nothing and stands zero pixels tall. Not for layout — it
+               reserves no space — but because a sibling that comes and goes
+               unkeyed makes the patch match the wrong children and re-slot the
+               list below it. Re-inserting a scroller resets its scrollTop, and
+               the list would snap back to its first row every time a text
+               presence came round. Same node, moved, scrolled home. --%>
+          <div id="screen-slot" class="w-[32rem]">
             <div
               :if={@current && @current.kind != "text"}
               id={"screen-#{@captured}"}
@@ -102,9 +102,9 @@ defmodule PresencemediaWeb.PresenceLive do
               data-media={@current.media}
               data-kind={@current.kind}
               class={[
-                "screen relative w-[32rem] overflow-hidden",
+                "screen relative mt-6 w-[32rem] overflow-hidden",
                 @current.kind == "face" && "h-54 bg-black",
-                @current.kind == "voice" && "h-1.5 bg-secondary-500/30"
+                @current.kind == "voice" && "h-[3px] bg-secondary-500/30"
               ]}
             >
               <video
@@ -115,9 +115,16 @@ defmodule PresencemediaWeb.PresenceLive do
               >
               </video>
 
-              <%!-- At this thickness there is no room for a status line and
-                   none is needed: the row already said VOICE, so the only thing
-                   left to say is how far along. --%>
+              <%!-- THE COUNT, where the old recorder kept it: bottom left, over
+                   the picture, counting up. It is the one thing the frame
+                   cannot say for itself — how far into someone you are. --%>
+              <div :if={@current.kind == "face"} class="absolute bottom-4 left-8">
+                <span class="screen-time text-sm text-dark-400">0:00</span>
+              </div>
+
+              <%!-- At a hairline there is no room for a count and none is
+                   needed: the row already said VOICE, so the only thing left to
+                   say is how far along. --%>
               <div
                 :if={@current.kind == "voice"}
                 class="screen-fill h-full bg-secondary-500"
@@ -127,7 +134,7 @@ defmodule PresencemediaWeb.PresenceLive do
             </div>
           </div>
 
-          <div class="relative mt-4 w-[32rem]">
+          <div id="stream-slot" class="relative mt-8 w-[32rem]">
             <div
               id="stream-scroll"
               phx-hook="Stream"
@@ -148,19 +155,15 @@ defmodule PresencemediaWeb.PresenceLive do
                      fit one exactly. Two lines is the most a note gets; a
                      shorter one simply leaves room. --%>
                 <li :for={presence <- @presences} class="stream-item">
-                  <div class="presence-row h-30 w-[32rem] border border-light-200 p-[1.95rem] dark:border-dark-800">
-                    <p class="stream-line text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]">
+                  <div class="presence-row h-27 w-[32rem] border border-light-200 p-[1.95rem] dark:border-dark-800">
+                    <p class="stream-line text-md tracking-[0.14em]">
                       <span class={[
                         presence.heard && "text-light-900 dark:text-dark-100",
                         !presence.heard && "text-primary-600 dark:text-primary-500"
                       ]}>
                         {presence.by}
                       </span>
-                      <%!-- Sky is the label ink everywhere else in this app —
-                           SCOPED/UNSCOPED wears it, the brackets are drawn in
-                           it — and the kind is a label, not part of the
-                           sentence. --%>
-                      <span :if={presence.kind != "text"} class="text-sky-600 dark:text-sky-400">
+                      <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
                         {String.upcase(presence.kind)}
                       </span>
                       <span :if={presence.note} class="text-light-300 dark:text-dark-700">
@@ -175,7 +178,7 @@ defmodule PresencemediaWeb.PresenceLive do
             <%!-- THE BAND, brackets only. The cards carry their own edges now,
                  so a filled band over one would be a second rectangle on top of
                  a rectangle. Aiming is all that is left for it to do. --%>
-            <div class="band pointer-events-none absolute top-0 left-0 h-30 w-[32rem]"></div>
+            <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem]"></div>
           </div>
         </div>
       </div>
