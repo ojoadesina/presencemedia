@@ -11,14 +11,17 @@ const HEADER_TOP = 32; // 2rem of air above the header, per the design
 
 export const Bar = {
   mounted(this: { el: HTMLElement }) {
-    // The bar sits at top-[34%] with a -50% shift of its own. Every transform
-    // written here has to carry that shift along, or the bar jumps half its
-    // height the instant we touch it.
+    // ONLY THE DELTA GOES HERE, never the bar's own -50% centring shift.
+    // Tailwind v4 writes `-translate-y-1/2` to the `translate` PROPERTY, not to
+    // `transform`, and the two compose — `translate` is applied first, then
+    // `transform` on top. Repeating the -50% here therefore doubled it and sat
+    // the band half its own height above the row it was supposed to be framing.
+    // The centring belongs to the class; the travel belongs to this.
     let shift = 0;
 
     const apply = (px: number) => {
       shift = px;
-      this.el.style.transform = `translateY(calc(-50% + ${px}px))`;
+      this.el.style.transform = px === 0 ? "" : `translateY(${px}px)`;
     };
 
     // Measured from where it IS, not from where it started, so a resize or a

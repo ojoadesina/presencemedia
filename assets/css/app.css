@@ -709,15 +709,33 @@ html[data-theme="dark"] {
 /* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
    what the page's top BECOMES, so the mark and the strapline leave with the
    list rather than being covered by the thing arriving. They go faster than the
-   bar travels, so the space is already clear when it lands. */
+   bar travels, so the space is already clear when it lands.
+
+   VISIBILITY, NOT pointer-events, and that distinction is the whole fix.
+   `pointer-events: none` on a wrapper does NOT disable a child that sets
+   `pointer-events: auto` — and both of these wrap exactly such a child: the
+   mark's button and the scope toggle each opt back in. So a fully faded mark
+   was still swallowing clicks aimed at the panel over it, which is why pressing
+   a moment toggled the theme. `visibility: hidden` takes an element and its
+   whole subtree out of hit-testing with nothing able to opt back in.
+
+   The transition on visibility is deliberately stepped rather than eased: it
+   holds until the fade has finished on the way out, and drops instantly on the
+   way back, so neither direction is ever clickable-but-invisible. */
 #regions.is-open .mark-slot,
-#regions.is-open .lede {
+#regions.is-open .lede,
+.list-away .regions-scroll {
   opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s 220ms;
 }
 .mark-slot,
 .lede {
-  transition: opacity 220ms ease-out;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s;
 }
 
 /* THE LIST STANDS DOWN rather than leaving. Fading keeps the box, and the box is
@@ -728,11 +746,9 @@ html[data-theme="dark"] {
    Faster out than the bar's travel, so the two do not read as one movement: the
    list is getting out of the way, not being carried. */
 .regions-scroll {
-  transition: opacity 220ms ease-out;
-}
-.list-away .regions-scroll {
-  opacity: 0;
-  pointer-events: none;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s;
 }
 
 /* THE PANEL arrives after the bar has landed, not with it. Two things moving at
