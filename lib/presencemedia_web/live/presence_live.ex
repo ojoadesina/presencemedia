@@ -74,83 +74,90 @@ defmodule PresencemediaWeb.PresenceLive do
             </p>
           </div>
 
-          <div class="relative mt-5 w-[32rem]">
+          <%!-- THE SCREEN SITS BETWEEN THE HEADING AND THE LIST, in a slot of
+               fixed height with its contents pinned to the BOTTOM. The slot is
+               fixed because the screen is not: a face is 216px and a voice is
+               6px, and letting that difference move the list would shift the
+               rows under the band, change what is captured, change the kind,
+               change the height again — a loop the interface would never settle
+               out of. Reserved, it cannot. Anchored low, the screen always
+               meets the list's top edge whatever it is showing. --%>
+          <div class="mt-6 flex h-54 w-[32rem] items-end">
+            <div
+              :if={@current && @current.kind != "text"}
+              id={"screen-#{@captured}"}
+              phx-hook="Screen"
+              phx-update="ignore"
+              data-media={@current.media}
+              data-kind={@current.kind}
+              class={[
+                "screen relative w-[32rem] overflow-hidden",
+                @current.kind == "face" && "h-54 bg-black",
+                @current.kind == "voice" && "h-1.5 bg-secondary-500/30"
+              ]}
+            >
+              <video
+                :if={@current.kind == "face"}
+                class="screen-video absolute inset-0 h-full w-full object-cover"
+                playsinline
+                preload="none"
+              >
+              </video>
+
+              <%!-- At this thickness there is no room for a status line and
+                   none is needed: the row already said VOICE, so the only thing
+                   left to say is how far along. --%>
+              <div
+                :if={@current.kind == "voice"}
+                class="screen-fill h-full bg-secondary-500"
+                style="width: var(--played, 0%)"
+              >
+              </div>
+            </div>
+          </div>
+
+          <div class="relative mt-4 w-[32rem]">
             <div
               id="stream-scroll"
               phx-hook="Stream"
               phx-update="ignore"
-              class="stream-scroll h-[50vh] overflow-y-auto overscroll-contain"
+              class="stream-scroll h-[46vh] overflow-y-auto overscroll-contain"
             >
               <ul>
-                <%!-- ONE SENTENCE, THREE INKS. Creator, then the kind, then the
-                     words — the relationship row's own two-weight trick with a
-                     third weight in the middle, so the two lists are the same
-                     idea rather than two designs sharing a screen. --%>
-                <li
-                  :for={presence <- @presences}
-                  class="stream-item flex min-h-16 cursor-pointer items-center px-[1.95rem]"
-                >
-                  <p class="stream-line text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]">
-                    <span class={[
-                      presence.heard && "text-light-900 dark:text-dark-100",
-                      !presence.heard && "text-primary-600 dark:text-primary-500"
-                    ]}>
-                      {presence.by}
-                    </span>
-                    <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
-                      {String.upcase(presence.kind)}
-                    </span>
-                    <span :if={presence.note} class="text-light-300 dark:text-dark-700">
-                      {presence.note}
-                    </span>
-                  </p>
+                <%!-- THE ITEM IS THE BOX. A bordered rectangle with the sentence
+                     inside it — creator, then kind, then the words — at one size
+                     throughout, separated only by ink. No highlight behind the
+                     text: the box already does that job, and a second one would
+                     be saying it twice.
+
+                     Every card is the same height, which is what lets the band
+                     fit one exactly. Two lines is the most a note gets; a
+                     shorter one simply leaves room. --%>
+                <li :for={presence <- @presences} class="stream-item">
+                  <div class="presence-row h-30 w-[32rem] border border-light-200 p-[1.95rem] dark:border-dark-800">
+                    <p class="stream-line text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]">
+                      <span class={[
+                        presence.heard && "text-light-900 dark:text-dark-100",
+                        !presence.heard && "text-primary-600 dark:text-primary-500"
+                      ]}>
+                        {presence.by}
+                      </span>
+                      <span :if={presence.kind != "text"} class="text-light-500 dark:text-dark-500">
+                        {String.upcase(presence.kind)}
+                      </span>
+                      <span :if={presence.note} class="text-light-300 dark:text-dark-700">
+                        {presence.note}
+                      </span>
+                    </p>
+                  </div>
                 </li>
               </ul>
             </div>
 
-            <%!-- THE BAND, and beneath it the screen. Both are pinned to the
-                 same 34% the relationship list uses; the band never moves and
-                 the screen grows downward from it, so a face arriving does not
-                 shove the chosen line off its own place. --%>
-            <div class="pointer-events-none absolute top-[34%] left-0 w-[32rem] -translate-y-1/2">
-              <div class="focus-box relative flex h-16 items-center bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20">
-              </div>
-
-              <%!-- THE SCREEN IS AS BIG AS IT HAS CAUSE TO BE. Face takes the
-                   recorder's own measure; voice takes a strip, because there is
-                   nothing to look at and a tall black rectangle would pretend
-                   otherwise; text takes nothing at all. --%>
-              <div
-                :if={@current && @current.kind != "text"}
-                id={"screen-#{@captured}"}
-                phx-hook="Screen"
-                phx-update="ignore"
-                data-media={@current.media}
-                data-kind={@current.kind}
-                class={[
-                  "screen relative w-[32rem] overflow-hidden",
-                  @current.kind == "face" && "h-54 bg-black",
-                  @current.kind == "voice" && "h-1.5 bg-secondary-500/30"
-                ]}
-              >
-                <video
-                  :if={@current.kind == "face"}
-                  class="screen-video absolute inset-0 h-full w-full object-cover"
-                  playsinline
-                  preload="none"
-                >
-                </video>
-
-                <%!-- A strip that fills. At this thickness there is no room for
-                     a status line, and none is needed: the row already said
-                     VOICE, so the only thing left to say is how far along. --%>
-                <div
-                  :if={@current.kind == "voice"}
-                  class="screen-fill h-full bg-secondary-500"
-                  style="width: var(--played, 0%)"
-                >
-                </div>
-              </div>
+            <%!-- THE BAND, brackets only. The cards carry their own edges now,
+                 so a filled band over one would be a second rectangle on top of
+                 a rectangle. Aiming is all that is left for it to do. --%>
+            <div class="band pointer-events-none absolute top-[34%] left-0 h-30 w-[32rem] -translate-y-1/2">
             </div>
           </div>
         </div>

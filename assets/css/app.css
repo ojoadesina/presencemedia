@@ -460,7 +460,8 @@ html[data-theme="dark"] {
    arms are sized against the height they sit in. */
 .focus-box::before,
 .frame::before,
-.scope-box::before {
+.scope-box::before,
+.band::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -487,10 +488,16 @@ html[data-theme="dark"] {
   --ax: 14px;
   --ay: 14px;
 }
-/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. */
+/* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. The
+   band on /presence is taller but the same width, so it keeps the horizontal
+   arms and grows the vertical ones to match its own height. */
 .focus-box::before {
   --ax: 24px;
   --ay: 14px;
+}
+.band::before {
+  --ax: 24px;
+  --ay: 22px;
 }
 /* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
    the shortest and its weight the lightest — 3px rules around a 12px label
