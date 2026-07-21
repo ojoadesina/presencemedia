@@ -735,55 +735,37 @@ defmodule PresencemediaWeb.HomeLive do
               <%!-- Lead and trail are what let the first and last presence
                    REACH the box. --%>
               <ul class="pt-[calc(34%+2rem)] pb-[60%]">
-                <%!-- WHO, HOW LONG, AND WHEN — and the middle one is a line
-                     rather than a number. A second line of text would clutter
-                     the list; a filled block would read as the captured card
-                     and set the screen arguing with itself. A rule is neither:
-                     its LENGTH is the duration and its COLOUR is the kind, so
-                     one mark carries two facts and adds no furniture. --%>
+                <%!-- ONE SENTENCE, THREE VOICES. The row reads as a single
+                     continuous line — name, then what kind of presence it is,
+                     then the words that came with it — at one size, separated
+                     only by weight. That is the relationship row's own trick
+                     (MUM in full ink, SARAH faded beside it) carried down a
+                     level, so the two lists are the same idea rather than two
+                     designs that happen to share a screen.
+
+                     Pure text names no kind, because the words are already the
+                     whole of it and "TEXT" would be labelling the obvious. --%>
                 <li
                   :for={presence <- @current.presences}
-                  class={[
-                    "stream-item flex h-54 cursor-pointer items-center gap-5 px-[1.95rem]",
-                    "text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]",
-                    "transition-colors duration-200",
-                    presence.heard && "text-light-900 dark:text-dark-100",
-                    !presence.heard && "text-primary-600 dark:text-primary-500"
-                  ]}
+                  class="stream-item flex h-54 cursor-pointer items-center px-[1.95rem]"
                 >
-                  <span class="shrink-0 whitespace-nowrap">{presence.by}</span>
-
-                  <%!-- FORM CARRIES THE KIND, not colour — colour is already
-                       spoken for on this row, where terracotta means unheard.
-                       Two meanings on one channel is one too many.
-
-                       A voice is a continuous stream of sound, so it draws as
-                       an unbroken line. A face is frames, so it draws as ticks.
-                       The shapes describe what they stand for, which a colour
-                       cannot do without a legend. --%>
-                  <span
-                    :if={presence.rule}
-                    class={["stream-rule shrink-0", presence.kind == "face" && "is-face"]}
-                    style={"width: #{presence.rule}"}
-                  >
-                  </span>
-
-                  <%!-- TEXT HAS NO SHAPE TO STAND IN FOR IT, because the words
-                       ARE the presence — there is nothing to play and nothing
-                       to time. So the row shows them, faded at the end like
-                       every other overlong line here. A rule in their place
-                       would be hiding the one thing that could simply be
-                       read. --%>
-                  <span
-                    :if={presence.kind == "text"}
-                    class="stream-note min-w-0 flex-1 overflow-hidden text-sm leading-5 tracking-[0.14em] whitespace-nowrap text-light-500 dark:text-dark-500"
-                  >
-                    {presence.note}
-                  </span>
-
-                  <span class="ml-auto shrink-0 text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
-                    {presence.when}
-                  </span>
+                  <p class="stream-line text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]">
+                    <span class={[
+                      presence.heard && "text-light-900 dark:text-dark-100",
+                      !presence.heard && "text-primary-600 dark:text-primary-500"
+                    ]}>
+                      {presence.by}
+                    </span>
+                    <span
+                      :if={presence.kind != "text"}
+                      class="text-light-500 dark:text-dark-500"
+                    >
+                      {String.upcase(presence.kind)}
+                    </span>
+                    <span :if={presence.note} class="text-light-300 dark:text-dark-700">
+                      {presence.note}
+                    </span>
+                  </p>
                 </li>
               </ul>
             </div>
