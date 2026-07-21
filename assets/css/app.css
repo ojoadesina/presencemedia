@@ -779,6 +779,106 @@ html[data-theme="dark"] {
   }
 }
 
+/* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
+   The atomic unit, and later the chat row. Everything here is about the one
+   distinction that matters: a LIVE presence is happening and therefore has no
+   shape, while a LEFT one is over and therefore has all of one.
+
+   UNHEARD IS THE ONLY STATE IT CARRIES that a live presence cannot have — you
+   can miss a recording, and missing one should be visible from across the room.
+   It is terracotta, because terracotta is this surface's word for "look at
+   this", and it stops the moment you play it. Nothing marks a heard presence;
+   the absence of the call IS the mark. */
+.presence {
+  --wave-idle: var(--color-light-300);
+  --wave-lit: var(--color-primary-600);
+}
+[data-theme="dark"] .presence {
+  --wave-idle: var(--color-dark-700);
+  --wave-lit: var(--color-primary-500);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .presence {
+    --wave-idle: var(--color-dark-700);
+    --wave-lit: var(--color-primary-500);
+  }
+}
+/* Unheard raises the RESTING bars rather than adding a badge, so the row itself
+   is the notice and there is no second thing to look at. */
+.presence.is-unheard {
+  --wave-idle: color-mix(in srgb, var(--color-primary-600) 45%, transparent);
+}
+[data-theme="dark"] .presence.is-unheard,
+.presence.is-unheard:where(html:not([data-theme]) *) {
+  --wave-idle: color-mix(in srgb, var(--color-primary-500) 45%, transparent);
+}
+
+/* THE SHAPE. Two layers of identical bars, the lit one clipped to the playhead.
+   Recolouring seventy-two bars per frame would repaint the row constantly and
+   still move a bar at a time; clipping is continuous and costs one style
+   write. */
+.wave {
+  --played: 0%;
+}
+.wave-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.wave-layer span {
+  flex: 1;
+  min-height: 2px;
+  /* Square ends. A rounded bar is a chart; this is a recording. */
+  background: currentColor;
+}
+.wave-base {
+  color: var(--wave-idle);
+}
+.wave-lit {
+  color: var(--wave-lit);
+  clip-path: inset(0 calc(100% - var(--played)) 0 0);
+}
+/* Nothing until the peaks are real. An empty row for a moment is better than a
+   placeholder shape that has to be replaced by a different one. */
+.wave:not(.is-drawn) {
+  opacity: 0;
+}
+.wave {
+  transition: opacity 200ms ease-out;
+}
+
+/* THE PLAY CONTROL is a square that becomes a bar, which is the same shape
+   language as the bars beside it — no triangle, no circle, nothing borrowed
+   from a media player. */
+.presence-play-mark {
+  position: absolute;
+  inset: 0.5rem;
+  background: var(--wave-lit);
+  transition:
+    inset 180ms ease,
+    opacity 180ms ease;
+}
+.presence:not(.is-unheard) .presence-play-mark {
+  background: var(--wave-idle);
+}
+.presence.is-playing .presence-play-mark {
+  /* Narrower and taller while it runs: a thing in motion, not a thing at rest. */
+  inset: 0.35rem 0.75rem;
+  background: var(--wave-lit);
+}
+.presence-play:hover .presence-play-mark {
+  background: var(--wave-lit);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .presence-play-mark,
+  .wave {
+    transition: none;
+  }
+}
+
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:
    while the list moves a row is passing through the band and the two would sit
    on top of each other. The frame is the SETTLED choice made visible, so it

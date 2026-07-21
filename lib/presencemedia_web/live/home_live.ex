@@ -154,17 +154,62 @@ defmodule PresencemediaWeb.HomeLive do
     %{label: "TEAMMATE", name: "CHIDI", state: "absent", frame: "empty", media: nil}
   ]
 
-  # PAST MOMENTS. The same verified clips again, standing in as a history —
-  # every user gets a deterministic slice, so the panel is never empty and never
-  # shuffles between renders. This is the shape a stream will take later: a list
-  # of things that happened, newest first, each one playable.
+  # A LEFT PRESENCE is one someone recorded and left behind, as opposed to the
+  # live presence the frame carries. The two are not the same object and must
+  # not look alike: a live presence has no duration and no shape, which is why
+  # it breathes; a left one is FINISHED, so it has a beginning, an end and a
+  # length you can see. Shape is what a recording earns by being over.
+  #
+  # `from` is here from the start because this row becomes the chat row later —
+  # the only difference then is the order they are stacked in. `heard` is the
+  # one piece of state a left presence has that a live one cannot: you can miss
+  # it, and it should say so.
   @moment_pool [
-    %{kind: "voice", when: "TODAY 09:14", len: "0:09"},
-    %{kind: "face", when: "YESTERDAY 21:02", len: "0:37"},
-    %{kind: "voice", when: "YESTERDAY 08:40", len: "0:13"},
-    %{kind: "face", when: "TUESDAY 19:55", len: "0:35"},
-    %{kind: "voice", when: "MONDAY 12:31", len: "0:22"},
-    %{kind: "face", when: "LAST WEEK", len: "0:47"}
+    %{
+      kind: "voice",
+      when: "TODAY 09:14",
+      len: "0:09",
+      from: "them",
+      heard: false,
+      media:
+        "#{@commons}/4/4f/Simone_Giertz_introducing_herself.ogg/" <>
+          "Simone_Giertz_introducing_herself.ogg.mp3"
+    },
+    %{
+      kind: "voice",
+      when: "YESTERDAY 21:02",
+      len: "0:22",
+      from: "you",
+      heard: true,
+      media:
+        "#{@commons}/e/ed/Richard_Rogers_-_voice_-_en.ogg/Richard_Rogers_-_voice_-_en.ogg.mp3"
+    },
+    %{
+      kind: "voice",
+      when: "YESTERDAY 08:40",
+      len: "0:13",
+      from: "them",
+      heard: true,
+      media:
+        "#{@commons}/4/46/Dan_Barker_introducing_himself.ogg/" <>
+          "Dan_Barker_introducing_himself.ogg.mp3"
+    },
+    %{
+      kind: "voice",
+      when: "TUESDAY 19:55",
+      len: "0:18",
+      from: "them",
+      heard: true,
+      media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
+    },
+    %{
+      kind: "voice",
+      when: "MONDAY 12:31",
+      len: "0:09",
+      from: "you",
+      heard: true,
+      media: "#{@commons}/0/0a/Charles_Duke_Intro.ogg/Charles_Duke_Intro.ogg.mp3"
+    }
   ]
 
   @impl true
@@ -533,28 +578,18 @@ defmodule PresencemediaWeb.HomeLive do
               MOMENTS
             </p>
 
-            <%!-- The shape a stream will take: a list of things that happened,
-                 newest first. Each one is a row in the same measure and rhythm
-                 as the list behind it, so the panel reads as the same surface
-                 opened up rather than as a different screen. --%>
-            <ul class="mt-4 divide-y divide-light-200 dark:divide-dark-800">
-              <li
-                :for={moment <- @current.moments}
-                class="flex items-baseline gap-4 py-4 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
-              >
-                <span class={[
-                  "w-16 shrink-0 text-sm tracking-[0.18em]",
-                  moment.kind == "face" && "text-primary-600 dark:text-primary-500",
-                  moment.kind == "voice" && "text-light-500 dark:text-dark-500"
-                ]}>
-                  {String.upcase(moment.kind)}
-                </span>
-                <span class="flex-1">{moment.when}</span>
-                <span class="text-sm tracking-[0.18em] text-light-400 dark:text-dark-600">
-                  {moment.len}
-                </span>
-              </li>
-            </ul>
+            <%!-- A COLUMN OF LEFT PRESENCES. Oldest at the top for now, because
+                 this is the content page and it reads in creation order; the
+                 inner view will stack the same rows the other way up. Nothing
+                 about the row itself changes between the two, which is the
+                 point of building it as one thing. --%>
+            <div class="mt-2 divide-y divide-light-200 dark:divide-dark-800">
+              <.presence
+                :for={{moment, i} <- Enum.with_index(@current.moments)}
+                id={"presence-#{@selected}-#{i}"}
+                presence={moment}
+              />
+            </div>
           </div>
         </div>
       </div>

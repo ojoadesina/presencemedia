@@ -504,6 +504,100 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   @doc """
+  Renders a LEFT PRESENCE — one someone recorded and left behind.
+
+  This is the app's atomic unit and the reason the rest exists. It is also, on
+  purpose, the chat row: a conversation is a column of these, and the only thing
+  that changes between the two uses is which end new ones arrive at.
+
+  ## Left is not live
+
+  The frame in the list carries a LIVE presence: no duration, no shape, just
+  breathing, because you cannot see the length of something still happening. A
+  left presence is finished, so it has all three. Giving it a shape is not
+  decoration — it is the honest difference between the two, and the reason they
+  can never be confused for one another.
+
+  ## The shape is the recording
+
+  The waveform is decoded from the actual audio file, peak by peak, in
+  `waveform.ts`. Nothing here is generated to look plausible: two presences of
+  the same length look different because they ARE different, and that is the
+  whole point of drawing one at all.
+
+  ## Face slots into the same skeleton
+
+  The middle is a SHAPE REGION and nothing more. Voice fills it with peaks; face
+  will fill it with a still. Everything around it — who, when, how long, heard
+  or not, the play control, the fill that tracks position — is already
+  kind-agnostic and does not move when the middle changes.
+
+  ## Examples
+
+      <.presence presence={@moment} id="m-1" />
+  """
+  attr :id, :string, required: true
+  attr :presence, :map, required: true
+
+  def presence(assigns) do
+    ~H"""
+    <article
+      id={@id}
+      class={[
+        "presence group/presence py-5",
+        !@presence.heard && "is-unheard",
+        @presence.from == "you" && "is-mine"
+      ]}
+    >
+      <%!-- WHO and WHEN sit above rather than beside, so the shape below gets
+           the full measure. In a chat column this line is what turns a run of
+           rows into a conversation. --%>
+      <p class="flex items-baseline justify-between text-sm tracking-[0.18em]">
+        <span class={[
+          "presence-who",
+          @presence.from == "you" && "text-light-400 dark:text-dark-600",
+          @presence.from != "you" && "text-light-600 dark:text-dark-400"
+        ]}>
+          {(@presence.from == "you" && "YOU") || "THEM"}
+        </span>
+        <span class="text-light-400 dark:text-dark-600">{@presence.when}</span>
+      </p>
+
+      <div class="mt-3 flex items-center gap-4">
+        <%!-- A square, because everything that means "a thing" on this surface
+             is square, and a round button here would be the only widget in the
+             room. It carries no glyph until you need one: the fill IS the
+             feedback while it plays. --%>
+        <button
+          type="button"
+          class="presence-play relative size-8 shrink-0 cursor-pointer"
+          aria-label="Play"
+        >
+          <span class="presence-play-mark"></span>
+        </button>
+
+        <%!-- THE SHAPE REGION. Voice puts peaks here; face will put a still.
+             The hook writes the bars and drives --played as it goes. --%>
+        <div
+          id={"#{@id}-wave"}
+          phx-hook="Waveform"
+          phx-update="ignore"
+          data-media={@presence.media}
+          class="wave relative h-10 flex-1 cursor-pointer"
+        >
+          <div class="wave-layer wave-base"></div>
+          <div class="wave-layer wave-lit"></div>
+        </div>
+
+        <span class="presence-len w-10 shrink-0 text-right text-sm tracking-[0.18em] tabular-nums text-light-400 dark:text-dark-600">
+          {@presence.len}
+        </span>
+      </div>
+    </article>
+    """
+  end
+
+  @doc """
   Renders the mark: a head, face on, eyes open.
 
   It is the whole argument of the product in one shape — people are the primary
