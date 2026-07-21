@@ -22,9 +22,34 @@ defmodule Presencemedia.Fixtures do
   Every presence in the pool, newest last, each already carrying its creator.
   """
   def presences do
+    people = creators()
+
+    # THE HUE IS THE CREATOR'S, not the row's — taken from their position in the
+    # roster, so a person is one colour wherever they turn up.
+    #
+    # Hashing the name into a fixed set of buckets was the obvious thing and the
+    # wrong one: fourteen names into ten buckets is four collisions before you
+    # start, and in practice it gave seven colours for fourteen people.
+    #
+    # Spreading them EVENLY over the circle was the second wrong one. It gives
+    # every creator a distinct hue and hands consecutive ones consecutive
+    # degrees, so the first three neighbours in the list came out red, red-orange
+    # and orange — three names apart in the roster is 77 degrees apart on the
+    # wheel and reads as the same colour. Neighbours are exactly the pairs that
+    # have to be told apart.
+    #
+    # The golden angle instead: 137.5 degrees between consecutive creators, so
+    # anyone standing next to anyone else is most of the wheel away, and the set
+    # as a whole still covers it without repeating. It is what phyllotaxis does
+    # with leaves for the same reason — never shade the one below you.
+    hues =
+      people
+      |> Enum.with_index()
+      |> Map.new(fn {who, i} -> {who, i |> Kernel.*(137.508) |> round() |> Integer.mod(360)} end)
+
     pool()
-    |> Enum.zip(creators())
-    |> Enum.map(fn {presence, by} -> Map.put(presence, :by, by) end)
+    |> Enum.zip(people)
+    |> Enum.map(fn {presence, by} -> Map.merge(presence, %{by: by, hue: hues[by]}) end)
   end
 
   # Real names on real clips. A presence belongs to whoever left it, so the

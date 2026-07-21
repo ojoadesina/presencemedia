@@ -887,6 +887,41 @@ html:not([data-theme]) .bar.is-picked .focus-box {
    No left padding: the card is the full 32rem measure, so an inset pushed it
    past the container's right edge and broke the one edge the screen aligns to.
    Taller than the card it holds, so cards have air between them. */
+/* ── THE WASHES ──────────────────────────────────────────────────────────────
+   The old recorder filled its layers rather than outlining them — bg-primary-100
+   over bg-secondary-500/60 — and that is the idea borrowed here: a presence is a
+   filled field, not a ruled box.
+
+   One fill for all of them would be a table with the lines rubbed out, so each
+   creator gets their own. The hue is the ONLY thing that varies: lightness and
+   chroma are fixed, so fourteen presences read as fourteen cards of one family
+   rather than as fourteen levels of importance. Assigned from a hash of the
+   name, so a creator keeps their colour wherever they appear.
+
+   The hue itself arrives from the server as --wash-h, spread evenly over the
+   whole circle by how many creators there are, so the palette grows with the
+   roster instead of running out of buckets and repeating. */
+#presence-page .presence-row {
+  background-color: oklch(0.958 0.024 var(--wash-h));
+}
+[data-theme="dark"] #presence-page .presence-row,
+html:not([data-theme]) #presence-page .presence-row {
+  background-color: oklch(0.185 0.03 var(--wash-h));
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) #presence-page .presence-row {
+    background-color: oklch(0.958 0.024 var(--wash-h));
+  }
+}
+
+/* THE CHOSEN ONE DROPS ITS OWN COLOUR. The band lays the relationship list's
+   wash over whatever has arrived under it, and two washes on one card is mud —
+   so the captured row gives its hue up for as long as it is the one being
+   watched, and takes it back on the way out. */
+#presence-page .stream-item.is-captured .presence-row {
+  background-color: transparent;
+}
+
 #panel .stream-item {
   display: flex;
   height: 15.5rem;

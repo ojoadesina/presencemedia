@@ -80,18 +80,21 @@ defmodule PresencemediaWeb.PresenceLive do
              the device only moved the empty page to the bottom; given the rest
              of the height it becomes rows instead. --%>
         <div class="flex h-full flex-col pt-4">
-          <%!-- THE SCREEN IS THE TOP OF THE PAGE, at exactly the size of what
-               it is showing and no larger. Nothing is titled: a page with one
-               thing on it does not need to announce which thing.
+          <%!-- THE SCREEN IS THE TOP OF THE PAGE, and it keeps its room whether
+               or not there is a face in it. Sizing it to its contents was
+               honest and wrong: scrolling a list is one continuous act, and a
+               page that rearranges itself under every third row turns that act
+               into a series of interruptions. Held open, the list below never
+               moves and the only thing that changes is what is in the screen —
+               which is the only thing that should.
 
-               THE SLOT ALWAYS EXISTS, and carries an id, even for text where it
-               holds nothing and stands zero pixels tall. Not for layout — it
-               reserves no space — but because a sibling that comes and goes
-               unkeyed makes the patch match the wrong children and re-slot the
-               list below it. Re-inserting a scroller resets its scrollTop, and
-               the list would snap back to its first row every time a text
-               presence came round. Same node, moved, scrolled home. --%>
-          <div id="screen-slot" class="w-[32rem]">
+               A voice therefore sits in the MIDDLE of that room rather than at
+               the top of it. Centred, the hairline is a thing placed in a space;
+               pinned high, it would read as a small thing in a big empty box.
+
+               Nothing is titled: a page with one thing on it does not need to
+               announce which thing. --%>
+          <div id="screen-slot" class="h-54 w-[32rem]">
             <div
               :if={@current && @current.kind != "text"}
               id={"screen-#{@captured}"}
@@ -99,11 +102,14 @@ defmodule PresencemediaWeb.PresenceLive do
               phx-update="ignore"
               data-media={@current.media}
               data-kind={@current.kind}
-              class="screen relative mt-4 w-[32rem]"
+              class="screen relative flex h-full w-[32rem] flex-col justify-center"
             >
               <%!-- A FACE. Black, the recorder's own measure, with the count
                    over the picture bottom left where the old one kept it. --%>
-              <div :if={@current.kind == "face"} class="relative h-54 w-full overflow-hidden bg-black">
+              <div
+                :if={@current.kind == "face"}
+                class="relative h-full w-full overflow-hidden bg-black"
+              >
                 <video
                   class="screen-video absolute inset-0 h-full w-full object-cover"
                   playsinline
@@ -118,12 +124,16 @@ defmodule PresencemediaWeb.PresenceLive do
               <%!-- A VOICE. A hairline, and the count below it at the left —
                    there is no picture to lay it over, so it sits under the bar
                    on the same line the list starts from. --%>
-              <div :if={@current.kind == "voice"}>
+              <div :if={@current.kind == "voice"} class="relative w-full">
                 <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
                   <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)">
                   </div>
                 </div>
-                <span class="screen-time mt-2 block text-sm text-light-500 dark:text-dark-500">
+                <%!-- ABSOLUTE, so the count hangs off the bar rather than being
+                     centred along with it. In flow it made the pair the thing
+                     being centred, which put the bar itself half a line high —
+                     and the bar is what the eye is actually looking for. --%>
+                <span class="screen-time absolute top-3 left-0 text-sm text-light-500 dark:text-dark-500">
                   0:00
                 </span>
               </div>
@@ -139,8 +149,10 @@ defmodule PresencemediaWeb.PresenceLive do
               class="stream-scroll h-full overflow-y-auto overscroll-contain"
             >
               <%!-- Gapped, so each presence is its own object rather than one
-                   ruled sheet. The gap is smaller than the border is quiet. --%>
-              <ul class="space-y-3">
+                   ruled sheet — and gapped generously, because a filled card
+                   needs more room around it than an outlined one did to stop
+                   the column reading as a single striped block. --%>
+              <ul class="space-y-5">
                 <%!-- THE ITEM IS THE BOX. A bordered rectangle with the sentence
                      inside it — creator, then kind, then the words — at one size
                      throughout, separated only by ink. No highlight behind the
@@ -150,8 +162,16 @@ defmodule PresencemediaWeb.PresenceLive do
                      Every card is the same height, which is what lets the band
                      fit one exactly. Two lines is the most a note gets; a
                      shorter one simply leaves room. --%>
+                <%!-- No border anywhere. The wash is the edge — the recorder
+                     filled its layers rather than outlining them, and a fill
+                     that stops is a stronger boundary than a line drawn round
+                     nothing. The hue comes from the creator's name, so a person
+                     keeps their colour wherever they turn up. --%>
                 <li :for={presence <- @presences} class="stream-item">
-                  <div class="presence-row h-27 w-[32rem] border border-light-200 p-[1.95rem] dark:border-dark-800">
+                  <div
+                    class="presence-row h-27 w-[32rem] p-[1.95rem]"
+                    style={"--wash-h: #{presence.hue}"}
+                  >
                     <p class="stream-line text-md tracking-[0.14em]">
                       <span class={[
                         "font-medium",
