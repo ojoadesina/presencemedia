@@ -27,6 +27,24 @@ export const Stream = {
     let snaps = 0;
 
     const rowHeight = () => items[0].getBoundingClientRect().height;
+
+    // THE LEAD AND TRAIL ARE MEASURED, not written in the markup, because they
+    // cannot be written there: the box sits at 34% of the scroller's HEIGHT,
+    // and a percentage padding resolves against WIDTH. Any figure hard-coded in
+    // the template is therefore right at exactly one viewport size and wrong
+    // everywhere else — which is why the first row sat 31px above the band and
+    // the snap then tried to scroll up from zero to fix it.
+    //
+    // Computed here, the first row lands ON the band at rest and the last one
+    // can still reach it.
+    const lead = () => {
+      const list = scroll.querySelector<HTMLElement>("ul");
+      if (!list) return;
+      const h = scroll.clientHeight;
+      const half = rowHeight() / 2;
+      list.style.paddingTop = `${Math.max(0, h * 0.34 - half)}px`;
+      list.style.paddingBottom = `${Math.max(0, h * 0.66 - half)}px`;
+    };
     const bandCentre = () => {
       const r = scroll.getBoundingClientRect();
       // The box sits at 34% of the list, not its middle — the same third the
@@ -50,7 +68,12 @@ export const Stream = {
     // Reported only on change: a settle that lands on the presence already
     // captured is not news, and re-sending it would rebuild the card and
     // restart whatever was playing in it.
-    let reported: number | null = null;
+    // Starts UNDEFINED rather than null, and that distinction is load-bearing.
+    // With null as the initial value, the first `report(null)` — which is what a
+    // settle sends when nothing is in reach — matched and returned early, so the
+    // server was never told and kept the default capture it had been given at
+    // mount. A box holding a presence the hook had already released.
+    let reported: number | null | undefined = undefined;
     const report = (index: number | null) => {
       if (index === reported) return;
       reported = index;
@@ -59,6 +82,7 @@ export const Stream = {
     };
 
     const settle = () => {
+      lead();
       scroll.classList.remove("is-scrolling");
       clear();
       const near = nearest();
@@ -72,16 +96,36 @@ export const Stream = {
       }
 
       // In reach but off-centre — draw it in, and settle again when it lands.
+      //
+      // A SCROLLER AT ITS END CANNOT MOVE, and then no scroll event arrives to
+      // settle again with — so the retry loop, which is driven entirely by that
+      // event, simply stops and nothing is ever captured. That is exactly what
+      // happened at the top of this list: the first row sits 31px above the
+      // band, the snap asks to scroll up from zero, nothing moves, and the box
+      // stayed empty forever. Watch for the scroll that did not happen and take
+      // the row anyway.
       if (Math.abs(near.delta) > 1 && snaps < 3) {
+        const before = scroll.scrollTop;
         snaps++;
         scroll.scrollBy({ top: near.delta, behavior: "smooth" });
+        window.setTimeout(() => {
+          if (scroll.scrollTop === before) {
+            snaps = 0;
+            take(near.el);
+          }
+        }, 200);
         return;
       }
 
       snaps = 0;
-      near.el.classList.add("is-captured");
+      take(near.el);
+    };
+
+    const take = (el: HTMLElement) => {
+      clear();
+      el.classList.add("is-captured");
       scroll.classList.add("has-capture");
-      report(items.indexOf(near.el));
+      report(items.indexOf(el));
     };
 
     scroll.addEventListener(
@@ -106,6 +150,12 @@ export const Stream = {
     );
 
     window.addEventListener("resize", settle);
-    settle();
+
+    // AFTER LAYOUT, not during mount. Every row now holds a card, and a card has
+    // an icon in it — so at mount time the rows can still measure zero, which
+    // makes rowHeight() zero, which makes every row further than one row away,
+    // which releases the capture and then never runs again because nothing
+    // scrolls. Two frames is enough for the rows to have a size to compare.
+    requestAnimationFrame(() => requestAnimationFrame(settle));
   },
 };

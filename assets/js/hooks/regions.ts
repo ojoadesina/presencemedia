@@ -216,17 +216,36 @@ export const Regions = {
       // In reach but off-centre — draw it in, and settle again when it lands.
       // No media yet: the row is still travelling, and a clip that started here
       // would be cut off by the next settle a few hundred milliseconds later.
+      //
+      // A SCROLLER AT ITS END CANNOT MOVE, and then no scroll event arrives to
+      // settle again with — so this retry, which is driven entirely by that
+      // event, stops and nothing is ever selected. It does not bite here today
+      // only because the lead padding leaves the band out of reach at rest; the
+      // presence stream has the same code and different padding, and there it
+      // hung the box empty forever. Watch for the scroll that did not happen.
       if (Math.abs(near.delta) > 1 && snaps < 3) {
+        const before = scroll.scrollTop;
         snaps++;
         scroll.scrollBy({ top: near.delta, behavior: "smooth" });
+        window.setTimeout(() => {
+          if (scroll.scrollTop === before) {
+            snaps = 0;
+            take(near.el);
+          }
+        }, 200);
         return;
       }
 
       snaps = 0;
-      near.el.classList.add("is-focused");
+      take(near.el);
+    };
+
+    const take = (el: HTMLElement) => {
+      clear();
+      el.classList.add("is-focused");
       scroll.classList.add("has-selection");
-      showFrame(near.el);
-      report(items.indexOf(near.el));
+      showFrame(el);
+      report(items.indexOf(el));
     };
 
     scroll.addEventListener(

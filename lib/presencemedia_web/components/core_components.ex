@@ -506,70 +506,100 @@ defmodule PresencemediaWeb.CoreComponents do
   @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
-  ## The old recorder's three layers, run backwards
+  Two variants of one object, and which you get depends on where it is.
 
-  The structure is the recorder's, unchanged: a screen underneath, and over it a
-  cover, an audio layer and a video layer, each trailing panel 95% wide so the
-  next always peeks. There, sliding armed a stream. Here it uncovers one — the
-  gesture that reveals the media is the gesture that starts it, which is the
-  same invention read in reverse.
+  ## `:card` — waiting in the list
 
-  THE LAYERS ARE NOT DECORATION. The audio layer is a translucent wash over the
-  screen, and that is the point of it: voice has nothing to look at, so what you
-  land on is a tinted pane rather than a picture. Face has something to look at,
-  so the system carries you one layer further and the pane slides off the video.
-  Collapsing the two into one cover loses exactly that distinction.
+  The recorder's cover, and only that: who left it, when, how long, and the note
+  they attached. It does not swipe. There is nothing behind it to reach, and a
+  scroller that scrolls nowhere is a promise the interface cannot keep.
 
-  A voice presence therefore has no video layer at all, rather than an empty
-  one — there is nothing behind it to reach.
+  ## `:open` — captured by the box
 
-  ## The note
+  The cover is GONE, not slid aside, and the media plays the moment it arrives.
+  Asking for a swipe here was friction dressed as an interaction: the box exists
+  to show more than the row could, so making you work for it is the box failing
+  at its one job. Worse, it hid the media twice — once in the list and again
+  behind a card — when the whole point of scrolling something into the box is
+  that you want it.
 
-  This is not a recorder, so the field is not an input. It is a NOTE: the words
-  someone attached to what they recorded. A voice can carry one and so can a
-  face.
+  So `:open` keeps two layers. The first plays: a voice fills it with the sage
+  pane and its status line, a face fills it with the picture. The second is
+  deliberately empty, waiting for whatever earns it.
 
   ## Examples
 
-      <.presence presence={@moment} by="SARAH" id="p-1" />
+      <.presence presence={@presence} by="SARAH" id="p-1" />
+      <.presence presence={@presence} by="SARAH" id="p-1" variant={:open} />
   """
   attr :id, :string, required: true
   attr :presence, :map, required: true
   attr :by, :string, required: true
+  attr :variant, :atom, values: [:card, :open], default: :card
 
   def presence(assigns) do
     ~H"""
     <div
       id={@id}
-      phx-hook="Presence"
-      phx-update="ignore"
+      phx-hook={@variant == :open && "Presence"}
       data-media={@presence.media}
       data-kind={@presence.kind}
-      class={["presence relative h-54 w-[32rem] shrink-0", !@presence.heard && "is-unheard"]}
+      class={[
+        "presence relative h-54 w-[32rem] shrink-0",
+        !@presence.heard && "is-unheard"
+      ]}
     >
-      <%!-- THE SCREEN, underneath and always there. --%>
-      <div class="presence-entry absolute inset-0 w-full overflow-hidden">
-        <div class="relative h-full w-full bg-black">
-          <video
-            class="presence-video absolute inset-0 hidden h-full w-full object-cover"
-            playsinline
-            preload="none"
-          >
-          </video>
+      <%= if @variant == :open do %>
+        <%!-- THE SCREEN, and nothing over it. --%>
+        <div class="presence-entry absolute inset-0 w-full overflow-hidden">
+          <div class="relative h-full w-full bg-black">
+            <video
+              class="presence-video absolute inset-0 hidden h-full w-full object-cover"
+              playsinline
+              preload="none"
+            >
+            </video>
 
-          <div class="absolute bottom-4 left-8 flex flex-col space-y-4">
-            <p class="presence-status text-sm tracking-[0.14em] text-sky-400"></p>
-            <span class="presence-elapsed text-sm tracking-[0.14em] text-neutral-400">0:00</span>
+            <div class="absolute bottom-4 left-8 flex flex-col space-y-4">
+              <p class="presence-status text-sm tracking-[0.14em] text-sky-400"></p>
+              <span class="presence-elapsed text-sm tracking-[0.14em] text-neutral-400">0:00</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <%!-- THE COVER. --%>
-      <div class="presence-layer no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
-        <div class="presence-cover relative h-full w-full shrink-0 snap-start bg-primary-100 transition-colors duration-200 dark:bg-primary-950">
+        <div class="presence-layer no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
+          <%!-- LAYER ONE PLAYS. A voice has nothing to look at, so it gets the
+               sage pane over the screen and the status line carries the message;
+               a face has something to look at, so this layer stays out of its
+               way entirely. --%>
+          <div class="presence-stage h-full w-full shrink-0 snap-start">
+            <div
+              :if={@presence.kind != "face"}
+              class="flex h-full w-full items-end bg-secondary-500/60 px-8 pb-16"
+            >
+              <%!-- A TEXT PRESENCE HAS NOTHING TO PLAY, so the stage shows the
+                   one thing it does have. Without this the box opened onto a
+                   black rectangle and a clock that never moved — a dead end
+                   reached by scrolling towards it. --%>
+              <p
+                :if={@presence.kind == "text"}
+                class="presence-note line-clamp-4 text-sm leading-6 tracking-[0.14em] text-light-50"
+              >
+                {@presence.note}
+              </p>
+            </div>
+          </div>
+
+          <%!-- LAYER TWO IS EMPTY ON PURPOSE, held for whatever earns it. It is
+               still 95% wide, so the fact that there IS somewhere to go stays
+               visible without announcing what. --%>
+          <div class="presence-reserved w-[95%] shrink-0 snap-end"></div>
+        </div>
+      <% else %>
+        <%!-- THE COVER, at rest. No arrow: nothing behind it to reach. --%>
+        <div class="presence-cover relative h-full w-full bg-primary-100 dark:bg-primary-950">
           <div class="relative flex h-full w-full flex-col space-y-4 px-4 py-4">
             <div class="flex items-start justify-between">
-              <%!-- Kept from the original, job still undecided. --%>
               <button
                 type="button"
                 class="presence-plus cursor-pointer text-primary-500 transition hover:text-primary-600"
@@ -591,17 +621,6 @@ defmodule PresencemediaWeb.CoreComponents do
 
             <div class="flex-1"></div>
 
-            <%!-- No arrow on a text presence: there is nothing behind it to
-                 swipe to, and an instruction that leads nowhere is worse than
-                 none. --%>
-            <div>
-              <span :if={@presence.kind != "text"} class="presence-hint text-lg text-neutral-400">
-                →
-              </span>
-            </div>
-
-            <%!-- THE NOTE — words attached to the recording, not a field to fill
-                 in. This is not a recorder. --%>
             <p class={[
               "presence-note text-sm leading-5 tracking-[0.14em] text-primary-700 dark:text-primary-300",
               @presence.kind == "text" && "line-clamp-4"
@@ -610,30 +629,7 @@ defmodule PresencemediaWeb.CoreComponents do
             </p>
           </div>
         </div>
-
-        <%!-- A TEXT PRESENCE HAS NO LAYERS BENEATH IT. The words are the whole
-             of it — nothing plays, so nothing is uncovered, and the cover has
-             no trailing panel to slide towards. --%>
-        <div :if={@presence.kind != "text"} class="presence-audio-trigger w-[95%] shrink-0 snap-end">
-          <div class="presence-inner no-scrollbar relative flex h-full snap-x snap-mandatory overflow-x-auto">
-            <div class="presence-audio w-full shrink-0 snap-start">
-              <div class="h-full w-full bg-secondary-500/60">
-                <div class="absolute bottom-20 px-2">
-                  <span :if={@presence.kind == "face"} class="text-lg text-neutral-300">→</span>
-                </div>
-              </div>
-            </div>
-            <%!-- No video layer for a voice: there is nothing behind it to
-                 reach, and an empty panel would invite a swipe that arrives
-                 nowhere. --%>
-            <div
-              :if={@presence.kind == "face"}
-              class="presence-video-trigger w-[95%] shrink-0 snap-end"
-            >
-            </div>
-          </div>
-        </div>
-      </div>
+      <% end %>
     </div>
     """
   end

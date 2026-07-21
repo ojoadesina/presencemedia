@@ -732,40 +732,22 @@ defmodule PresencemediaWeb.HomeLive do
               phx-update="ignore"
               class="stream-scroll h-full overflow-y-auto overscroll-contain"
             >
-              <%!-- Lead and trail are what let the first and last presence
-                   REACH the box. --%>
-              <ul class="pt-[calc(34%+2rem)] pb-[60%]">
-                <%!-- ONE SENTENCE, THREE VOICES. The row reads as a single
-                     continuous line — name, then what kind of presence it is,
-                     then the words that came with it — at one size, separated
-                     only by weight. That is the relationship row's own trick
-                     (MUM in full ink, SARAH faded beside it) carried down a
-                     level, so the two lists are the same idea rather than two
-                     designs that happen to share a screen.
+              <%!-- Lead and trail are set by the hook, not here: the box sits
+                   at 34% of the scroller's HEIGHT and a percentage padding
+                   resolves against WIDTH, so any figure written here is right
+                   at one viewport size and wrong at every other. --%>
+              <ul>
+                <%!-- EVERY ITEM IS A CARD NOW. The row used to be a sentence
+                     and the box held the card; that made the media something
+                     you had to dig for twice. The card is the resting state,
+                     the box is where it plays, and nothing is hidden on the way
+                     between them.
 
-                     Pure text names no kind, because the words are already the
-                     whole of it and "TEXT" would be labelling the obvious. --%>
-                <li
-                  :for={presence <- @current.presences}
-                  class="stream-item flex h-54 cursor-pointer items-center px-[1.95rem]"
-                >
-                  <p class="stream-line text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em]">
-                    <span class={[
-                      presence.heard && "text-light-900 dark:text-dark-100",
-                      !presence.heard && "text-primary-600 dark:text-primary-500"
-                    ]}>
-                      {presence.by}
-                    </span>
-                    <span
-                      :if={presence.kind != "text"}
-                      class="text-light-500 dark:text-dark-500"
-                    >
-                      {String.upcase(presence.kind)}
-                    </span>
-                    <span :if={presence.note} class="text-light-300 dark:text-dark-700">
-                      {presence.note}
-                    </span>
-                  </p>
+                     A card in the list does NOT swipe: there is nothing behind
+                     it to reach, and a scroller that scrolls nowhere is a
+                     promise the interface cannot keep. --%>
+                <li :for={{presence, i} <- Enum.with_index(@current.presences)} class="stream-item">
+                  <.presence id={"card-#{@selected}-#{i}"} presence={presence} by={presence.by} />
                 </li>
               </ul>
             </div>
@@ -781,6 +763,7 @@ defmodule PresencemediaWeb.HomeLive do
                 id={"captured-#{@selected}-#{@captured}"}
                 presence={Enum.at(@current.presences, @captured)}
                 by={Enum.at(@current.presences, @captured).by}
+                variant={:open}
               />
             </div>
           </div>

@@ -1,29 +1,31 @@
-// A LEFT PRESENCE.
+// A CAPTURED PRESENCE.
 //
-// The recorder's transport, run backwards. There, sliding a layer aside ARMED a
-// stream; here it UNCOVERS one — the gesture that reveals the media is the
-// gesture that starts it. Same invention, read in reverse.
+// It plays the moment it arrives. Asking for a swipe first was friction dressed
+// as an interaction: the box exists to show more than the row could, so making
+// you work for it is the box failing at its one job — and it hid the media
+// twice over, once in the list and again behind a card, when scrolling
+// something into the box is already the act of saying you want it.
 //
-// scrollend rather than scroll, and a threshold rather than a position, both
-// taken from the original: a swipe is judged once it has SETTLED, so a finger
-// dragged halfway and released does not start anything.
-const THRESHOLD = 0.95 * 0.8;
-
+// The swipe is still there, but it now leads to an empty layer held for later.
+// Playback does not depend on it and does not stop for it.
 export const Presence = {
   mounted(this: { el: HTMLElement }) {
     const el = this.el;
     const url = el.dataset.media;
     const kind = el.dataset.kind || "voice";
 
-    const layer = el.querySelector<HTMLElement>(".presence-layer");
-    const inner = el.querySelector<HTMLElement>(".presence-inner");
     const status = el.querySelector<HTMLElement>(".presence-status");
     const elapsed = el.querySelector<HTMLElement>(".presence-elapsed");
     const video = el.querySelector<HTMLVideoElement>(".presence-video");
-    if (!url || !layer) return;
+
+    // A text presence has nothing to play and says so by carrying no media.
+    if (!url) {
+      if (status) status.textContent = "";
+      return;
+    }
 
     // Voice plays through an Audio element and leaves the screen dark, because
-    // there is nothing to look at; face plays in the screen itself.
+    // there is nothing to look at; a face plays in the screen itself.
     const media: HTMLMediaElement = kind === "face" && video ? video : new Audio();
     if (media !== video) media.preload = "none";
 
@@ -36,65 +38,32 @@ export const Presence = {
       raf = requestAnimationFrame(tick);
     };
 
-    // The original held a flag for 500ms while it moved a layer itself, so its
-    // own scroll would not be read back as the user's. Same problem here, same
-    // answer: carrying you to the video layer must not look like you asked.
-    let selfScrolling = false;
+    media.setAttribute("src", url);
+    if (video && kind === "face") video.classList.remove("hidden");
+    if (status) status.textContent = kind === "face" ? "playing face" : "playing voice";
 
-    const play = () => {
-      if (!media.getAttribute("src")) media.setAttribute("src", url);
-      media.play().catch(() => {});
-      el.classList.add("is-playing");
-      // Heard is not a thing you undo. Once played, it stops asking.
-      el.classList.remove("is-unheard");
-      if (status) status.textContent = kind === "face" ? "playing face" : "playing voice";
-      if (video && kind === "face") video.classList.remove("hidden");
+    // Autoplay with sound needs a user activation. Reaching a captured presence
+    // takes several clicks, so by here there always is one — but a refusal is
+    // the browser's policy rather than a fault, and must not throw.
+    media
+      .play()
+      .then(() => {
+        el.classList.add("is-playing");
+        // Heard is not a thing you undo. Once played, it stops asking.
+        el.classList.remove("is-unheard");
+      })
+      .catch(() => {
+        if (status) status.textContent = "";
+      });
 
-      // A face has something to look at, so it is carried one layer further and
-      // the pane slides off the picture. A voice stays on the tinted pane,
-      // which is the whole reason that layer exists.
-      if (kind === "face" && inner) {
-        selfScrolling = true;
-        inner.scrollTo({ left: inner.scrollWidth, behavior: "smooth" });
-        setTimeout(() => (selfScrolling = false), 500);
-      }
-
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(tick);
-    };
-
-    const pause = () => {
-      media.pause();
-      el.classList.remove("is-playing");
-      if (status) status.textContent = "";
-      cancelAnimationFrame(raf);
-    };
-
-    layer.addEventListener("scrollend", () => {
-      const open = layer.scrollLeft > layer.clientWidth * THRESHOLD;
-      if (open && media.paused) play();
-      else if (!open && !media.paused) pause();
-    });
-
-    // Sliding the inner layer back by hand takes the picture away without
-    // stopping the sound — the same clip, heard rather than watched.
-    inner?.addEventListener("scrollend", () => {
-      if (selfScrolling || kind !== "face" || !video) return;
-      const onVideo = inner.scrollLeft > inner.clientWidth * THRESHOLD;
-      video.classList.toggle("hidden", !onVideo);
-      if (status) status.textContent = onVideo ? "playing face" : "playing voice";
-    });
+    raf = requestAnimationFrame(tick);
 
     media.addEventListener("ended", () => {
-      pause();
+      el.classList.remove("is-playing");
+      if (status) status.textContent = "";
       if (elapsed) elapsed.textContent = clock(0);
       if (video) video.classList.add("hidden");
-      // A finished presence goes back to being a card rather than sitting open
-      // on a screen with nothing on it.
-      selfScrolling = true;
-      inner?.scrollTo({ left: 0, behavior: "smooth" });
-      layer.scrollTo({ left: 0, behavior: "smooth" });
-      setTimeout(() => (selfScrolling = false), 500);
+      cancelAnimationFrame(raf);
     });
 
     this.cleanup = () => {
@@ -104,6 +73,9 @@ export const Presence = {
     };
   },
 
+  // The captured card's id carries the captured index, so scrolling to another
+  // presence destroys this one outright. Tearing the media down here is what
+  // stops a clip playing on under whatever replaced it.
   destroyed(this: { cleanup?: () => void }) {
     this.cleanup?.();
   },

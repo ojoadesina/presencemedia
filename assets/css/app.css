@@ -837,33 +837,19 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   display: none;
 }
 
-/* TWO LINES, THEN IT FADES. Exactly two lines tall always, so a short presence
-   simply leaves the second empty and nothing appears to be cut.
+/* The captured card hands its place to the box, which is holding the same
+   presence with its cover off. Leaving it visible underneath would show the
+   thing twice, once shut and once open. Its neighbours stay. */
+/* NO LEFT PADDING. The card is the full 32rem measure, so an inset here pushed
+   it past the container's right edge and broke the one edge the whole screen is
+   aligned to. The row's job is vertical rhythm only.
 
-   The fade takes two mask layers because one cannot do it: a vertical gradient
-   would dim the whole second line evenly, and a horizontal one would dim the
-   first line too. Layer one is opaque across the top half and transparent
-   below; layer two fades to the right across the whole box. Added together, the
-   first line stays untouched and only the second runs out — which is what a
-   sentence continuing past its room actually looks like. */
-.stream-line {
-  --stream-lh: 1.6em;
-  line-height: var(--stream-lh);
-  height: calc(var(--stream-lh) * 2);
-  overflow: hidden;
-  mask-image:
-    linear-gradient(to bottom, #000 0 50%, transparent 50%),
-    linear-gradient(to right, #000 calc(100% - 5rem), transparent 100%);
-  mask-composite: add;
-  -webkit-mask-image:
-    linear-gradient(to bottom, #000 0 50%, transparent 50%),
-    linear-gradient(to right, #000 calc(100% - 5rem), transparent 100%);
-  -webkit-mask-composite: source-over;
-}
-
-/* The captured row hands its place to the box: the card covers it, so leaving
-   the name showing underneath would print it twice. Its neighbours stay. */
+   Taller than the card it holds, so cards have air between them rather than
+   stacking flush and reading as one block. */
 .stream-item {
+  display: flex;
+  height: 15.5rem;
+  align-items: center;
   transition: opacity 200ms ease-out;
 }
 .stream-item.is-captured {
