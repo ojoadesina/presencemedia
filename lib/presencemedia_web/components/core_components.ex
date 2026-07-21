@@ -506,49 +506,105 @@ defmodule PresencemediaWeb.CoreComponents do
   @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
-  ## The shape
+  ## Borrowed from the recorder
 
-  An outer rectangle holding an inner one. The inner rectangle is not a
-  highlight sitting behind something else — it IS the content, and it carries
-  the colour. For voice it doubles as the player: it fills left to right as the
-  recording runs, so the thing you are looking at and the thing telling you
-  where you are in it are the same object rather than a bar bolted underneath.
+  The shape is the old recorder's, turned around. There, a card sat on top of a
+  black panel and swiping it aside ARMED the stream; here the same swipe REVEALS
+  the playback. The gesture that uncovers the media is the gesture that starts
+  it — which is the recorder's actual invention, that a swipe is transport
+  rather than navigation, and it reads the same backwards.
 
-  Square corners, because nothing on this surface is rounded — the reference this
-  came from is rounded, and that is the one detail deliberately not carried over.
+  So there are two layers and no button. The card carries who, when, how long and
+  what they wrote; underneath it the screen plays, saying `playing voice` or
+  `playing face` with a clock that counts up.
 
-  ## Left is not live
+  ## Face slots into the same card
 
-  The frame in the list carries a LIVE presence: no duration, no shape, only
-  breathing, because you cannot see the length of something still happening. A
-  left presence is finished, so it has both — and the fill is what having a
-  length looks like.
-
-  ## Face slots into the same rectangle
-
-  The inner rectangle is a REGION. Voice fills it with colour advancing; face
-  will fill it with a still. The outer rectangle, the press target and the fill
-  that tracks position do not change when its contents do.
+  The panel beneath is a screen either way. Voice leaves it black and lets the
+  status line carry the message; face fills it with the picture. Nothing about
+  the card, the swipe or the transport changes between them.
 
   ## Examples
 
-      <.presence presence={@moment} id="p-1" />
+      <.presence presence={@moment} by="SARAH" id="p-1" />
   """
   attr :id, :string, required: true
   attr :presence, :map, required: true
+  attr :by, :string, required: true
 
   def presence(assigns) do
     ~H"""
     <div
       id={@id}
-      phx-hook="Waveform"
+      phx-hook="Presence"
       phx-update="ignore"
       data-media={@presence.media}
-      role="button"
-      tabindex="0"
-      aria-label={"Play #{@presence.len} recording"}
-      class={["presence", !@presence.heard && "is-unheard"]}
+      data-kind={@presence.kind}
+      class={["presence relative w-[32rem]", !@presence.heard && "is-unheard"]}
     >
+      <%!-- THE SCREEN, underneath and always there. You only see it once the
+           card above has been slid away — which is also the moment it starts. --%>
+      <div class="presence-entry absolute inset-0 overflow-hidden bg-light-950 dark:bg-dark-900">
+        <video
+          class="presence-video absolute inset-0 h-full w-full object-cover"
+          playsinline
+          preload="none"
+        >
+        </video>
+        <div class="absolute bottom-4 left-8 flex flex-col space-y-4">
+          <p class="presence-status text-sm tracking-[0.14em] text-sky-400"></p>
+          <span class="presence-elapsed text-sm tracking-[0.14em] text-light-400 dark:text-dark-500">
+            0:00
+          </span>
+        </div>
+      </div>
+
+      <%!-- THE CARD, on top. Its trailing panel is 95% wide, so the screen
+           beneath always peeks and the card never fully leaves — it is still
+           there to come back to, which is what makes the swipe feel reversible
+           rather than final. --%>
+      <div class="presence-layer no-scrollbar relative flex min-h-[13.5rem] snap-x snap-mandatory overflow-x-auto">
+        <div class="presence-card relative w-full shrink-0 snap-start">
+          <div class="relative flex h-full w-full flex-col space-y-4 px-4 py-4">
+            <div class="flex items-start justify-between">
+              <%!-- Kept from the original, job still undecided. --%>
+              <button
+                type="button"
+                class="presence-plus cursor-pointer text-primary-600 transition hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400"
+                aria-label="Unassigned"
+              >
+                <.icon name="hero-plus" class="h-5 w-5" />
+              </button>
+
+              <div class="text-right">
+                <div class="flex items-center justify-end gap-1 text-sm tracking-[0.14em]">
+                  <span class="text-primary-600 dark:text-primary-500">{@by},</span>
+                  <span class="text-light-500 dark:text-dark-500">{@presence.when}</span>
+                </div>
+                <span class="text-sm tracking-[0.14em] text-light-400 dark:text-dark-600">
+                  {@presence.len}
+                </span>
+              </div>
+            </div>
+
+            <div class="flex-1"></div>
+
+            <div>
+              <span class="presence-hint text-lg text-light-500 dark:text-dark-500">→</span>
+            </div>
+
+            <%!-- rows="1" and grown by the hook, not by a fixed row count: the
+                 field should be as tall as what is in it and no taller. --%>
+            <textarea
+              class="presence-text w-full resize-none overflow-hidden border-0 bg-transparent text-sm tracking-[0.14em] text-light-900 placeholder:text-light-400 focus:ring-0 focus:outline-none dark:text-dark-100 dark:placeholder:text-dark-600"
+              placeholder="type here......."
+              rows="1"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="presence-trigger w-[95%] shrink-0 snap-end"></div>
+      </div>
     </div>
     """
   end

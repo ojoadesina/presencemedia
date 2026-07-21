@@ -731,11 +731,14 @@ html[data-theme="dark"] {
   display: none;
 }
 .bar.is-picked .focus-box {
-  background-color: color-mix(in srgb, var(--color-light-600) 15%, transparent);
+  background-color: var(--color-light-200);
 }
+/* dark-800 rather than dark-200: the two ramps run in opposite directions, so
+   the counterpart of "a solid step up from the page" is a low number in light
+   and a high one in dark. Pairing them by number would put #bdbdbd on black. */
 [data-theme="dark"] .bar.is-picked .focus-box,
 html:not([data-theme]) .bar.is-picked .focus-box {
-  background-color: color-mix(in srgb, var(--color-dark-500) 20%, transparent);
+  background-color: var(--color-dark-800);
 }
 
 /* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
@@ -812,32 +815,20 @@ html:not([data-theme]) .bar.is-picked .focus-box {
 }
 
 /* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
-   One filled rectangle. No border, no ring, no inner block — the fill IS the
-   thing, carrying the colour the inner rectangle used to. Removing the outline
-   is what lets it read as a solid object on the surface rather than as a card
-   containing one.
-
-   IT PULSES RATHER THAN FILLING while it plays. A progress fill answers "how
-   far through am I", which is a question about a bar; a pulse answers "is this
-   running", which is a question about a presence. Same 32rem measure and left
-   edge as the header above it, so one line still runs down the screen. */
+   The recorder's two-layer card, turned around: there the swipe armed a stream,
+   here it uncovers one. Same 32rem measure and left edge as the header, so one
+   line still runs down the screen. */
 .presence {
   --presence-body: color-mix(in srgb, var(--color-primary-600) 12%, transparent);
-
-  width: 32rem;
-  height: 7.5rem;
-  background-color: var(--presence-body);
-  cursor: pointer;
 }
 [data-theme="dark"] .presence,
 html:not([data-theme]) .presence {
   --presence-body: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
 }
 
-/* UNHEARD deepens the rectangle rather than adding a badge, so the block itself
-   is the notice and there is no second thing to look at. It clears the moment
-   you play; nothing marks a heard presence, because the absence of the call is
-   the mark. */
+/* UNHEARD deepens the card rather than adding a badge, so the thing itself is
+   the notice. It clears the moment you play; nothing marks a heard presence,
+   because the absence of the call is the mark. */
 .presence.is-unheard {
   --presence-body: color-mix(in srgb, var(--color-primary-600) 26%, transparent);
 }
@@ -846,31 +837,34 @@ html:not([data-theme]) .presence.is-unheard {
   --presence-body: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
 }
 
-.presence.is-playing {
-  animation: presence-pulse 1.5s ease-in-out infinite;
+/* Opaque, not the wash. The card has to HIDE the screen underneath it — a
+   translucent one would show the picture through its own text and give the
+   swipe nothing to reveal. It is the page colour with the wash laid over it,
+   which is the same tone the block had while it was one flat rectangle. */
+.presence-card {
+  background-color: var(--color-light-50);
+  background-image: linear-gradient(var(--presence-body), var(--presence-body));
 }
-@keyframes presence-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.presence:focus-visible {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
+[data-theme="dark"] .presence-card,
+html:not([data-theme]) .presence-card {
+  background-color: var(--color-dark-950);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  /* Held at the bright end, so a running presence still reads as present rather
-     than as switched off. */
-  .presence.is-playing {
-    animation: none;
-    opacity: 1;
-  }
+/* The screen shows a picture only when there is one to show. */
+.presence-video {
+  display: none;
+}
+.presence[data-kind="face"].is-playing .presence-video {
+  display: block;
+}
+
+/* The arrow is the only instruction on the card, so it says its piece and stops
+   once the card has been moved. */
+.presence-hint {
+  transition: opacity 200ms ease-out;
+}
+.presence.is-playing .presence-hint {
+  opacity: 0;
 }
 
 /* The states regions.ts drives. The placeholder belongs to REST, not to motion:

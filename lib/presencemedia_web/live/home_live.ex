@@ -576,6 +576,7 @@ defmodule PresencemediaWeb.HomeLive do
             :if={@current.moments != []}
             id={"presence-#{@selected}"}
             presence={hd(@current.moments)}
+            by={(hd(@current.moments).from == "you" && "YOU") || @current.name}
           />
         </div>
       </div>
