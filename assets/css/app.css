@@ -939,6 +939,17 @@ html:not([data-theme]) .presence-row .stream-name {
   }
 }
 
+/* THE PLAY MARK shows while a screen is readied and clears the moment it is
+   playing — the screen is its own play button, so the mark is the only thing
+   that says "tap me" and the only thing that would be noise once you have. */
+.screen-play {
+  opacity: 1;
+  transition: opacity 150ms ease-out;
+}
+.screen.is-playing .screen-play {
+  opacity: 0;
+}
+
 /* The rows are reachable even where an overlay sits over them — a click travels
    to the box and the box decides, so a moving list is never blocked. */
 .stream-item {

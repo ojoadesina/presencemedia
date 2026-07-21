@@ -504,6 +504,73 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   @doc """
+  THE SCREEN under the band, shared by both presence surfaces so they cannot
+  drift apart.
+
+  Capture READIES it; it does not play until it is tapped. A face shows its
+  first frame with a play mark over it; a voice shows an empty bar. Nothing
+  moves and nothing sounds while you are only scrolling past — that is the whole
+  point of it: the box captures what settles in it, but settling is what
+  browsing looks like too, and the interface cannot tell "I am scanning past
+  this" from "I want this one." So it stops guessing. One tap on the screen
+  plays the presence, with sound, and the play mark clears.
+
+  The slot holds its full height whatever it carries, and stands even for text
+  where it holds nothing — reserved so scrolling never re-lays the page out, and
+  present with a stable id so a screenless presence does not delete the element
+  and reset the list's scroll.
+  """
+  attr :id, :string, required: true
+  attr :presence, :map, default: nil
+
+  def presence_screen(assigns) do
+    ~H"""
+    <div id="screen-slot" class="h-54 w-[32rem]">
+      <div
+        :if={@presence && @presence.kind != "text"}
+        id={@id}
+        phx-hook="Screen"
+        phx-update="ignore"
+        data-media={@presence.media}
+        data-kind={@presence.kind}
+        class="screen relative flex h-full w-[32rem] cursor-pointer flex-col justify-center"
+      >
+        <%!-- A FACE, readied on its first frame, the play mark over the picture
+             and the count bottom left where the recorder kept it. --%>
+        <div :if={@presence.kind == "face"} class="relative h-full w-full overflow-hidden bg-black">
+          <video
+            class="screen-video absolute inset-0 h-full w-full object-cover"
+            playsinline
+            preload="metadata"
+          >
+          </video>
+          <span class="screen-play pointer-events-none absolute inset-0 flex items-center justify-center">
+            <.icon name="hero-play-solid" class="h-12 w-12 text-light-50/85" />
+          </span>
+          <div class="absolute bottom-4 left-8">
+            <span class="screen-time text-sm text-dark-400">0:00</span>
+          </div>
+        </div>
+
+        <%!-- A VOICE: a hairline, the play mark beside its count. No picture to
+             lay a mark over, so it sits with the count under the bar. --%>
+        <div :if={@presence.kind == "voice"} class="relative w-full">
+          <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
+            <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)"></div>
+          </div>
+          <div class="absolute top-3 left-0 flex items-center gap-2">
+            <span class="screen-play">
+              <.icon name="hero-play-solid" class="h-3.5 w-3.5 text-secondary-500" />
+            </span>
+            <span class="screen-time text-sm text-light-500 dark:text-dark-500">0:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
   Two variants of one object, and which you get depends on where it is.

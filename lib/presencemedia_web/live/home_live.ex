@@ -752,48 +752,10 @@ defmodule PresencemediaWeb.HomeLive do
                conversation, so the washes come in two tones instead of a
                spread. --%>
           <div class="flex h-full flex-col pt-4">
-            <%!-- THE SCREEN keeps its full room whatever it holds, so scrolling
-                 the list never re-lays the page out under the reader. Face at
-                 the recorder's measure, voice a hairline centred in the space,
-                 text nothing at all. The slot stands even for text, with a
-                 stable id, so a presence that has no screen does not delete the
-                 element and re-slot the list — which would reset its scroll. --%>
-            <div id="screen-slot" class="h-54 w-[32rem]">
-              <div
-                :if={@captured_presence && @captured_presence.kind != "text"}
-                id={"screen-#{@selected}-#{@captured}"}
-                phx-hook="Screen"
-                phx-update="ignore"
-                data-media={@captured_presence.media}
-                data-kind={@captured_presence.kind}
-                class="screen relative flex h-full w-[32rem] flex-col justify-center"
-              >
-                <div
-                  :if={@captured_presence.kind == "face"}
-                  class="relative h-full w-full overflow-hidden bg-black"
-                >
-                  <video
-                    class="screen-video absolute inset-0 h-full w-full object-cover"
-                    playsinline
-                    preload="none"
-                  >
-                  </video>
-                  <div class="absolute bottom-4 left-8">
-                    <span class="screen-time text-sm text-dark-400">0:00</span>
-                  </div>
-                </div>
-
-                <div :if={@captured_presence.kind == "voice"} class="relative w-full">
-                  <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
-                    <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)">
-                    </div>
-                  </div>
-                  <span class="screen-time absolute top-3 left-0 text-sm text-light-500 dark:text-dark-500">
-                    0:00
-                  </span>
-                </div>
-              </div>
-            </div>
+            <%!-- THE SCREEN, the same component /presence uses. It readies on
+                 capture and plays only on a tap, so scrolling the panel is
+                 silent and still. --%>
+            <.presence_screen id={"screen-#{@selected}-#{@captured}"} presence={@captured_presence} />
 
             <%!-- THE LIST takes the rest of the panel. phx-update="ignore" and
                  data-anchor="top" for the same reasons /presence carries them:

@@ -94,51 +94,7 @@ defmodule PresencemediaWeb.PresenceLive do
 
                Nothing is titled: a page with one thing on it does not need to
                announce which thing. --%>
-          <div id="screen-slot" class="h-54 w-[32rem]">
-            <div
-              :if={@current && @current.kind != "text"}
-              id={"screen-#{@captured}"}
-              phx-hook="Screen"
-              phx-update="ignore"
-              data-media={@current.media}
-              data-kind={@current.kind}
-              class="screen relative flex h-full w-[32rem] flex-col justify-center"
-            >
-              <%!-- A FACE. Black, the recorder's own measure, with the count
-                   over the picture bottom left where the old one kept it. --%>
-              <div
-                :if={@current.kind == "face"}
-                class="relative h-full w-full overflow-hidden bg-black"
-              >
-                <video
-                  class="screen-video absolute inset-0 h-full w-full object-cover"
-                  playsinline
-                  preload="none"
-                >
-                </video>
-                <div class="absolute bottom-4 left-8">
-                  <span class="screen-time text-sm text-dark-400">0:00</span>
-                </div>
-              </div>
-
-              <%!-- A VOICE. A hairline, and the count below it at the left —
-                   there is no picture to lay it over, so it sits under the bar
-                   on the same line the list starts from. --%>
-              <div :if={@current.kind == "voice"} class="relative w-full">
-                <div class="h-[3px] w-full overflow-hidden bg-secondary-500/30">
-                  <div class="screen-fill h-full bg-secondary-500" style="width: var(--played, 0%)">
-                  </div>
-                </div>
-                <%!-- ABSOLUTE, so the count hangs off the bar rather than being
-                     centred along with it. In flow it made the pair the thing
-                     being centred, which put the bar itself half a line high —
-                     and the bar is what the eye is actually looking for. --%>
-                <span class="screen-time absolute top-3 left-0 text-sm text-light-500 dark:text-dark-500">
-                  0:00
-                </span>
-              </div>
-            </div>
-          </div>
+          <.presence_screen id={"screen-#{@captured}"} presence={@current} />
 
           <div id="stream-slot" class="relative mt-8 min-h-0 w-[32rem] flex-1">
             <div
