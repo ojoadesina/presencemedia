@@ -191,7 +191,7 @@ defmodule PresencemediaWeb.HomeLive do
     --%>
     <div
       id="regions"
-      class="fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-800"
+      class="fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-950"
     >
       <%!-- THE MARK sits ABSOLUTELY, not in the flow, and that is the whole
            trick of putting it here. The band's position is derived from the
@@ -357,7 +357,7 @@ defmodule PresencemediaWeb.HomeLive do
                        nobody can hit. --%>
                   <button
                     type="button"
-                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-light-950/15 text-light-50 transition-colors hover:bg-light-950/30 dark:bg-dark-800/25 dark:hover:bg-dark-950/40"
+                    class="frame-restart absolute inset-0 hidden items-center justify-center bg-light-950/15 text-light-50 transition-colors hover:bg-light-950/30 dark:bg-dark-950/25 dark:hover:bg-dark-950/40"
                     aria-label="Play again"
                   >
                     <%!-- Inline rather than a heroicon: this is a three-quarter

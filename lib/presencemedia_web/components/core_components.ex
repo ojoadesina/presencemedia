@@ -13,11 +13,12 @@ defmodule PresencemediaWeb.CoreComponents do
   renders. Four rules keep the set coherent:
 
     * SURFACES come from two ramps, not one: `light-*` (warm, cream to cocoa)
-      and `dark-*` (cool slate, lifted from daisyUI's own dark theme). Every
-      colour utility therefore ships with a `dark:` twin. Do NOT pair them by
-      number — light's page is `light-50` and dark's is `dark-800`, because
-      dark's ramp keeps `dark-900` and `dark-950` for the layers RECESSED below
-      the page rather than for the page itself.
+      and `dark-*` (black and untinted greys). Every colour utility therefore
+      ships with a `dark:` twin, and they run in OPPOSITE directions. Light's
+      page is `light-50` and everything real on it is darker; dark's page is
+      `dark-950` and everything real on it is lighter. Never pair them by
+      number — `text-light-900 dark:text-dark-100` is a matched pair, and
+      `dark:text-dark-900` on the dark page would be invisible.
     * `primary` (terracotta) means ATTENTION — the pressed button, the invalid
       field, the error flash. The palette carries no separate red, and it does
       not need one.
@@ -59,7 +60,7 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   defp input_ok do
-    "border-light-200 focus-visible:border-primary-500 dark:border-dark-700"
+    "border-light-200 focus-visible:border-primary-500 dark:border-dark-800"
   end
 
   defp input_bad do
@@ -140,7 +141,7 @@ defmodule PresencemediaWeb.CoreComponents do
       "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 " <>
         "text-md font-semibold transition-colors outline-none " <>
         "focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-2 " <>
-        "focus-visible:ring-offset-light-50 dark:focus-visible:ring-offset-dark-800 " <>
+        "focus-visible:ring-offset-light-50 dark:focus-visible:ring-offset-dark-950 " <>
         "disabled:pointer-events-none disabled:opacity-50"
 
     # Solid carries the page's one primary action. Soft is the same colour at low
@@ -280,7 +281,7 @@ defmodule PresencemediaWeb.CoreComponents do
             @class ||
               "size-4 shrink-0 cursor-pointer rounded border-light-300 accent-primary-600 " <>
                 "outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 " <>
-                "dark:border-dark-600 dark:accent-primary-500"
+                "dark:border-dark-700 dark:accent-primary-500"
           }
           {@rest}
         />{@label}
@@ -429,7 +430,7 @@ defmodule PresencemediaWeb.CoreComponents do
          it scrolls inside its own box instead. --%>
     <div class="w-full overflow-x-auto">
       <table class="w-full border-collapse text-left text-md">
-        <thead class="border-b border-light-200 dark:border-dark-700">
+        <thead class="border-b border-light-200 dark:border-dark-800">
           <tr>
             <th
               :for={col <- @col}
@@ -452,7 +453,7 @@ defmodule PresencemediaWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={@row_id && @row_id.(row)}
-            class="border-b border-light-150 odd:bg-light-100/50 hover:bg-primary-50 dark:border-dark-900 dark:odd:bg-dark-900/40 dark:hover:bg-primary-950/40"
+            class="border-b border-light-150 odd:bg-light-100/50 hover:bg-primary-50 dark:border-dark-800 dark:odd:bg-dark-900/40 dark:hover:bg-primary-950/40"
           >
             <td
               :for={col <- @col}
@@ -491,7 +492,7 @@ defmodule PresencemediaWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="divide-y divide-light-200 dark:divide-dark-700">
+    <ul class="divide-y divide-light-200 dark:divide-dark-800">
       <li :for={item <- @item} class="flex flex-col gap-1 py-4">
         <div class="text-sm font-semibold tracking-wide text-light-600 uppercase dark:text-dark-400">
           {item.title}

@@ -16,8 +16,8 @@
      light      — the warm ramp, cream to cocoa. It is the LIGHT theme's whole
                   vocabulary: the surface at 50, and every weight of text that
                   sits on it running down to 950.
-     dark       — the cool slate ramp, and the dark theme's equivalent. Read the
-                  OTHER WAY: the page is 800 and text climbs towards 50.
+     dark       — black and untinted greys, the dark theme's equivalent. Read
+                  the OTHER WAY: the page is 950 and everything climbs from it.
      primary    — terracotta. ATTENTION: the focused row, the band, the brackets.
      secondary  — sage. Held in reserve. It carried the presence dot until the
                   frame took that job over, and it stays unspent rather than
@@ -43,32 +43,36 @@
   --color-light-900: #573d37;
   --color-light-950: #2e1f1c;
 
-  /* DARK — daisyUI's own dark theme, lifted out of the plugin before it was
-     deleted and kept as ours. Four of these are its values verbatim, converted
-     from oklch and placed at the lightness they actually had.
+  /* DARK — black, and greys with no temperature at all. Not daisyUI's; none of
+     its values survive here. This is the ramp the surface was actually drawn
+     against, recovered from the design as it stood before any palette existed,
+     and three of these are that design's own values verbatim: 100 was the row
+     text, 500 the label above it, 600 the quiet name beside it, and 950 is the
+     plain `bg-black` it all sat on.
 
-     THE PAGE IS 800, and that is the point of the whole set. daisyUI's dark
-     surface was base-100, with base-200 and base-300 as the layers RECESSED
-     beneath it — a card, a well, a scrim. Reading this ramp as "950 is the
-     background" inverts that: it puts the page on the deepest layer and leaves
-     nothing below it, which is exactly the mistake that made the last attempt
-     look nothing like the original.
+     ACHROMATIC IS THE POINT. Every attempt to give the dark surface a colour —
+     warm cocoa, blue slate — made the accents fight it, because terracotta and
+     sky both have to read as SIGNAL and cannot do that against a background
+     that is also saying something. Black says nothing, so everything placed on
+     it is legible as meaning.
 
-     So the two ramps are not mirrors and should not be paired by number. Light
-     runs surface-first from 50; dark has its surface in the middle at 800, text
-     climbing to 50 above it and depth falling to 950 below. */
-  --color-dark-50: #ecf9ff; /* base-content — the text colour */
-  --color-dark-100: #dce9fa;
-  --color-dark-150: #d0dcec;
-  --color-dark-200: #c3cfde;
-  --color-dark-300: #a7b2c1;
-  --color-dark-400: #86909d;
-  --color-dark-500: #69727e;
-  --color-dark-600: #4e5660;
-  --color-dark-700: #394049;
-  --color-dark-800: #292f37; /* base-100 — THE PAGE */
-  --color-dark-900: #1e2329; /* base-200 — recessed */
-  --color-dark-950: #13171c; /* base-300 — deepest */
+     THE PAGE IS 950 and the ramp climbs from it: 900 and 800 are the raised
+     things — panels, borders, a hover — because on black, nearer means
+     LIGHTER. That is the opposite of the light ramp, where the page is 50 and
+     everything real is darker than it. The two are not mirrors and must never
+     be paired by number. */
+  --color-dark-50: #f5f5f5;
+  --color-dark-100: #e6e6e6; /* the rows */
+  --color-dark-150: #d4d4d4;
+  --color-dark-200: #bdbdbd;
+  --color-dark-300: #9e9e9e;
+  --color-dark-400: #808080;
+  --color-dark-500: #6f6f6f; /* the label */
+  --color-dark-600: #585858; /* the quiet name */
+  --color-dark-700: #3d3d3d;
+  --color-dark-800: #262626;
+  --color-dark-900: #141414;
+  --color-dark-950: #000000; /* THE PAGE */
 
   --color-primary-50: #fdf5f3;
   --color-primary-100: #fbeae5;
@@ -367,7 +371,7 @@ html[data-theme="dark"] {
   background-color: color-mix(in srgb, var(--color-light-50) 58%, transparent);
 }
 .theme-wash[data-target="dark"] {
-  background-color: color-mix(in srgb, var(--color-dark-800) 58%, transparent);
+  background-color: color-mix(in srgb, var(--color-dark-950) 58%, transparent);
 }
 
 .head.is-animated .head-eyes {

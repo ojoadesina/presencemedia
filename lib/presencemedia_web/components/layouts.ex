@@ -35,8 +35,8 @@ defmodule PresencemediaWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="min-h-screen bg-light-50 text-light-900 dark:bg-dark-800 dark:text-dark-100">
-      <header class="flex items-center gap-4 border-b border-light-200 px-4 py-3 sm:px-6 lg:px-8 dark:border-dark-700">
+    <div class="min-h-screen bg-light-50 text-light-900 dark:bg-dark-950 dark:text-dark-100">
+      <header class="flex items-center gap-4 border-b border-light-200 px-4 py-3 sm:px-6 lg:px-8 dark:border-dark-800">
         <div class="flex-1">
           <a href="/" class="flex w-fit items-center gap-2">
             <img src={~p"/images/logo.svg"} width="36" />
@@ -48,7 +48,7 @@ defmodule PresencemediaWeb.Layouts do
             <li>
               <a
                 href="https://phoenixframework.org/"
-                class="rounded-md px-3 py-2 text-md font-medium text-light-700 transition-colors hover:bg-light-100 dark:text-dark-300 dark:hover:bg-dark-700"
+                class="rounded-md px-3 py-2 text-md font-medium text-light-700 transition-colors hover:bg-light-100 dark:text-dark-300 dark:hover:bg-dark-900"
               >
                 Website
               </a>
@@ -56,7 +56,7 @@ defmodule PresencemediaWeb.Layouts do
             <li>
               <a
                 href="https://github.com/phoenixframework/phoenix"
-                class="rounded-md px-3 py-2 text-md font-medium text-light-700 transition-colors hover:bg-light-100 dark:text-dark-300 dark:hover:bg-dark-700"
+                class="rounded-md px-3 py-2 text-md font-medium text-light-700 transition-colors hover:bg-light-100 dark:text-dark-300 dark:hover:bg-dark-900"
               >
                 GitHub
               </a>
@@ -145,8 +145,8 @@ defmodule PresencemediaWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="relative flex flex-row items-center rounded-full border-2 border-light-200 bg-light-200 dark:border-dark-700 dark:bg-dark-700">
-      <div class="absolute left-0 h-full w-1/3 rounded-full border border-light-100 bg-light-50 transition-[left] in-data-[theme=light]:left-1/3 in-data-[theme=dark]:left-2/3 dark:border-dark-600 dark:bg-dark-800" />
+    <div class="relative flex flex-row items-center rounded-full border-2 border-light-200 bg-light-200 dark:border-dark-800 dark:bg-dark-950">
+      <div class="absolute left-0 h-full w-1/3 rounded-full border border-light-100 bg-light-50 transition-[left] in-data-[theme=light]:left-1/3 in-data-[theme=dark]:left-2/3 dark:border-dark-800 dark:bg-dark-950" />
 
       <button
         class="flex w-1/3 cursor-pointer p-2"
