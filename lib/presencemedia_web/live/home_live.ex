@@ -164,7 +164,7 @@ defmodule PresencemediaWeb.HomeLive do
   # the only difference then is the order they are stacked in. `heard` is the
   # one piece of state a left presence has that a live one cannot: you can miss
   # it, and it should say so.
-  @moment_pool [
+  @presence_pool [
     %{
       kind: "voice",
       when: "09:14",
@@ -244,17 +244,24 @@ defmodule PresencemediaWeb.HomeLive do
     users =
       @users
       |> Enum.with_index()
-      |> Enum.map(fn {user, i} -> Map.put(user, :moments, moments(i)) end)
+      |> Enum.map(fn {user, i} -> Map.put(user, :presences, presences_for(user, i)) end)
 
     {:ok,
      socket
-     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list)
+     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list, captured: 0)
      |> put_current()}
   end
 
-  defp moments(index) do
-    n = length(@moment_pool)
-    for k <- 0..2, do: Enum.at(@moment_pool, rem(index * 2 + k, n))
+  # Newest first, the way a feed reads. `by` is resolved here rather than stored
+  # on the pool, because who left a presence depends on whose stream it is
+  # appearing in — the same clip is "them" in one and "YOU" in another.
+  defp presences_for(user, index) do
+    n = length(@presence_pool)
+
+    for k <- 0..4 do
+      presence = Enum.at(@presence_pool, rem(index * 3 + k, n))
+      Map.put(presence, :by, (presence.from == "you" && "YOU") || user.name)
+    end
   end
 
   # SELECTION NOW REACHES THE SERVER. It used to live only in the hook, which was
@@ -264,13 +271,13 @@ defmodule PresencemediaWeb.HomeLive do
   # that can, since it owns the scroll — and reports the answer here.
   @impl true
   def handle_event("select", %{"index" => index}, socket) do
-    {:noreply, socket |> assign(selected: index) |> put_current()}
+    {:noreply, socket |> assign(selected: index, captured: 0) |> put_current()}
   end
 
   def handle_event("deselect", _params, socket) do
     # Losing the selection closes the panel with it. There is no such thing as an
     # open view of nobody.
-    {:noreply, socket |> assign(selected: nil, mode: :list) |> put_current()}
+    {:noreply, socket |> assign(selected: nil, mode: :list, captured: 0) |> put_current()}
   end
 
   # One event for both directions, because the band is one target and which way
@@ -282,6 +289,17 @@ defmodule PresencemediaWeb.HomeLive do
       {_, :open} -> {:noreply, assign(socket, mode: :list)}
       {_, :list} -> {:noreply, assign(socket, mode: :open)}
     end
+  end
+
+  # THE SAME MECHANISM, one level down. A presence is captured by scrolling it
+  # into the box rather than by pressing it, exactly as a relationship is — the
+  # hook decides who lands there, the server holds which one it was.
+  def handle_event("capture_presence", %{"index" => index}, socket) do
+    {:noreply, assign(socket, captured: index)}
+  end
+
+  def handle_event("release_presence", _params, socket) do
+    {:noreply, assign(socket, captured: nil)}
   end
 
   def handle_event("toggle_scope", _params, socket) do
@@ -592,19 +610,54 @@ defmodule PresencemediaWeb.HomeLive do
       <div
         :if={@mode == :open && @current}
         id="panel"
-        class="panel fixed inset-x-0 top-30 bottom-0 z-20 overflow-y-auto"
+        class="panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
-        <%!-- SAME MEASURE, SAME EDGE. The header's bracketed box starts at this
-             container's left, so the presence does too — no inner padding, no
-             max-w of its own, nothing that would put it on a different line
-             from the thing above it. One edge down the whole screen. --%>
-        <div class="mx-auto w-full max-w-6xl px-4">
-          <.presence
-            :if={@current.moments != []}
-            id={"presence-#{@selected}"}
-            presence={hd(@current.moments)}
-            by={(hd(@current.moments).from == "you" && "YOU") || @current.name}
-          />
+        <div class="mx-auto h-full w-full max-w-6xl px-4">
+          <%!-- THE SAME MECHANISM AS THE LIST ABOVE IT, one level down. A box
+               fixed a third of the way in, and presences that scroll THROUGH
+               it — whichever settles there is captured, and the box shows
+               everything the row was holding back. Same third, same settle,
+               same snap, so the two screens rhyme rather than merely coexist.
+
+               phx-update="ignore" for the same reason the relationship list
+               carries it: the hook owns the scroll position and the capture
+               class, and a patch must never wipe either. --%>
+          <div class="relative h-full w-[32rem]">
+            <div
+              id="stream-scroll"
+              phx-hook="Stream"
+              phx-update="ignore"
+              class="stream-scroll h-full overflow-y-auto overscroll-contain"
+            >
+              <%!-- Lead and trail are what let the first and last presence
+                   REACH the box. --%>
+              <ul class="pt-[calc(34%+2rem)] pb-[60%]">
+                <li
+                  :for={presence <- @current.presences}
+                  class="stream-item flex h-54 cursor-pointer items-center px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
+                >
+                  <%!-- Collapsed, a presence is only who left it — the same way
+                       a relationship row is only the name you gave them. The
+                       box supplies the rest. --%>
+                  <span>{presence.by}</span>
+                </li>
+              </ul>
+            </div>
+
+            <%!-- THE BOX. Fixed at the same 34%, holding the card. Its id
+                 carries the captured index so a new capture REPLACES the
+                 element rather than patching it — which is what resets the
+                 media cleanly, where a patch would leave the previous clip's
+                 src behind. --%>
+            <div class="pointer-events-none absolute top-[34%] left-0 w-[32rem] -translate-y-1/2">
+              <.presence
+                :if={@captured && Enum.at(@current.presences, @captured)}
+                id={"captured-#{@selected}-#{@captured}"}
+                presence={Enum.at(@current.presences, @captured)}
+                by={Enum.at(@current.presences, @captured).by}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

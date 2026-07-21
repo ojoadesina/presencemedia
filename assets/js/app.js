@@ -27,13 +27,14 @@ import {Regions} from "./hooks/regions"
 import {Head} from "./hooks/head"
 import {Bar} from "./hooks/bar"
 import {Presence} from "./hooks/presence"
+import {Stream} from "./hooks/stream"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, Regions, Head, Bar, Presence},
+  hooks: {...colocatedHooks, Regions, Head, Bar, Presence, Stream},
 })
 
 // Show progress bar on live navigation and form submits

@@ -814,6 +814,37 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   }
 }
 
+/* ── THE PRESENCE STREAM ───────────────────────────────────────────────────────
+   The relationship list's mechanism, one level down, so the same three rules
+   apply for the same reasons: the scrollbar is hidden because the box reports
+   position and a bar would only draw a hard edge through the fade, and the list
+   fades at BOTH ends so presences arrive and leave rather than appearing. */
+.stream-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 86%, transparent 100%);
+}
+.stream-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* The captured row hands its place to the box: the card covers it, so leaving
+   the name showing underneath would print it twice. Its neighbours stay. */
+.stream-item {
+  transition: opacity 200ms ease-out;
+}
+.stream-item.is-captured {
+  opacity: 0;
+}
+
+/* The card is reachable even though the box it sits in is not — same trick the
+   band uses, so a moving list is never blocked by an overlay. */
+.stream-item,
+#stream-scroll ~ div .presence {
+  pointer-events: auto;
+}
+
 /* ── A LEFT PRESENCE ───────────────────────────────────────────────────────────
    The recorder's three layers, run backwards. Almost nothing is needed here:
    the cover, the audio pane and the screen all carry their colour inline, as
