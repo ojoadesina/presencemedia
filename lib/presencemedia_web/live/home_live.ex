@@ -167,75 +167,123 @@ defmodule PresencemediaWeb.HomeLive do
   @presence_pool [
     %{
       kind: "voice",
-      when: "09:14",
-      note: "found the thing you were looking for",
-      len: "0:09",
+      when: "07:12",
+      len: "0:10",
       from: "them",
-      heard: false,
-      media:
-        "#{@commons}/4/4f/Simone_Giertz_introducing_herself.ogg/" <>
-          "Simone_Giertz_introducing_herself.ogg.mp3"
+      heard: true,
+      note: "up early, thinking about what you said",
+      media: "#{@commons}/9/96/Andy_Mabbett_voice.ogg/Andy_Mabbett_voice.ogg.mp3"
     },
     %{
-      kind: "voice",
-      when: "21:02",
-      note: "call me when you land",
-      len: "0:22",
+      kind: "face",
+      when: "08:03",
+      len: "0:37",
       from: "you",
       heard: true,
+      note: "the light here is unbelievable",
       media:
-        "#{@commons}/e/ed/Richard_Rogers_-_voice_-_en.ogg/Richard_Rogers_-_voice_-_en.ogg.mp3"
+        "#{@commons}/8/8e/WIKITONGUES-_Sedang_speaking_Iban.webm/" <>
+          "WIKITONGUES-_Sedang_speaking_Iban.webm.360p.vp9.webm"
     },
     %{
       kind: "voice",
-      when: "08:40",
-      note: "listen to the end, it gets better",
-      len: "0:13",
+      when: "09:41",
+      len: "0:15",
       from: "them",
       heard: true,
-      media:
-        "#{@commons}/4/46/Dan_Barker_introducing_himself.ogg/" <>
-          "Dan_Barker_introducing_himself.ogg.mp3"
+      note: "found the thing you were looking for",
+      media: "#{@commons}/b/bb/Bettany_Hughes_voice.ogg/Bettany_Hughes_voice.ogg.mp3"
     },
     %{
       kind: "voice",
-      when: "19:55",
+      when: "11:26",
+      len: "0:17",
+      from: "you",
+      heard: true,
       note: "nothing urgent",
+      media: "#{@commons}/0/01/David_Lammy_voice.ogg/David_Lammy_voice.ogg.mp3"
+    },
+    %{
+      kind: "face",
+      when: "12:58",
+      len: "0:46",
+      from: "them",
+      heard: true,
+      note: "two minutes, then I have to go",
+      media:
+        "#{@commons}/2/26/WIKITONGUES-_Tarkhan_speaking_Jek.webm/" <>
+          "WIKITONGUES-_Tarkhan_speaking_Jek.webm.360p.vp9.webm"
+    },
+    %{
+      kind: "voice",
+      when: "14:07",
+      len: "0:16",
+      from: "them",
+      heard: true,
+      note: "listen to the end, it gets better",
+      media: "#{@commons}/e/ec/David_Harewood_voice.ogg/David_Harewood_voice.ogg.mp3"
+    },
+    %{
+      kind: "face",
+      when: "15:34",
+      len: "0:54",
+      from: "you",
+      heard: true,
+      note: "showing you rather than telling you",
+      media:
+        "#{@commons}/e/ea/WIKITONGUES-_Uladzislau_speaking_Belarusian.webm/" <>
+          "WIKITONGUES-_Uladzislau_speaking_Belarusian.webm.360p.vp9.webm"
+    },
+    %{
+      kind: "voice",
+      when: "17:19",
       len: "0:18",
       from: "them",
       heard: true,
-      media: "#{@commons}/c/ca/Robin_Owain_en_Voice.ogg/Robin_Owain_en_Voice.ogg.mp3"
+      note: "you were right about the other thing",
+      media: "#{@commons}/0/0f/Alison_Balsom_voice.ogg/Alison_Balsom_voice.ogg.mp3"
     },
     %{
       kind: "face",
-      when: "21:40",
-      note: "the light here is unbelievable",
-      len: "0:37",
+      when: "18:45",
+      len: "0:48",
       from: "them",
-      heard: true,
-      media:
-        "#{@commons}/6/67/WIKITONGUES-_Paulus_speaking_Mentuka.webm/" <>
-          "WIKITONGUES-_Paulus_speaking_Mentuka.webm.360p.vp9.webm"
-    },
-    %{
-      kind: "face",
-      when: "07:26",
-      note: "two minutes, then I have to go",
-      len: "0:35",
-      from: "you",
       heard: false,
+      note: "walked past the old place today",
       media:
-        "#{@commons}/0/01/WIKITONGUES-_Hermica_speaking_Bengape.webm/" <>
-          "WIKITONGUES-_Hermica_speaking_Bengape.webm.360p.vp9.webm"
+        "#{@commons}/c/c9/WIKITONGUES-_Jeries_speaking_Syriac.webm/" <>
+          "WIKITONGUES-_Jeries_speaking_Syriac.webm.360p.vp9.webm"
     },
     %{
       kind: "voice",
-      when: "12:31",
-      note: "you were right about the other thing",
-      len: "0:09",
+      when: "20:02",
+      len: "0:16",
       from: "you",
       heard: true,
-      media: "#{@commons}/0/0a/Charles_Duke_Intro.ogg/Charles_Duke_Intro.ogg.mp3"
+      note: "call me when you land",
+      media: "#{@commons}/f/fa/Brian_Schmidt_voice.ogg/Brian_Schmidt_voice.ogg.mp3"
+    },
+    %{
+      kind: "face",
+      when: "21:30",
+      len: "0:56",
+      from: "them",
+      heard: false,
+      note: "quick one before bed",
+      media:
+        "#{@commons}/2/20/WIKITONGUES-_Yernur_speaking_Kazakh.webm/" <>
+          "WIKITONGUES-_Yernur_speaking_Kazakh.webm.360p.vp9.webm"
+    },
+    %{
+      kind: "face",
+      when: "22:51",
+      len: "0:58",
+      from: "them",
+      heard: false,
+      note: "last one, promise",
+      media:
+        "#{@commons}/0/05/WIKITONGUES-_Rizki_speaking_Malay.webm/" <>
+          "WIKITONGUES-_Rizki_speaking_Malay.webm.360p.vp9.webm"
     }
   ]
 
@@ -258,10 +306,14 @@ defmodule PresencemediaWeb.HomeLive do
   defp presences_for(user, index) do
     n = length(@presence_pool)
 
-    for k <- 0..4 do
-      presence = Enum.at(@presence_pool, rem(index * 3 + k, n))
-      Map.put(presence, :by, (presence.from == "you" && "YOU") || user.name)
+    # Rotated so no two people's streams are identical, then SORTED, because a
+    # rotation would otherwise leave the times out of order — and a stream that
+    # is not chronological is not a stream.
+    for k <- 0..5 do
+      Enum.at(@presence_pool, rem(index * 4 + k, n))
     end
+    |> Enum.sort_by(& &1.when)
+    |> Enum.map(&Map.put(&1, :by, (&1.from == "you" && "YOU") || user.name))
   end
 
   # SELECTION NOW REACHES THE SERVER. It used to live only in the hook, which was

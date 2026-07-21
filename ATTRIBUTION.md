@@ -33,6 +33,38 @@ Single speakers talking to camera, recorded for language documentation.
 | Célestin | Kilega | 46.6s | CC BY-SA 4.0 |
 | Donald | Tswana | 54.5s | CC BY-SA 4.0 |
 
+## The presence stream — Wikitongues and the Voice intro project
+
+A second, non-overlapping set, used for the presences inside a person's stream.
+The clips above stay where they were: they are the LIVE presence the frame
+carries in the relationship list, and nothing in the stream reuses them.
+
+### Faces — Wikitongues, CC BY-SA 4.0
+
+| Speaker | Language | Duration |
+|---|---|---|
+| Sedang | Iban | 37.4s |
+| Tarkhan | Jek | 46.9s |
+| Jeries | Syriac | 48.5s |
+| Uladzislau | Belarusian | 54.3s |
+| Yernur | Kazakh | 56.5s |
+| Rizki | Malay | 58.4s |
+
+### Voices — Commons Voice intro project
+
+| Speaker | Duration | Licence |
+|---|---|---|
+| Andy Mabbett | 10.5s | CC BY-SA 3.0 |
+| Bettany Hughes | 15.6s | CC BY-SA 4.0 |
+| Brian Schmidt | 16.2s | CC BY-SA 4.0 |
+| David Harewood | 16.7s | CC BY-SA 4.0 |
+| David Lammy | 17.5s | CC BY-SA 4.0 |
+| Alison Balsom | 18.1s | CC BY-SA 4.0 |
+
+None of this second set is public domain — every item is CC BY or CC BY-SA and
+carries an attribution requirement. Video credit is Wikitongues plus the named
+recordist; audio credit is the uploader on each Commons file page.
+
 ## Licence texts
 
 - CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
