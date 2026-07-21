@@ -350,10 +350,14 @@ html[data-theme="dark"] {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  /* Under the mark, over everything else: the colour has to look like it is
-     coming OUT of the logo, which it cannot do if it paints over the top of
-     it. */
-  z-index: 20;
+  /* A MIDDLE LAYER, not an overlay. A negative z-index inside #regions'
+     stacking context lands in the one place that exists between a box's own
+     background and its content: painted after the background, before anything
+     in flow. Every row, the band, the frame and the mark sit above it,
+     untouched, which is what lets it be opaque.
+     (#regions carries z-0, and that is what opens the context. Without it a
+     negative index would escape to the page root and hide behind the body.) */
+  z-index: -1;
   will-change: transform, opacity;
 }
 /* TRANSLUCENT, and that is the correction. An opaque disc technically hid the
@@ -367,11 +371,15 @@ html[data-theme="dark"] {
    The swap underneath is still softened, because most of the difference between
    the two surfaces is masked by the tint sitting over it. Softened, not
    hidden — which is the honest version of the effect. */
+/* FULLY OPAQUE, because it no longer has to be seen through. The tint was only
+   ever a compromise between reaching the target colour and not hiding the page,
+   and underneath the content there is nothing left to trade: this is exactly
+   the colour the page is about to be, with no blend to dilute it. */
 .theme-wash[data-target="light"] {
-  background-color: color-mix(in srgb, var(--color-light-50) 85%, transparent);
+  background-color: var(--color-light-50);
 }
 .theme-wash[data-target="dark"] {
-  background-color: color-mix(in srgb, var(--color-dark-950) 85%, transparent);
+  background-color: var(--color-dark-950);
 }
 
 .head.is-animated .head-eyes {
