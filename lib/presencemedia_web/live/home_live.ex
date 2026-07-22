@@ -727,7 +727,7 @@ defmodule PresencemediaWeb.HomeLive do
             <div
               id={"stage-#{@selected}"}
               phx-update="ignore"
-              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-8 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
+              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-20 w-[32rem] -translate-y-10 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
             >
               <video
                 class="stage-video absolute inset-0 h-full w-full object-cover"
@@ -761,24 +761,25 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
+                  class="presence-item flex h-20 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
                 >
-                  <%!-- The kind mark leads — face or voice — then the name, then
-                       the time on the same line. Mark and time hold the same
-                       muted neutral, quiet metadata either side of the name;
-                       text is neutral throughout, and only the chosen name in
-                       the band is allowed the terracotta. --%>
+                  <%!-- The kind mark leads — face or voice — then the name, and
+                       the age stacked BELOW it on the left. Mark and age hold the
+                       same muted neutral; text is neutral throughout, and only
+                       the chosen name in the band is allowed the terracotta. --%>
                   <.presence_glyph
                     kind={presence.kind}
                     class="mr-3 text-neutral-400 dark:text-neutral-500"
                   />
-                  <span>{presence.by}</span>
-                  <%!-- The age, at the name's own size but faded well back, so it
-                       reads as a quiet aside on the same line rather than a
-                       second label. --%>
-                  <span class="presence-when ml-3 text-neutral-400/55 dark:text-neutral-500/60">
-                    {presence.when}
-                  </span>
+                  <div class="flex flex-col leading-tight">
+                    <span>{presence.by}</span>
+                    <%!-- The age below the name, at the name's own size but faded
+                         well back so it reads as a quiet second line rather than
+                         a label competing with it. --%>
+                    <span class="presence-when mt-1 text-neutral-400/55 dark:text-neutral-500/60">
+                      {presence.when}
+                    </span>
+                  </div>
                 </li>
               </ul>
             </div>

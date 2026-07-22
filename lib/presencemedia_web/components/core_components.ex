@@ -574,13 +574,14 @@ defmodule PresencemediaWeb.CoreComponents do
   THE KIND MARK — a small symbol that says, before the name, whether a presence
   is a face or a voice.
 
-  A FACE is a face reduced to three strokes: two rectangular eyes and, beneath
-  them, one mouth as wide as the pair of eyes together — all the same height, no
-  curve anywhere. It is a face without being a head, which is the point: a
-  rounded head reads as a generic avatar, where three bars read as ours.
+  A FACE is a face in three rectangles: two eyes, and beneath them one mouth as
+  wide as the two eyes ADDED TOGETHER — not as wide as the gap between them, the
+  two widths summed — all the same height, sharp corners, no curve anywhere. A
+  face without a head, which is the point: a head reads as a generic avatar,
+  three bars read as ours.
 
-  A VOICE is a short waveform, four bars — sound, drawn in the same rectangles
-  the face is, so the two marks are plainly of one family.
+  A VOICE is a short waveform, four bars — sound in the same rectangles the face
+  is, so the two marks are plainly of one family.
 
   It draws in currentColor at a hair over the line's own size, so it sits with
   the name rather than beside it.
@@ -592,9 +593,9 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
       <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]" fill="currentColor">
-        <rect x="6" y="7" width="4" height="3" rx="0.6" />
-        <rect x="14" y="7" width="4" height="3" rx="0.6" />
-        <rect x="6" y="14" width="12" height="3" rx="0.6" />
+        <rect x="6" y="7" width="4" height="3" />
+        <rect x="14" y="7" width="4" height="3" />
+        <rect x="8" y="14" width="8" height="3" />
       </svg>
       <svg
         :if={@kind == "voice"}

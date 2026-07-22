@@ -1049,15 +1049,20 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   opacity: 0;
 }
 
-/* THE PROGRESS IS THE PLAY EFFECT for a voice: a translucent black layer that
-   grows from the left across the box, its width the fraction the hook reports as
-   played, so the box fills like a bar instead of breathing. It shows once the
-   voice is committed, and holds its position when paused rather than snapping
-   back — a bar, after all, remembers where it got to. */
+/* THE PROGRESS IS THE PLAY EFFECT for a voice: a layer that grows from the left
+   across the box, its width the fraction the hook reports as played, so the box
+   fills like a bar instead of breathing. It is a translucent wash of the box's
+   OWN colour — a deeper terracotta over the pale one — so the played side reads
+   as the box filling with itself rather than being blacked out. It shows once
+   the voice is committed and holds where it paused. */
 .stage-progress {
   width: var(--played, 0%);
-  background-color: rgb(0 0 0 / 0.28);
+  background-color: color-mix(in oklab, var(--color-primary-600) 34%, transparent);
   opacity: 0;
+}
+[data-theme="dark"] .stage-progress,
+html:not([data-theme]) .stage-progress {
+  background-color: color-mix(in oklab, var(--color-primary-500) 34%, transparent);
 }
 .stage.is-voice.is-live .stage-progress {
   opacity: 1;
