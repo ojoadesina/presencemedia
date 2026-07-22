@@ -462,7 +462,8 @@ html[data-theme="dark"] {
 .frame::before,
 .scope-box::before,
 .band::before,
-.stage::before {
+.stage::before,
+.live-frame::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -509,6 +510,12 @@ html[data-theme="dark"] {
 .stage::before {
   --ax: 24px;
   --ay: 14px;
+}
+/* A live cell wears the same brackets as the frame it echoes — a square, so its
+   arms are equal. */
+.live-frame::before {
+  --ax: 16px;
+  --ay: 16px;
 }
 /* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
    the shortest and its weight the lightest — 3px rules around a 12px label
@@ -1146,4 +1153,52 @@ html:not([data-theme]) .stage-progress {
 }
 .presence-scroll::-webkit-scrollbar {
   display: none;
+}
+
+/* ── THE LIVE GRID ───────────────────────────────────────────────────────────
+   The right-side wall of who is HERE. Each cell is a live frame in the same
+   terracotta-and-brackets language as the one beside the relationship list. */
+
+/* THE SCREEN is the box's fill — a wash of the house terracotta. A voice and an
+   open-but-quiet line BREATHE it; a face hides it and shows the picture instead.
+   The breath is slow and each cell is delayed by its index, so the wall shifts
+   like a room of people rather than pulsing in lockstep. */
+.live-screen {
+  background-color: var(--color-primary-600);
+  opacity: 0.14;
+}
+[data-theme="dark"] .live-screen,
+html:not([data-theme]) .live-screen {
+  background-color: var(--color-primary-500);
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .live-screen {
+    background-color: var(--color-primary-600);
+  }
+}
+
+.live-frame.is-voice .live-screen,
+.live-frame.is-empty .live-screen {
+  animation: live-breathe 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.55s);
+}
+.live-frame.is-face .live-screen {
+  display: none;
+}
+@keyframes live-breathe {
+  0%,
+  100% {
+    opacity: 0.07;
+  }
+  50% {
+    opacity: 0.24;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-frame.is-voice .live-screen,
+  .live-frame.is-empty .live-screen {
+    animation: none;
+    opacity: 0.16;
+  }
 }

@@ -112,7 +112,7 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "BEST FRIEND",
       name: "TUNDE ADEBAYO",
-      state: "present",
+      state: "live",
       frame: "face",
       media:
         "#{@commons}/3/31/WIKITONGUES-_C%C3%A9lestin_speaking_Kilega.webm/" <>
@@ -122,7 +122,7 @@ defmodule PresencemediaWeb.HomeLive do
     %{
       label: "COUSIN",
       name: "KEMI",
-      state: "present",
+      state: "live",
       frame: "voice",
       media:
         "#{@commons}/4/46/Dan_Barker_introducing_himself.ogg/" <>
@@ -285,6 +285,7 @@ defmodule PresencemediaWeb.HomeLive do
     {:ok,
      socket
      |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list)
+     |> assign(live: Enum.filter(users, &(&1.state == "live")))
      |> put_current()}
   end
 
@@ -462,7 +463,7 @@ defmodule PresencemediaWeb.HomeLive do
 
       <%!-- the OLD design's measure, kept: the same mx-auto max-w-6xl px-4 the
            slot grid sat in, so this surface lines up with what came before. --%>
-      <div class="mx-auto h-full w-full max-w-6xl px-4">
+      <div class="relative mx-auto h-full w-full max-w-6xl px-4">
         <div class="pt-[max(1rem,calc(37vh-84px))]">
           <%!-- The heading is NOT held to the list's width — a line of prose
                needs the room to be a line of prose. It shares only the rows'
@@ -685,6 +686,50 @@ defmodule PresencemediaWeb.HomeLive do
                      only thing a voice is allowed to look like. --%>
                 <audio class="frame-audio" preload="none"></audio>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <%!-- ── THE LIVE GRID ──────────────────────────────────────────────────
+             The right half's answer to the left. The list is who you HOLD; this
+             is who is HERE — the people whose line is open right now. Each is a
+             live frame in the same language as the one beside the list: a face
+             plays, a voice breathes, and an open-but-quiet line breathes too,
+             because a live line with nothing coming through is still someone
+             being there.
+
+             They breathe on their OWN phases, staggered by index, so the wall
+             reads as a room of people rather than one machine blinking in time.
+             The faces autoplay muted and looping — no gesture, no sound, just
+             presence you can glance at. It is out of the flow so it cannot move
+             the band the whole left side is measured from, hidden where a screen
+             is too narrow to hold a second column, and covered by the panel the
+             moment a relationship is opened. --%>
+        <div class="live-grid pointer-events-none absolute top-1/2 right-6 hidden w-[35rem] -translate-y-1/2 lg:block">
+          <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
+            HERE NOW <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
+          </p>
+          <div class="grid grid-cols-3 gap-x-5 gap-y-4">
+            <div :for={{person, i} <- Enum.with_index(@live)} class="live-cell" style={"--i: #{i}"}>
+              <div class={[
+                "live-frame is-live relative aspect-square w-full overflow-hidden",
+                "is-#{person.frame}"
+              ]}>
+                <video
+                  :if={person.frame == "face"}
+                  class="live-video absolute inset-0 h-full w-full object-cover"
+                  src={person.media}
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                >
+                </video>
+                <div class="live-screen absolute inset-0"></div>
+              </div>
+              <span class="mt-2 block truncate px-1 text-sm tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
+                {person.label}
+              </span>
             </div>
           </div>
         </div>
