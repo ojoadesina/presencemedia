@@ -574,14 +574,14 @@ defmodule PresencemediaWeb.CoreComponents do
   THE KIND MARK — a small symbol that says, before the name, whether a presence
   is a face or a voice.
 
-  A FACE is a face in three rectangles: two eyes, and beneath them one mouth as
-  wide as the two eyes ADDED TOGETHER — not as wide as the gap between them, the
-  two widths summed — all the same height, sharp corners, no curve anywhere. A
-  face without a head, which is the point: a head reads as a generic avatar,
-  three bars read as ours.
+  Two marks, and they are the "--" placeholder drawn as rectangles:
 
-  A VOICE is a short waveform, four bars — sound in the same rectangles the face
-  is, so the two marks are plainly of one family.
+    FACE  is the two EYES — two small rectangles side by side, "- -".
+    VOICE is the one MOUTH — a single elongated rectangle, "--", as wide as the
+          two eyes added together.
+
+  A face has eyes; a voice has a mouth. Every bar shares one height, sharp
+  corners, no curve anywhere.
 
   It draws in currentColor at a hair over the line's own size, so it sits with
   the name rather than beside it.
@@ -593,9 +593,8 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
       <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]" fill="currentColor">
-        <rect x="6" y="7" width="4" height="3" />
-        <rect x="14" y="7" width="4" height="3" />
-        <rect x="8" y="14" width="8" height="3" />
+        <rect x="6" y="10.5" width="4" height="3" />
+        <rect x="14" y="10.5" width="4" height="3" />
       </svg>
       <svg
         :if={@kind == "voice"}
@@ -603,10 +602,7 @@ defmodule PresencemediaWeb.CoreComponents do
         class="h-[1.15em] w-[1.15em]"
         fill="currentColor"
       >
-        <rect x="3" y="9.5" width="2.4" height="5" rx="1.2" />
-        <rect x="8" y="5.5" width="2.4" height="13" rx="1.2" />
-        <rect x="13" y="8" width="2.4" height="8" rx="1.2" />
-        <rect x="18" y="10.5" width="2.4" height="3" rx="1.2" />
+        <rect x="8" y="10.5" width="8" height="3" />
       </svg>
     </span>
     """
