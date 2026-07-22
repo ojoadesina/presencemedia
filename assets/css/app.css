@@ -1022,24 +1022,27 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
    breathes it; a face fills it. Behind the rows (z-0 to their z-10) so the
    chosen row's name reads over whatever is playing. */
 
-/* THE PLACEHOLDER holds the empty band — the same "--" the relationship list
-   rests on — until a presence lands or the list starts moving. */
-.stage:not(.is-playing):not(.is-scrolling) .focus-empty {
+/* THE PLACEHOLDER holds the EMPTY band — the "--" — until a presence is loaded
+   (is-voice / is-face) or the list starts moving. Gated on the kind rather than
+   on playing, so a presence that has finished its clip still owns the band
+   instead of the placeholder flashing back over it. */
+.stage:not(.is-voice):not(.is-face):not(.is-scrolling) .focus-empty {
   opacity: 1;
 }
 
-/* VOICE breathes the box: a terracotta wash over the base that swells and
-   settles, the pulsation standing in for a static background now that the box
-   itself is the player. */
+/* THE PULSE IS THE PLAY EFFECT. A voice breathes the box only while it is
+   actually playing — muted preview or committed sound, either way — and holds
+   still the moment it ends or is paused. That is what makes the pulse read as
+   "playing now" rather than merely "selected". */
 .stage-fill {
   opacity: 0;
 }
-.stage.is-voice .stage-fill {
+.stage.is-voice.is-playing .stage-fill {
   background-color: var(--color-primary-600);
   animation: stage-breathe 1.6s ease-in-out infinite;
 }
-[data-theme="dark"] .stage.is-voice .stage-fill,
-html:not([data-theme]) .stage.is-voice .stage-fill {
+[data-theme="dark"] .stage.is-voice.is-playing .stage-fill,
+html:not([data-theme]) .stage.is-voice.is-playing .stage-fill {
   background-color: var(--color-primary-500);
 }
 @keyframes stage-breathe {
@@ -1052,22 +1055,47 @@ html:not([data-theme]) .stage.is-voice .stage-fill {
   }
 }
 
-/* FACE fills the box; a scrim rides over the picture so the terracotta name
-   stays legible against a bright frame. */
+/* FACE shows in the box. At rest size a scrim rides over it so the terracotta
+   name overhead stays legible; committed and enlarged, the box comes forward
+   over the rows and the scrim lifts, because there is no longer a name on top
+   to protect and the picture should be seen clean. */
 .stage-video {
   opacity: 0;
 }
 .stage.is-face .stage-video {
   opacity: 1;
 }
-.stage.is-face .stage-fill {
+.stage.is-face:not(.is-live) .stage-fill {
   opacity: 1;
   background-color: rgb(0 0 0 / 0.32);
 }
 
+/* COMMIT enlarges a face to full height and lifts it above the rows so the big
+   picture is not read through the names around it. It grows from the band's
+   centre because the box is pinned there and translated up by half itself. */
+.stage {
+  transition: height 320ms ease-out;
+}
+.stage.is-live.is-face {
+  height: 16rem;
+  z-index: 20;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .stage.is-voice .stage-fill {
+  .stage.is-voice.is-playing .stage-fill {
     animation: none;
     opacity: 0.22;
   }
+  .stage {
+    transition: none;
+  }
+}
+
+/* Hide the scrollbar — the band is the only cursor this list needs, and a
+   scrollbar would draw a second one down the side. */
+.presence-scroll {
+  scrollbar-width: none;
+}
+.presence-scroll::-webkit-scrollbar {
+  display: none;
 }
