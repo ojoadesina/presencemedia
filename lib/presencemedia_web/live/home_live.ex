@@ -682,22 +682,66 @@ defmodule PresencemediaWeb.HomeLive do
            is positioned against the list's box, so a collapsing container would
            drag the header off its own line mid-flight.
 
-           EMPTIED to a blank canvas. The presence stream that filled it — the
-           screen, the wash rows, the band — came out with the turn to
-           people-first; a feed of a relationship's presences was the content
-           model, and that is the thing we are leaving behind. The panel is now
-           just the space under the header, waiting for what a presence panel
-           becomes next.
-
-           Nothing that will be missed is gone: the mechanism, the screen
-           component and the wash styling are kept dormant rather than deleted,
-           so the rebuild has its parts to hand. --%>
+           It carries the relationship list's own design, one level in: the
+           same rows, the same band a third of the way down, the same scroll
+           that chooses. What is different is the content — these are the
+           presences that relationship left, named by whoever left them — and
+           what selection does. There is no frame on the right. The chosen box
+           is the player: a voice breathes it, a face fills it, and it plays the
+           moment it lands, so the frame's whole job is delegated to the
+           selection and nothing sits off to the side. --%>
       <div
         :if={@mode == :open && @current}
         id="presence-panel"
         class="presence-panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
-        <div class="mx-auto h-full w-full max-w-6xl px-4"></div>
+        <div class="mx-auto h-full w-full max-w-6xl px-4">
+          <div class="relative h-full w-[32rem]">
+            <%!-- THE STAGE — the selected box at the band, a third down. It sits
+                 BEHIND the rows (z-0 to their z-10) so the chosen row's own name
+                 reads over whatever is playing. Its id carries the selection so
+                 opening a different relationship gives it a clean element rather
+                 than a patched one; phx-update="ignore" so a re-render never
+                 strips the src the hook set. The video comes first and the fill
+                 second, so the fill is a breathing wash for a voice and a
+                 darkening scrim over the picture for a face. --%>
+            <div
+              id={"stage-#{@selected}"}
+              phx-update="ignore"
+              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-1/2 overflow-hidden"
+            >
+              <video
+                class="stage-video absolute inset-0 h-full w-full object-cover"
+                playsinline
+                preload="none"
+              >
+              </video>
+              <div class="stage-fill absolute inset-0 bg-primary-600/15 dark:bg-primary-500/20"></div>
+              <audio class="stage-audio" preload="none"></audio>
+            </div>
+
+            <%!-- THE LIST. Presence names, one per row, scrolling through the
+                 band. Lead and trail are set by the hook, not here, so the list
+                 rests unselected and every row can still reach the band. --%>
+            <div
+              id={"presence-scroll-#{@selected}"}
+              phx-hook="PresencePanel"
+              phx-update="ignore"
+              class="presence-scroll relative z-10 h-full overflow-y-auto overscroll-contain"
+            >
+              <ul class="pt-[calc(34vh+4rem)] pb-[30vh]">
+                <li
+                  :for={presence <- @current.presences}
+                  data-kind={presence.kind}
+                  data-media={presence.media}
+                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
+                >
+                  <span>{presence.by}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     """

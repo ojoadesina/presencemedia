@@ -428,7 +428,7 @@ html[data-theme="dark"] {
    the two branches mirror the dark variant above, because a plain stylesheet
    cannot call a Tailwind variant. */
 #regions,
-#presence-page {
+#presence-panel {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
   /* ABSENT is the one place neutral earns its keep. Terracotta is the colour of
@@ -440,7 +440,7 @@ html[data-theme="dark"] {
 }
 
 [data-theme="dark"] #regions,
-[data-theme="dark"] #presence-page {
+[data-theme="dark"] #presence-panel {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
   --rg-absent: color-mix(in oklab, var(--color-neutral-300) 8%, transparent);
@@ -448,7 +448,7 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) #regions,
-  html:not([data-theme]) #presence-page {
+  html:not([data-theme]) #presence-panel {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
     --rg-absent: color-mix(in oklab, var(--color-neutral-300) 8%, transparent);
@@ -998,4 +998,57 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
 }
 #regions-scroll.has-selection ~ .bar .frame {
   opacity: 1;
+}
+
+/* ── THE PRESENCE PANEL LIST ─────────────────────────────────────────────────
+   The relationship list's mechanism, one level in — a band a third down, rows
+   scrolling through it — but the chosen box does the frame's job itself. There
+   is no frame off to the side: the STAGE sits at the band, behind the rows, and
+   the chosen row's own name reads over it. */
+.presence-item.is-focused {
+  color: var(--rg-accent);
+}
+
+/* THE STAGE is the selected box. It is invisible until a presence lands in it,
+   then it fills with that presence — a voice breathes the box, a face shows in
+   it — and the name overhead reads against it. Behind the rows (z-0 to their
+   z-10) so the chosen row's text sits over whatever is playing. */
+.stage {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.stage.is-playing {
+  opacity: 1;
+}
+
+/* VOICE breathes the fill, the same heartbeat the frame uses, because there is
+   nothing to look at and the sound is the whole of it. This is the pulsation
+   standing in for the box's background colour — the box IS the player now. */
+.stage-fill {
+  opacity: 0;
+}
+.stage.is-voice .stage-fill {
+  opacity: 1;
+  animation: frame-voice 1.5s ease-in-out infinite;
+}
+
+/* FACE shows in the box itself. A darkening scrim rides over it so the name
+   overhead stays legible against a bright frame — without it a pale sky behind
+   a terracotta name would swallow the word. */
+.stage-video {
+  opacity: 0;
+}
+.stage.is-face .stage-video {
+  opacity: 1;
+}
+.stage.is-face .stage-fill {
+  opacity: 1;
+  background: rgb(0 0 0 / 0.35);
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage.is-voice .stage-fill {
+    animation: none;
+  }
 }
