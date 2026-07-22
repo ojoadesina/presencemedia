@@ -122,6 +122,7 @@ export const PresencePanel = {
     const settle = () => {
       pad();
       scroll.classList.remove("is-scrolling");
+      stage.classList.remove("is-scrolling");
       clear();
       const near = nearest();
 
@@ -164,9 +165,11 @@ export const PresencePanel = {
     scroll.addEventListener(
       "scroll",
       () => {
-        // Moving: no selection and no sound. A voice carrying on over a moving
-        // list would be a voice with nobody attached to it.
+        // Moving: no selection and no sound, and the placeholder gone too — a
+        // row is passing through the band and they would collide. A voice
+        // carrying on over a moving list would be a voice with nobody attached.
         scroll.classList.add("is-scrolling");
+        stage.classList.add("is-scrolling");
         scroll.classList.remove("has-selection");
         clear();
         silence();

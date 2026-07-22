@@ -461,7 +461,8 @@ html[data-theme="dark"] {
 .focus-box::before,
 .frame::before,
 .scope-box::before,
-.band::before {
+.band::before,
+.stage::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -502,6 +503,12 @@ html[data-theme="dark"] {
 .band::before {
   --ax: 18px;
   --ay: 18px;
+}
+/* The presence panel's box is the focus-box's twin — same 24px arms across, and
+   14px down for its slightly taller measure. */
+.stage::before {
+  --ax: 24px;
+  --ay: 14px;
 }
 /* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
    the shortest and its weight the lightest — 3px rules around a 12px label
@@ -1009,32 +1016,44 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   color: var(--rg-accent);
 }
 
-/* THE STAGE is the selected box. It is invisible until a presence lands in it,
-   then it fills with that presence — a voice breathes the box, a face shows in
-   it — and the name overhead reads against it. Behind the rows (z-0 to their
-   z-10) so the chosen row's text sits over whatever is playing. */
-.stage {
-  opacity: 0;
-  transition: opacity 200ms ease-out;
-}
-.stage.is-playing {
+/* THE BOX is the relationship list's own focus-box — its wash and brackets
+   come from .focus-box, so it stands at the band ALWAYS, not only on selection.
+   What lands in it is what changes: empty, it holds the placeholder; a voice
+   breathes it; a face fills it. Behind the rows (z-0 to their z-10) so the
+   chosen row's name reads over whatever is playing. */
+
+/* THE PLACEHOLDER holds the empty band — the same "--" the relationship list
+   rests on — until a presence lands or the list starts moving. */
+.stage:not(.is-playing):not(.is-scrolling) .focus-empty {
   opacity: 1;
 }
 
-/* VOICE breathes the fill, the same heartbeat the frame uses, because there is
-   nothing to look at and the sound is the whole of it. This is the pulsation
-   standing in for the box's background colour — the box IS the player now. */
+/* VOICE breathes the box: a terracotta wash over the base that swells and
+   settles, the pulsation standing in for a static background now that the box
+   itself is the player. */
 .stage-fill {
   opacity: 0;
 }
 .stage.is-voice .stage-fill {
-  opacity: 1;
-  animation: frame-voice 1.5s ease-in-out infinite;
+  background-color: var(--color-primary-600);
+  animation: stage-breathe 1.6s ease-in-out infinite;
+}
+[data-theme="dark"] .stage.is-voice .stage-fill,
+html:not([data-theme]) .stage.is-voice .stage-fill {
+  background-color: var(--color-primary-500);
+}
+@keyframes stage-breathe {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.32;
+  }
 }
 
-/* FACE shows in the box itself. A darkening scrim rides over it so the name
-   overhead stays legible against a bright frame — without it a pale sky behind
-   a terracotta name would swallow the word. */
+/* FACE fills the box; a scrim rides over the picture so the terracotta name
+   stays legible against a bright frame. */
 .stage-video {
   opacity: 0;
 }
@@ -1043,12 +1062,12 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
 }
 .stage.is-face .stage-fill {
   opacity: 1;
-  background: rgb(0 0 0 / 0.35);
-  animation: none;
+  background-color: rgb(0 0 0 / 0.32);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stage.is-voice .stage-fill {
     animation: none;
+    opacity: 0.22;
   }
 }

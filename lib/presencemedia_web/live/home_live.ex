@@ -697,18 +697,22 @@ defmodule PresencemediaWeb.HomeLive do
       >
         <div class="mx-auto h-full w-full max-w-6xl px-4">
           <div class="relative h-full w-[32rem]">
-            <%!-- THE STAGE — the selected box at the band, a third down. It sits
-                 BEHIND the rows (z-0 to their z-10) so the chosen row's own name
-                 reads over whatever is playing. Its id carries the selection so
-                 opening a different relationship gives it a clean element rather
-                 than a patched one; phx-update="ignore" so a re-render never
-                 strips the src the hook set. The video comes first and the fill
-                 second, so the fill is a breathing wash for a voice and a
-                 darkening scrim over the picture for a face. --%>
+            <%!-- THE BOX — the relationship list's own selection box, kept
+                 whole: the wash, the brackets, the "--" placeholder for the
+                 empty band. The ONLY thing left behind is the frame off to the
+                 side; its job moves in here. The box stands at the band always,
+                 and a landing presence fills it — a voice breathes it, a face
+                 shows in it. It sits BEHIND the rows (z-0 to their z-10) so the
+                 chosen row's own name reads over whatever is playing, and the
+                 brackets, being at the corners, clear the words entirely.
+
+                 phx-update="ignore" so a re-render never strips the src the hook
+                 set; the id carries the selection so a different relationship
+                 gets a clean element rather than a patched one. --%>
             <div
               id={"stage-#{@selected}"}
               phx-update="ignore"
-              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-1/2 overflow-hidden"
+              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-1/2 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
             >
               <video
                 class="stage-video absolute inset-0 h-full w-full object-cover"
@@ -716,7 +720,10 @@ defmodule PresencemediaWeb.HomeLive do
                 preload="none"
               >
               </video>
-              <div class="stage-fill absolute inset-0 bg-primary-600/15 dark:bg-primary-500/20"></div>
+              <div class="stage-fill absolute inset-0"></div>
+              <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
+                --
+              </span>
               <audio class="stage-audio" preload="none"></audio>
             </div>
 
