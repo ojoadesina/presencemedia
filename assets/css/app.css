@@ -1021,6 +1021,28 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   color: var(--rg-accent);
 }
 
+/* THE KIND MARK BREATHES while its presence plays — voice or face alike. The
+   hook puts is-playing on the row for exactly as long as the media runs, so the
+   mark says "playing now" in the list itself, and holds still the moment it
+   pauses or ends. */
+.presence-item.is-playing .presence-glyph {
+  animation: glyph-pulse 1.3s ease-in-out infinite;
+}
+@keyframes glyph-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .presence-item.is-playing .presence-glyph {
+    animation: none;
+  }
+}
+
 /* COMMIT expands the chosen row IN THE FLOW — it grows to the box's full height
    and the rows below it move down to make room, an accordion rather than a card
    lifted over its neighbours. The name rides at the top of the opened row so the
@@ -1057,12 +1079,12 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
    the voice is committed and holds where it paused. */
 .stage-progress {
   width: var(--played, 0%);
-  background-color: color-mix(in oklab, var(--color-primary-600) 34%, transparent);
+  background-color: color-mix(in oklab, var(--color-primary-600) 17%, transparent);
   opacity: 0;
 }
 [data-theme="dark"] .stage-progress,
 html:not([data-theme]) .stage-progress {
-  background-color: color-mix(in oklab, var(--color-primary-500) 34%, transparent);
+  background-color: color-mix(in oklab, var(--color-primary-500) 17%, transparent);
 }
 .stage.is-voice.is-live .stage-progress {
   opacity: 1;

@@ -595,8 +595,8 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
       <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.7em] w-[1.7em]" fill="currentColor">
-        <rect x="4" y="9" width="5" height="6" />
-        <rect x="15" y="9" width="5" height="6" />
+        <rect x="4" y="9" width="6" height="6" />
+        <rect x="14" y="9" width="6" height="6" />
       </svg>
       <svg
         :if={@kind == "voice"}

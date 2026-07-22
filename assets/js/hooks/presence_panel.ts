@@ -168,17 +168,23 @@ export const PresencePanel = {
     // than our intentions, so a clip that ends or is paused by the browser tells
     // the truth. is-playing marks that something is running; ending drops the
     // commit so the box shrinks with nothing else asked of it.
+    // is-playing rides both the stage AND the chosen row, so its kind mark can
+    // pulse in the list while it plays — the same "playing now" the progress bar
+    // and the moving picture already say, said once more where the eye is.
     for (const m of [video, audio]) {
       m?.addEventListener("play", () => {
         stage.classList.add("is-playing");
+        focusedRow()?.classList.add("is-playing");
         track();
       });
       m?.addEventListener("pause", () => {
         stage.classList.remove("is-playing");
+        focusedRow()?.classList.remove("is-playing");
         cancelAnimationFrame(raf);
       });
       m?.addEventListener("ended", () => {
         stage.classList.remove("is-playing");
+        focusedRow()?.classList.remove("is-playing");
         cancelAnimationFrame(raf);
         stage.style.setProperty("--played", "0%");
         collapse();
@@ -220,7 +226,8 @@ export const PresencePanel = {
       return best;
     };
 
-    const clear = () => items.forEach((i) => i.classList.remove("is-focused", "is-expanded"));
+    const clear = () =>
+      items.forEach((i) => i.classList.remove("is-focused", "is-expanded", "is-playing"));
 
     const settle = () => {
       pad();
