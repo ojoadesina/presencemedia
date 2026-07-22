@@ -717,7 +717,7 @@ defmodule PresencemediaWeb.HomeLive do
               <video
                 class="stage-video absolute inset-0 h-full w-full object-cover"
                 playsinline
-                preload="none"
+                preload="metadata"
               >
               </video>
               <div class="stage-fill absolute inset-0"></div>
@@ -741,16 +741,18 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-16 cursor-pointer items-center justify-between whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
-                  <span>{presence.by}</span>
-                  <%!-- WHEN it was left, on every row — the one fact a presence
-                       carries besides who and what. Held to its own muted colour
-                       so it never competes with the name, even when the row goes
-                       terracotta in the band. --%>
-                  <span class="presence-when ml-4 text-sm text-light-400 dark:text-dark-500">
-                    {presence.when}
-                  </span>
+                  <%!-- The name, and BELOW it the time it was left — stacked on
+                       the left so the right side stays clean. The time keeps its
+                       own muted colour so it never competes with the name, even
+                       when the row goes terracotta in the band. --%>
+                  <div class="flex flex-col leading-tight">
+                    <span>{presence.by}</span>
+                    <span class="presence-when mt-1 text-sm text-light-400 dark:text-dark-500">
+                      {presence.when}
+                    </span>
+                  </div>
                 </li>
               </ul>
             </div>

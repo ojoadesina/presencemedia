@@ -60,8 +60,9 @@ export const PresencePanel = {
       }
     };
 
-    // PREVIEW: a presence lands, and it plays muted. No commit yet — a new
-    // presence always arrives silent and at rest size.
+    // PREVIEW: a presence lands READY, not playing. No commit, no sound, no
+    // motion — a face shows a still first frame, a voice shows its box, and
+    // both wait for the click.
     const preview = (el: HTMLElement) => {
       const nextMode = el.dataset.kind || "empty";
       const nextSrc = el.dataset.media || "";
@@ -69,8 +70,8 @@ export const PresencePanel = {
 
       stopMedia();
       // Reset the play effect up front rather than trusting the outgoing clip's
-      // 'pause' to land in time — a voice preview does not play, and it must not
-      // inherit the pulse from the face that was showing a moment ago.
+      // 'pause' to land in time — nothing plays on landing, and the box must not
+      // inherit the pulse from the presence that was showing a moment ago.
       stage.classList.remove("is-live", "is-playing");
       setKind(nextMode);
       src = nextSrc;
@@ -78,14 +79,10 @@ export const PresencePanel = {
       const m = media();
       if (!m || !nextSrc) return;
       m.src = nextSrc;
-      m.muted = true;
-      // A FACE previews itself — its muted picture plays so you see who it is
-      // while scrolling. A VOICE has nothing to preview silently, so it waits:
-      // the pulse is the play effect, and it must not run until the voice is
-      // actually being played, which is only ever on the click that commits it.
-      // A scroll is not a user activation, so even the muted face play may be
-      // refused; that is policy, not a fault, and must not throw.
-      if (nextMode === "face") m.play().catch(() => {});
+      // Ready, paused. Because nothing ever plays until the click — and the click
+      // carries the activation sound needs — there is no muting anywhere, and so
+      // none to undo. A face's still frame is coaxed out by the loadedmetadata
+      // handler below; a voice simply has nothing to show until it is played.
     };
 
     // COMMIT: the click on the already-chosen presence turns the sound on, and
@@ -103,28 +100,24 @@ export const PresencePanel = {
       focusedRow()?.classList.remove("is-expanded");
     };
 
-    // The click on the chosen presence is a TOGGLE. First press commits: sound
-    // on, and a face opens to full height. Press it again and it goes back the
-    // way it came — collapsed and muted — because the row is the only control
+    // The click on the chosen presence is a TOGGLE. First press commits: it
+    // plays, with sound, and a face opens to full height. Press it again and it
+    // pauses and goes back the way it came — because the row is the only control
     // and pressing it twice should undo, not do nothing.
     const commit = () => {
       const m = media();
       if (!m || !src) return;
 
       if (stage.classList.contains("is-live")) {
-        m.muted = true;
+        m.pause();
         collapse();
-        // A face keeps playing its muted picture — back to the preview it was.
-        // A voice has no silent preview to fall back to, so it simply stops.
-        if (mode === "voice") m.pause();
         return;
       }
 
-      m.muted = false;
-      if (m.paused || m.ended) {
-        m.currentTime = 0;
-        m.play().catch(() => {});
-      }
+      // Resume where it paused, unless it had run to the end. The click is the
+      // activation, so this play() may carry sound without being refused.
+      if (m.ended) m.currentTime = 0;
+      m.play().catch(() => {});
       stage.classList.add("is-live");
       if (mode === "face") focusedRow()?.classList.add("is-expanded");
     };
@@ -137,17 +130,31 @@ export const PresencePanel = {
       src = "";
     };
 
+    // A READIED FACE IS ITS FIRST FRAME, not a black rectangle — otherwise the
+    // paused box gives no sign there is anyone in it. preload="metadata" paints
+    // nothing on its own, so nudge the time a hair: a seek forces the browser to
+    // decode and show that one frame while the video stays paused. Only when it
+    // is genuinely at rest, so it never fights a clip that is playing.
+    video?.addEventListener("loadedmetadata", () => {
+      if (video.paused && video.currentTime === 0) {
+        try {
+          video.currentTime = 0.05;
+        } catch {
+          /* a source that refuses the seek stays black; not fatal */
+        }
+      }
+    });
+
     // THE PLAY EFFECT AND THE REVERT both follow the media's OWN state rather
     // than our intentions, so a clip that ends or is paused by the browser tells
     // the truth. is-playing is what the pulse rides; ending drops the commit so
-    // the box shrinks and mutes itself with nothing else asked of it.
+    // the box shrinks with nothing else asked of it.
     for (const m of [video, audio]) {
       m?.addEventListener("play", () => stage.classList.add("is-playing"));
       m?.addEventListener("pause", () => stage.classList.remove("is-playing"));
       m?.addEventListener("ended", () => {
         stage.classList.remove("is-playing");
         collapse();
-        m.muted = true;
       });
     }
 
