@@ -1012,8 +1012,23 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
    scrolling through it — but the chosen box does the frame's job itself. There
    is no frame off to the side: the STAGE sits at the band, behind the rows, and
    the chosen row's own name reads over it. */
+.presence-item {
+  transition:
+    height 320ms ease-out,
+    color 200ms ease-out;
+}
 .presence-item.is-focused {
   color: var(--rg-accent);
+}
+
+/* COMMIT expands the chosen row IN THE FLOW — it grows to the box's full height
+   and the rows below it move down to make room, an accordion rather than a card
+   lifted over its neighbours. The name rides at the top of the opened row so the
+   picture fills the space beneath it rather than being covered by it. */
+.presence-item.is-expanded {
+  height: 16rem;
+  align-items: flex-start;
+  padding-top: 1.55rem;
 }
 
 /* THE BOX is the relationship list's own focus-box — its wash and brackets
@@ -1055,30 +1070,28 @@ html:not([data-theme]) .stage.is-voice.is-playing .stage-fill {
   }
 }
 
-/* FACE shows in the box. At rest size a scrim rides over it so the terracotta
-   name overhead stays legible; committed and enlarged, the box comes forward
-   over the rows and the scrim lifts, because there is no longer a name on top
-   to protect and the picture should be seen clean. */
+/* FACE shows in the box, with a scrim over the picture so the terracotta name
+   riding on top stays legible whether the box is at rest size or opened. */
 .stage-video {
   opacity: 0;
 }
 .stage.is-face .stage-video {
   opacity: 1;
 }
-.stage.is-face:not(.is-live) .stage-fill {
+.stage.is-face .stage-fill {
   opacity: 1;
   background-color: rgb(0 0 0 / 0.32);
 }
 
-/* COMMIT enlarges a face to full height and lifts it above the rows so the big
-   picture is not read through the names around it. It grows from the band's
-   centre because the box is pinned there and translated up by half itself. */
+/* COMMIT grows the box to full height to match the row that opened beneath it.
+   The box is top-anchored (translated up by a constant half-row, not by half
+   of ITSELF) so it grows DOWNWARD in step with the row rather than reopening
+   from the centre and drifting off the line the row is holding. */
 .stage {
   transition: height 320ms ease-out;
 }
 .stage.is-live.is-face {
   height: 16rem;
-  z-index: 20;
 }
 
 @media (prefers-reduced-motion: reduce) {

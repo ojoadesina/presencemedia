@@ -508,7 +508,7 @@ defmodule PresencemediaWeb.HomeLive do
                   data-state={user.state}
                   data-frame={user.frame}
                   data-media={user.media}
-                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
+                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
                   <span>{user.label}</span>
                   <%!-- their own name, quiet beside the label: it arrives only
@@ -712,7 +712,7 @@ defmodule PresencemediaWeb.HomeLive do
             <div
               id={"stage-#{@selected}"}
               phx-update="ignore"
-              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-1/2 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
+              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-16 w-[32rem] -translate-y-8 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
             >
               <video
                 class="stage-video absolute inset-0 h-full w-full object-cover"
@@ -741,7 +741,7 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 transition-colors duration-200 dark:text-dark-100"
+                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
                   <span>{presence.by}</span>
                 </li>

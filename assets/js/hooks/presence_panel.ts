@@ -85,6 +85,12 @@ export const PresencePanel = {
     // COMMIT: the click on the already-chosen presence turns the sound on, and
     // grows a face to full height. Reaching a click is the activation the audio
     // needs. A clip that had already run out restarts from the top.
+    //
+    // The growth is INLINE, not an overlay: the chosen row itself expands and
+    // pushes the rows below it down, an accordion rather than a card lifting
+    // over its neighbours. The box (which holds the picture) grows to match and
+    // stays welded to that row, top-anchored, so the two open as one.
+    const expand = () => stage.parentElement?.querySelector<HTMLElement>(".is-focused");
     const commit = () => {
       const m = media();
       if (!m || !src) return;
@@ -93,12 +99,20 @@ export const PresencePanel = {
         m.currentTime = 0;
         m.play().catch(() => {});
       }
-      if (mode === "face") stage.classList.add("is-live");
+      if (mode === "face") {
+        stage.classList.add("is-live");
+        expand()?.classList.add("is-expanded");
+      }
+    };
+
+    const collapse = () => {
+      stage.classList.remove("is-live");
+      expand()?.classList.remove("is-expanded");
     };
 
     const silence = () => {
       stopMedia();
-      stage.classList.remove("is-live");
+      collapse();
       setKind("empty");
       src = "";
     };
@@ -111,7 +125,8 @@ export const PresencePanel = {
       m?.addEventListener("play", () => stage.classList.add("is-playing"));
       m?.addEventListener("pause", () => stage.classList.remove("is-playing"));
       m?.addEventListener("ended", () => {
-        stage.classList.remove("is-playing", "is-live");
+        stage.classList.remove("is-playing");
+        collapse();
         m.muted = true;
       });
     }
@@ -151,7 +166,7 @@ export const PresencePanel = {
       return best;
     };
 
-    const clear = () => items.forEach((i) => i.classList.remove("is-focused"));
+    const clear = () => items.forEach((i) => i.classList.remove("is-focused", "is-expanded"));
 
     const settle = () => {
       pad();
