@@ -576,15 +576,17 @@ defmodule PresencemediaWeb.CoreComponents do
 
   Two marks, and they are the "--" placeholder drawn as rectangles:
 
-    FACE  is the two EYES — two small rectangles side by side, "- -".
-    VOICE is the one MOUTH — a single elongated rectangle, "--", as wide as the
-          two eyes added together.
+    FACE  is the two EYES — two rectangles side by side, "- -".
+    VOICE is the one MOUTH — a single rectangle, "--", as wide as the two eyes
+          span END TO END: from the left edge of the left eye to the right edge
+          of the right eye, gap included, so the mouth covers exactly the width
+          the two eyes do.
 
   A face has eyes; a voice has a mouth. Every bar shares one height, sharp
   corners, no curve anywhere.
 
-  It draws in currentColor at a hair over the line's own size, so it sits with
-  the name rather than beside it.
+  It draws in currentColor a good deal larger than the line, so it reads as a
+  mark rather than a speck.
   """
   attr :kind, :string, required: true
   attr :class, :string, default: nil
@@ -592,17 +594,17 @@ defmodule PresencemediaWeb.CoreComponents do
   def presence_glyph(assigns) do
     ~H"""
     <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
-      <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]" fill="currentColor">
-        <rect x="6" y="10.5" width="4" height="3" />
-        <rect x="14" y="10.5" width="4" height="3" />
+      <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.7em] w-[1.7em]" fill="currentColor">
+        <rect x="4" y="9" width="5" height="6" />
+        <rect x="15" y="9" width="5" height="6" />
       </svg>
       <svg
         :if={@kind == "voice"}
         viewBox="0 0 24 24"
-        class="h-[1.15em] w-[1.15em]"
+        class="h-[1.7em] w-[1.7em]"
         fill="currentColor"
       >
-        <rect x="8" y="10.5" width="8" height="3" />
+        <rect x="4" y="9" width="16" height="6" />
       </svg>
     </span>
     """

@@ -761,15 +761,17 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-20 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
+                  class="presence-item flex h-20 cursor-pointer items-start whitespace-nowrap px-[1.95rem] pt-[1.15rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
                 >
-                  <%!-- The kind mark leads — face or voice — then the name, and
-                       the age stacked BELOW it on the left. Mark and age hold the
-                       same muted neutral; text is neutral throughout, and only
-                       the chosen name in the band is allowed the terracotta. --%>
+                  <%!-- The kind mark leads — face or voice — pinned to the TOP
+                       beside the name rather than centred against the two-line
+                       block, so it reads on the name's line and the age hangs
+                       below. Mark and age hold the same muted neutral; text is
+                       neutral throughout, and only the chosen name in the band
+                       is allowed the terracotta. --%>
                   <.presence_glyph
                     kind={presence.kind}
-                    class="mr-3 text-neutral-400 dark:text-neutral-500"
+                    class="mr-3 -mt-[0.28em] text-neutral-400 dark:text-neutral-500"
                   />
                   <div class="flex flex-col leading-tight">
                     <span>{presence.by}</span>
