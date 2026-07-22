@@ -741,18 +741,21 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
                 >
-                  <%!-- The name, and BELOW it the time it was left — stacked on
-                       the left so the right side stays clean. The time keeps its
-                       own muted colour so it never competes with the name, even
-                       when the row goes terracotta in the band. --%>
-                  <div class="flex flex-col leading-tight">
-                    <span>{presence.by}</span>
-                    <span class="presence-when mt-1 text-sm text-light-400 dark:text-dark-500">
-                      {presence.when}
-                    </span>
-                  </div>
+                  <%!-- The kind mark leads — face or voice — then the name, then
+                       the time on the same line. Mark and time hold the same
+                       muted neutral, quiet metadata either side of the name;
+                       text is neutral throughout, and only the chosen name in
+                       the band is allowed the terracotta. --%>
+                  <.presence_glyph
+                    kind={presence.kind}
+                    class="mr-3 text-neutral-400 dark:text-neutral-500"
+                  />
+                  <span>{presence.by}</span>
+                  <span class="presence-when ml-3 text-sm text-neutral-400 dark:text-neutral-500">
+                    {presence.when}
+                  </span>
                 </li>
               </ul>
             </div>

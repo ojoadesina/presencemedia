@@ -571,6 +571,45 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   @doc """
+  THE KIND MARK — a small symbol that says, before the name, whether a presence
+  is a face or a voice.
+
+  A FACE is a tiny head: a ring with two eyes, the same shape as the app's own
+  mark, so the thing that means "a person on camera" rhymes with the thing that
+  means the app. A VOICE is a short waveform, four bars — the plainest picture
+  of sound there is.
+
+  It draws in currentColor at a hair over the line's own size, so it sits with
+  the name rather than beside it, and it is a first pass at a symbol we are still
+  inventing rather than a settled glyph.
+  """
+  attr :kind, :string, required: true
+  attr :class, :string, default: nil
+
+  def presence_glyph(assigns) do
+    ~H"""
+    <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
+      <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="9" cy="11.5" r="1.35" fill="currentColor" />
+        <circle cx="15" cy="11.5" r="1.35" fill="currentColor" />
+      </svg>
+      <svg
+        :if={@kind == "voice"}
+        viewBox="0 0 24 24"
+        class="h-[1.15em] w-[1.15em]"
+        fill="currentColor"
+      >
+        <rect x="3" y="9.5" width="2.4" height="5" rx="1.2" />
+        <rect x="8" y="5.5" width="2.4" height="13" rx="1.2" />
+        <rect x="13" y="8" width="2.4" height="8" rx="1.2" />
+        <rect x="18" y="10.5" width="2.4" height="3" rx="1.2" />
+      </svg>
+    </span>
+    """
+  end
+
+  @doc """
   Renders a LEFT PRESENCE — one someone recorded and left behind.
 
   Two variants of one object, and which you get depends on where it is.
