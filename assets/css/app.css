@@ -804,7 +804,7 @@ html:not([data-theme]) .bar.is-picked .focus-box {
    once would be a transition; one thing moving and then another appearing is a
    sequence, and a sequence is what "it became a header, and here is what is
    under it" actually looks like. */
-.panel {
+.presence-panel {
   animation: panel-in 380ms 260ms ease-out both;
 }
 @keyframes panel-in {
@@ -823,7 +823,7 @@ html:not([data-theme]) .bar.is-picked .focus-box {
   .regions-scroll {
     transition: none;
   }
-  .panel {
+  .presence-panel {
     animation: none;
   }
 }

@@ -32,7 +32,7 @@ defmodule PresencemediaWeb.HomeLiveTest do
     {:ok, live, html} = live(conn, ~p"/")
 
     # Nothing is picked until something is selected, and the band says nothing.
-    refute html =~ "id=\"panel\""
+    refute html =~ "id=\"presence-panel\""
     refute has_element?(live, "#bar.is-picked")
 
     # Clicking the band with no selection must be inert — there is no item to
@@ -47,7 +47,7 @@ defmodule PresencemediaWeb.HomeLiveTest do
     opened = live |> element(".focus-box") |> render_click()
     assert has_element?(live, "#bar.is-picked")
     assert has_element?(live, "#regions.is-open")
-    assert has_element?(live, "#panel")
+    assert has_element?(live, "#presence-panel")
     # The bar now carries its own label, which is what lets it fly without
     # leaving its words behind in the list.
     assert opened =~ "DAD"
@@ -55,8 +55,8 @@ defmodule PresencemediaWeb.HomeLiveTest do
 
     closed = live |> element(".focus-box") |> render_click()
     refute has_element?(live, "#bar.is-picked")
-    refute has_element?(live, "#panel")
-    refute closed =~ "id=\"panel\""
+    refute has_element?(live, "#presence-panel")
+    refute closed =~ "id=\"presence-panel\""
   end
 
   test "losing the selection closes the panel with it", %{conn: conn} do
@@ -64,11 +64,11 @@ defmodule PresencemediaWeb.HomeLiveTest do
 
     render_hook(live, "select", %{"index" => 0})
     live |> element(".focus-box") |> render_click()
-    assert has_element?(live, "#panel")
+    assert has_element?(live, "#presence-panel")
 
     # Scrolling the band empty must not leave an open view of nobody.
     render_hook(live, "deselect", %{})
-    refute has_element?(live, "#panel")
+    refute has_element?(live, "#presence-panel")
     refute has_element?(live, "#bar.is-picked")
   end
 

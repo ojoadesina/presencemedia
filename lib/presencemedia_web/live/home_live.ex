@@ -284,10 +284,16 @@ defmodule PresencemediaWeb.HomeLive do
 
     {:ok,
      socket
-     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list, captured: 0)
+     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list)
      |> put_current()}
   end
 
+  # DORMANT. Nothing renders `user.presences` since the presence panel was
+  # emptied — it is kept computed rather than torn out because it is real,
+  # curated, voice/face-only media, the raw material the rebuilt panel will
+  # draw on. When the new panel lands, this is what it reads; until then it
+  # simply rides along, built and unshown.
+  #
   # Newest first, the way a feed reads. `by` is resolved here rather than stored
   # on the pool, because who left a presence depends on whose stream it is
   # appearing in — the same clip is "them" in one and "YOU" in another.
@@ -344,13 +350,13 @@ defmodule PresencemediaWeb.HomeLive do
   # that can, since it owns the scroll — and reports the answer here.
   @impl true
   def handle_event("select", %{"index" => index}, socket) do
-    {:noreply, socket |> assign(selected: index, captured: 0) |> put_current()}
+    {:noreply, socket |> assign(selected: index) |> put_current()}
   end
 
   def handle_event("deselect", _params, socket) do
     # Losing the selection closes the panel with it. There is no such thing as an
     # open view of nobody.
-    {:noreply, socket |> assign(selected: nil, mode: :list, captured: 0) |> put_current()}
+    {:noreply, socket |> assign(selected: nil, mode: :list) |> put_current()}
   end
 
   # One event for both directions, because the band is one target and which way
@@ -362,17 +368,6 @@ defmodule PresencemediaWeb.HomeLive do
       {_, :open} -> {:noreply, assign(socket, mode: :list)}
       {_, :list} -> {:noreply, assign(socket, mode: :open)}
     end
-  end
-
-  # THE SAME MECHANISM, one level down. A presence is captured by scrolling it
-  # into the box rather than by pressing it, exactly as a relationship is — the
-  # hook decides who lands there, the server holds which one it was.
-  def handle_event("capture_presence", %{"index" => index}, socket) do
-    {:noreply, socket |> assign(captured: index) |> put_captured()}
-  end
-
-  def handle_event("release_presence", _params, socket) do
-    {:noreply, socket |> assign(captured: nil) |> put_captured()}
   end
 
   def handle_event("toggle_scope", _params, socket) do
@@ -388,27 +383,10 @@ defmodule PresencemediaWeb.HomeLive do
   # LiveView's change tracking off for that whole block — the panel would then be
   # re-sent on every unrelated update.
   defp put_current(socket) do
-    socket
-    |> assign(
-      :current,
-      socket.assigns.selected && Enum.at(socket.assigns.users, socket.assigns.selected)
-    )
-    |> put_captured()
-  end
-
-  # The captured presence resolved once and stored, for the same reason `current`
-  # is: the screen reads it, and reaching into `current.presences` from the
-  # template would call a function with `assigns` and switch change tracking off
-  # for the whole panel. Re-run whenever either the selection or the capture
-  # moves, so the screen above the list always shows what the box is holding.
-  defp put_captured(socket) do
-    current = socket.assigns.current
-    captured = socket.assigns.captured
-
     assign(
       socket,
-      :captured_presence,
-      current && captured && Enum.at(current.presences, captured)
+      :current,
+      socket.assigns.selected && Enum.at(socket.assigns.users, socket.assigns.selected)
     )
   end
 
@@ -697,66 +675,29 @@ defmodule PresencemediaWeb.HomeLive do
         </div>
       </div>
 
-      <%!-- ── THE PANEL ────────────────────────────────────────────────────────
-           What opens under the header once an item has been picked up. It is a
-           SIBLING of the list rather than a child, and fixed rather than in
-           flow, because the list must keep its geometry while hidden: the bar
+      <%!-- ── THE PRESENCE PANEL ───────────────────────────────────────────────
+           What opens under the header once a relationship has been picked up.
+           It is a SIBLING of the list rather than a child, and fixed rather than
+           in flow, because the list must keep its geometry while hidden: the bar
            is positioned against the list's box, so a collapsing container would
            drag the header off its own line mid-flight.
 
-           It starts below where the bar comes to rest and runs to the bottom of
-           the screen, so the picked item reads as a heading with its own
-           contents beneath it rather than as a card floating over a page. --%>
+           EMPTIED to a blank canvas. The presence stream that filled it — the
+           screen, the wash rows, the band — came out with the turn to
+           people-first; a feed of a relationship's presences was the content
+           model, and that is the thing we are leaving behind. The panel is now
+           just the space under the header, waiting for what a presence panel
+           becomes next.
+
+           Nothing that will be missed is gone: the mechanism, the screen
+           component and the wash styling are kept dormant rather than deleted,
+           so the rebuild has its parts to hand. --%>
       <div
         :if={@mode == :open && @current}
-        id="panel"
-        class="panel fixed inset-x-0 top-30 bottom-0 z-20"
+        id="presence-panel"
+        class="presence-panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
-        <div class="mx-auto h-full w-full max-w-6xl px-4">
-          <%!-- THE SAME SURFACE AS /presence, now that /presence is what a
-               presence stream is. A screen at the top that plays whatever is
-               chosen, the list beneath it with the chosen row lifted to its top
-               edge, and every row a filled-wash sentence. The one difference is
-               the data: there the feed is many creators, here it is one
-               conversation, so the washes come in two tones instead of a
-               spread. --%>
-          <div class="flex h-full flex-col pt-4">
-            <%!-- THE SCREEN, the same component /presence uses. It readies on
-                 capture and plays only on a tap, so scrolling the panel is
-                 silent and still. --%>
-            <.presence_screen id={"screen-#{@selected}-#{@captured}"} presence={@captured_presence} />
-
-            <%!-- THE LIST takes the rest of the panel. phx-update="ignore" and
-                 data-anchor="top" for the same reasons /presence carries them:
-                 the hook owns the scroll and the capture class, and the chosen
-                 presence belongs directly under the screen showing it. --%>
-            <div id="stream-slot" class="relative mt-8 min-h-0 w-[32rem] flex-1">
-              <div
-                id="stream-scroll"
-                phx-hook="Stream"
-                phx-update="ignore"
-                data-anchor="top"
-                class="stream-scroll h-full overflow-y-auto overscroll-contain"
-              >
-                <ul class="space-y-5">
-                  <li :for={presence <- @current.presences} class="stream-item">
-                    <div
-                      class="presence-row h-27 w-[32rem] p-[1.95rem]"
-                      style={"--wash-h: #{presence.hue}"}
-                    >
-                      <p class="stream-line text-md tracking-[0.14em]">
-                        <span class="stream-name font-semibold">{presence.by}</span>
-                        <span class="text-light-500 dark:text-dark-500">{presence.kind}</span>
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="band pointer-events-none absolute top-0 left-0 h-27 w-[32rem]"></div>
-            </div>
-          </div>
-        </div>
+        <div class="mx-auto h-full w-full max-w-6xl px-4"></div>
       </div>
     </div>
     """
