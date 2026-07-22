@@ -360,12 +360,12 @@ html[data-theme="dark"] {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  /* A MIDDLE LAYER, not an overlay. A negative z-index inside #regions'
+  /* A MIDDLE LAYER, not an overlay. A negative z-index inside #scopes'
      stacking context lands in the one place that exists between a box's own
      background and its content: painted after the background, before anything
      in flow. Every row, the band, the frame and the mark sit above it,
      untouched, which is what lets it be opaque.
-     (#regions carries z-0, and that is what opens the context. Without it a
+     (#scopes carries z-0, and that is what opens the context. Without it a
      negative index would escape to the page root and hide behind the body.) */
   z-index: -1;
   will-change: transform, opacity;
@@ -427,7 +427,7 @@ html[data-theme="dark"] {
    never mention a colour directly. Light is the default and dark restates them;
    the two branches mirror the dark variant above, because a plain stylesheet
    cannot call a Tailwind variant. */
-#regions,
+#scopes,
 #presence-panel {
   --rg-accent: var(--color-primary-600);
   --rg-bracket: var(--color-primary-500);
@@ -439,7 +439,7 @@ html[data-theme="dark"] {
   --b: 3px; /* bracket weight */
 }
 
-[data-theme="dark"] #regions,
+[data-theme="dark"] #scopes,
 [data-theme="dark"] #presence-panel {
   --rg-accent: var(--color-primary-500);
   --rg-bracket: var(--color-primary-400);
@@ -447,7 +447,7 @@ html[data-theme="dark"] {
 }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme]) #regions,
+  html:not([data-theme]) #scopes,
   html:not([data-theme]) #presence-panel {
     --rg-accent: var(--color-primary-500);
     --rg-bracket: var(--color-primary-400);
@@ -460,7 +460,6 @@ html[data-theme="dark"] {
    arms are sized against the height they sit in. */
 .focus-box::before,
 .frame::before,
-.scope-box::before,
 .band::before,
 .stage::before,
 .live-reticle::before {
@@ -527,31 +526,12 @@ html[data-theme="dark"] {
     transition: none;
   }
 }
-/* THE SCOPE BOX is the smallest thing wearing these brackets, so its arms are
-   the shortest and its weight the lightest — 3px rules around a 12px label
-   would read as a fence rather than a frame. The arms are short enough that the
-   corners stay open even when the label shrinks from UNSCOPED to SCOPED.
-
-   It overrides --rg-bracket rather than getting a rule of its own, because the
-   bracket geometry above already reads that variable: setting it on the element
-   cascades into the pseudo-element for free. Sky, because scope is a control
-   you operate and terracotta already means a person you are reaching. */
-.scope-box {
-  --rg-bracket: var(--color-sky-600);
-  --b: 2px;
-}
-.scope-box::before {
-  --ax: 10px;
-  --ay: 7px;
-}
-[data-theme="dark"] .scope-box {
-  --rg-bracket: var(--color-sky-400);
-}
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme]) .scope-box {
-    --rg-bracket: var(--color-sky-400);
-  }
-}
+/* THE TWO LENSES — SCOPED and LOCATION — used to be one bracketed word off to
+   the right. They are filled, faded chips now, and the fill IS the state: a lit
+   sky chip is the list you are looking through, a dim neutral one the list you
+   are not. A pair you switch between reads as "this, not that" from the fill
+   alone, which is what a viewfinder bracket aimed at a single thing could never
+   say — so the brackets came off, and their geometry went with them. */
 /* ── THE FRAME ─────────────────────────────────────────────────────────────────
    One element, where there used to be a marker and a separate box. It is the
    BAND'S TARGET — the brackets are what aim it at whoever the band landed on —
@@ -717,13 +697,13 @@ html[data-theme="dark"] {
    trackpad, touch and keyboard, and the band is what reports position. A bar
    would only draw a hard vertical edge straight through the fade the mask
    exists to create. Three declarations because three engines disagree. */
-.regions-scroll {
+.scopes-scroll {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* legacy Edge */
   mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 84%, transparent 100%);
 }
-.regions-scroll::-webkit-scrollbar {
+.scopes-scroll::-webkit-scrollbar {
   display: none; /* WebKit / Blink */
 }
 
@@ -731,7 +711,7 @@ html[data-theme="dark"] {
    FADES OUT at the row's edge, so it reads as continuing rather than as broken.
    The mask sits on the row, so it only ever bites text that actually reaches
    the edge; a short name never touches it. */
-.regions-item {
+.scopes-item {
   overflow: hidden;
   mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
@@ -795,9 +775,9 @@ html:not([data-theme]) .bar.is-picked .focus-box {
    The transition on visibility is deliberately stepped rather than eased: it
    holds until the fade has finished on the way out, and drops instantly on the
    way back, so neither direction is ever clickable-but-invisible. */
-#regions.is-open .mark-slot,
-#regions.is-open .lede,
-.list-away .regions-scroll {
+#scopes.is-open .mark-slot,
+#scopes.is-open .lede,
+.list-away .scopes-scroll {
   opacity: 0;
   visibility: hidden;
   transition:
@@ -818,7 +798,7 @@ html:not([data-theme]) .bar.is-picked .focus-box {
 
    Faster out than the bar's travel, so the two do not read as one movement: the
    list is getting out of the way, not being carried. */
-.regions-scroll {
+.scopes-scroll {
   transition:
     opacity 220ms ease-out,
     visibility 0s;
@@ -844,7 +824,7 @@ html:not([data-theme]) .bar.is-picked .focus-box {
 
 @media (prefers-reduced-motion: reduce) {
   .bar,
-  .regions-scroll {
+  .scopes-scroll {
     transition: none;
   }
   .presence-panel {
@@ -1005,22 +985,22 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   opacity: 0;
 }
 
-/* The states regions.ts drives. The placeholder belongs to REST, not to motion:
+/* The states scopes.ts drives. The placeholder belongs to REST, not to motion:
    while the list moves a row is passing through the band and the two would sit
    on top of each other. The frame is the SETTLED choice made visible, so it
    leaves the instant the list moves. A relationship's own name
    appears only while its row is IN the band — it is context, not a second
    label, so it never travels with the row. */
-.regions-item.is-focused {
+.scopes-item.is-focused {
   color: var(--rg-accent);
 }
-.regions-item.is-focused .regions-name {
+.scopes-item.is-focused .scopes-name {
   opacity: 1;
 }
-#regions-scroll:not(.has-selection):not(.is-scrolling) ~ .bar .focus-empty {
+#scopes-scroll:not(.has-selection):not(.is-scrolling) ~ .bar .focus-empty {
   opacity: 1;
 }
-#regions-scroll.has-selection ~ .bar .frame {
+#scopes-scroll.has-selection ~ .bar .frame {
   opacity: 1;
 }
 

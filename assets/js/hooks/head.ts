@@ -59,13 +59,13 @@ export const Head = {
       disc.style.top = `${cy - r}px`;
       disc.style.width = disc.style.height = `${r * 2}px`;
 
-      // INSIDE #regions, not on the body, and this is not a detail. #regions
+      // INSIDE #scopes, not on the body, and this is not a detail. #scopes
       // carries z-0, which on a positioned element opens a stacking context —
       // so the mark's z-30 is only meaningful against its siblings INSIDE that
-      // context. A disc parented to the body competes with #regions as a whole
+      // context. A disc parented to the body competes with #scopes as a whole
       // and wins outright, burying the logo no matter what number it carries.
       // Same parent, same context, and the z-indexes mean what they say.
-      (document.getElementById("regions") ?? document.body).appendChild(disc);
+      (document.getElementById("scopes") ?? document.body).appendChild(disc);
 
       const spread = disc.animate(
         [{ transform: "scale(0)" }, { transform: "scale(1)" }],

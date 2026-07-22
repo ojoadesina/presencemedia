@@ -11,7 +11,7 @@
 // element among several and a box pinned to its top edge would read as a
 // heading rather than as a sight.
 //
-// This is deliberately a copy of `regions.ts` rather than a shared abstraction.
+// This is deliberately a copy of `scopes.ts` rather than a shared abstraction.
 // The two lists sit at different levels of the same app and will drift — one
 // chooses a person, the other chooses a moment — and a base class that has to
 // serve both would end up parameterised into something neither of them reads

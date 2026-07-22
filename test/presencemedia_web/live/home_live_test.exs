@@ -10,7 +10,7 @@ defmodule PresencemediaWeb.HomeLiveTest do
     assert html =~ "MUM"
     assert html =~ "SARAH"
     # one row per user, and a band for them to pass through
-    assert html |> String.split(~s(class="regions-item)) |> length() == 20
+    assert html |> String.split(~s(class="scopes-item)) |> length() == 20
     assert html =~ "focus-box"
   end
 
@@ -46,7 +46,7 @@ defmodule PresencemediaWeb.HomeLiveTest do
 
     opened = live |> element(".focus-box") |> render_click()
     assert has_element?(live, "#bar.is-picked")
-    assert has_element?(live, "#regions.is-open")
+    assert has_element?(live, "#scopes.is-open")
     assert has_element?(live, "#presence-panel")
     # The bar now carries its own label, which is what lets it fly without
     # leaving its words behind in the list.
@@ -72,21 +72,43 @@ defmodule PresencemediaWeb.HomeLiveTest do
     refute has_element?(live, "#bar.is-picked")
   end
 
-  test "scope toggles between its two labels and back", %{conn: conn} do
+  test "the scoped button flips the people list and back", %{conn: conn} do
     {:ok, live, html} = live(conn, ~p"/")
 
     assert html =~ "SCOPED"
-    assert has_element?(live, ~s(.scope-box[aria-pressed="true"]))
+    # Lit means the people list is what the scroller is showing.
+    assert has_element?(live, ~s(button[phx-click="toggle_scope"][aria-pressed="true"]))
 
-    toggled = live |> element(".scope-box") |> render_click()
+    toggled = live |> element(~s(button[phx-click="toggle_scope"])) |> render_click()
     assert toggled =~ "UNSCOPED"
-    assert has_element?(live, ~s(.scope-box[aria-pressed="false"]))
+    # A stranger only the unscoped world holds, so this proves the list swapped.
+    assert toggled =~ "AMINA"
 
-    back = live |> element(".scope-box") |> render_click()
+    back = live |> element(~s(button[phx-click="toggle_scope"])) |> render_click()
     # "SCOPED" is a substring of "UNSCOPED", so proving we came back means
     # proving the longer label is GONE, not that the shorter one is present.
     refute back =~ "UNSCOPED"
     assert back =~ "SCOPED"
-    assert has_element?(live, ~s(.scope-box[aria-pressed="true"]))
+  end
+
+  test "location swaps the list for countries and a pick sets the button", %{conn: conn} do
+    {:ok, live, _html} = live(conn, ~p"/")
+
+    # Entering location swaps people out for a roll of the world; Finland is the
+    # default the button already carried.
+    opened = live |> element(~s(button[phx-click="to_location"])) |> render_click()
+    assert has_element?(live, ~s(button[phx-click="to_location"][aria-pressed="true"]))
+    assert opened =~ "Nigeria"
+
+    # A country settles in the band, then the band is picked — no panel, just the
+    # LOCATION button taking on the chosen place as its state.
+    render_hook(live, "select", %{"index" => 1})
+    picked = live |> element(".focus-box") |> render_click()
+    refute has_element?(live, "#presence-panel")
+    assert picked =~ "NIGERIA"
+
+    # SCOPED brings the people back, on the scope we left.
+    back = live |> element(~s(button[phx-click="toggle_scope"])) |> render_click()
+    assert back =~ "MUM"
   end
 end

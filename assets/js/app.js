@@ -23,7 +23,7 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/presencemedia"
-import {Regions} from "./hooks/regions"
+import {Scopes} from "./hooks/scopes"
 import {Head} from "./hooks/head"
 import {Bar} from "./hooks/bar"
 import {Presence} from "./hooks/presence"
@@ -37,7 +37,7 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, Regions, Head, Bar, Presence, Stream, Screen, PresencePanel, LiveRoom},
+  hooks: {...colocatedHooks, Scopes, Head, Bar, Presence, Stream, Screen, PresencePanel, LiveRoom},
 })
 
 // Show progress bar on live navigation and form submits

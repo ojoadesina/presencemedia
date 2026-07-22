@@ -1,5 +1,8 @@
-// THE REGION LIST. A fixed band a third of the way down the list is the
-// selection: rows scroll THROUGH it, and whichever lands there is chosen.
+// THE SCOPES LIST. A fixed band a third of the way down the list is the
+// selection: rows scroll THROUGH it, and whichever lands there is chosen. It is
+// MODAL — the same scroller and band carry the people you hold (SCOPED), the
+// people you don't (UNSCOPED), and a roll of countries (LOCATION); the server
+// swaps the rows by changing the element's id, which re-runs this hook fresh.
 //
 // Selection resolves on SETTLE, not continuously — a highlight strobing past
 // every row during a flick reads as noise, not as choosing. That single choice
@@ -14,20 +17,20 @@
 // first row in.
 type HookCtx = { el: HTMLElement; pushEvent: (event: string, payload: object) => void };
 
-export const Regions = {
+export const Scopes = {
   mounted(this: HookCtx) {
     const scroll = this.el;
     const push = this.pushEvent.bind(this);
-    // THE TRANSIENT CLASSES LIVE ON THE SCROLLER, not on #regions, and that is
-    // not a preference. #regions is the LiveView root: every patch rewrites its
+    // THE TRANSIENT CLASSES LIVE ON THE SCROLLER, not on #scopes, and that is
+    // not a preference. #scopes is the LiveView root: every patch rewrites its
     // class attribute back to whatever the server rendered, so a hook-set
     // `has-selection` survived only until the next update — which is why the
     // frame vanished and the placeholder came back the moment an item was
     // picked. The scroller carries phx-update="ignore", so it is the one
     // element in the tree LiveView will not touch. The CSS reaches the bar from
     // here with a sibling combinator.
-    const items = Array.from(scroll.querySelectorAll<HTMLElement>(".regions-item"));
-    const root = document.getElementById("regions");
+    const items = Array.from(scroll.querySelectorAll<HTMLElement>(".scopes-item"));
+    const root = document.getElementById("scopes");
     if (!root || !items.length) return;
 
     // THE FRAME is ONE element that every row borrows in turn, rather than one

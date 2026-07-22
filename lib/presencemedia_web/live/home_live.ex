@@ -65,7 +65,7 @@ defmodule PresencemediaWeb.HomeLive do
   # a free licence. The faces come from Wikitongues, whose recordings are single
   # speakers talking to camera. Every clip is under a minute. Licences run CC0
   # to CC BY-SA; attribution lives in ATTRIBUTION.md at the repo root.
-  @users [
+  @scopes [
     %{
       label: "MUM",
       name: "SARAH",
@@ -152,6 +152,126 @@ defmodule PresencemediaWeb.HomeLive do
     %{label: "BARBER", name: "FEMI", state: "absent", frame: "empty", media: nil},
     %{label: "PASTOR", name: "EMMANUEL", state: "present", frame: "empty", media: nil},
     %{label: "TEAMMATE", name: "CHIDI", state: "absent", frame: "empty", media: nil}
+  ]
+
+  # THE UNSCOPED WORLD — everyone you have NOT made a relationship with. They
+  # carry a name but no label, because a label is a name YOU gave someone and
+  # you have given these none. This is the discovery surface: the same live
+  # frame, the same three states, but people you do not yet hold. The SCOPED
+  # button flips the list between the two — the ones you keep, and the rest.
+  @unscopes [
+    %{
+      label: nil,
+      name: "AMINA",
+      state: "live",
+      frame: "face",
+      media:
+        "#{@commons}/8/8e/WIKITONGUES-_Sedang_speaking_Iban.webm/WIKITONGUES-_Sedang_speaking_Iban.webm.360p.vp9.webm"
+    },
+    %{
+      label: nil,
+      name: "LEV",
+      state: "live",
+      frame: "voice",
+      media: "#{@commons}/9/96/Andy_Mabbett_voice.ogg/Andy_Mabbett_voice.ogg.mp3"
+    },
+    %{
+      label: nil,
+      name: "PRIYA",
+      state: "present",
+      frame: "voice",
+      media: "#{@commons}/b/bb/Bettany_Hughes_voice.ogg/Bettany_Hughes_voice.ogg.mp3"
+    },
+    %{
+      label: nil,
+      name: "TARKHAN",
+      state: "live",
+      frame: "face",
+      media:
+        "#{@commons}/2/26/WIKITONGUES-_Tarkhan_speaking_Jek.webm/WIKITONGUES-_Tarkhan_speaking_Jek.webm.360p.vp9.webm"
+    },
+    %{label: nil, name: "SOPHIE", state: "absent", frame: "empty", media: nil},
+    %{
+      label: nil,
+      name: "JERIES",
+      state: "present",
+      frame: "face",
+      media:
+        "#{@commons}/c/c9/WIKITONGUES-_Jeries_speaking_Syriac.webm/WIKITONGUES-_Jeries_speaking_Syriac.webm.360p.vp9.webm"
+    },
+    %{
+      label: nil,
+      name: "MATEO",
+      state: "live",
+      frame: "voice",
+      media: "#{@commons}/0/01/David_Lammy_voice.ogg/David_Lammy_voice.ogg.mp3"
+    },
+    %{
+      label: nil,
+      name: "YERNUR",
+      state: "present",
+      frame: "face",
+      media:
+        "#{@commons}/2/20/WIKITONGUES-_Yernur_speaking_Kazakh.webm/WIKITONGUES-_Yernur_speaking_Kazakh.webm.360p.vp9.webm"
+    },
+    %{label: nil, name: "HANA", state: "absent", frame: "empty", media: nil},
+    %{
+      label: nil,
+      name: "OMAR",
+      state: "present",
+      frame: "voice",
+      media: "#{@commons}/e/ec/David_Harewood_voice.ogg/David_Harewood_voice.ogg.mp3"
+    },
+    %{
+      label: nil,
+      name: "ULADZISLAU",
+      state: "live",
+      frame: "face",
+      media:
+        "#{@commons}/e/ea/WIKITONGUES-_Uladzislau_speaking_Belarusian.webm/WIKITONGUES-_Uladzislau_speaking_Belarusian.webm.360p.vp9.webm"
+    },
+    %{
+      label: nil,
+      name: "FREYA",
+      state: "present",
+      frame: "voice",
+      media: "#{@commons}/0/0f/Alison_Balsom_voice.ogg/Alison_Balsom_voice.ogg.mp3"
+    },
+    %{label: nil, name: "RIZKI", state: "absent", frame: "empty", media: nil},
+    %{
+      label: nil,
+      name: "NOA",
+      state: "present",
+      frame: "voice",
+      media: "#{@commons}/f/fa/Brian_Schmidt_voice.ogg/Brian_Schmidt_voice.ogg.mp3"
+    },
+    %{label: nil, name: "DIEGO", state: "absent", frame: "empty", media: nil}
+  ]
+
+  # WORLD COUNTRIES — the LOCATION list. A scroll of places rather than people;
+  # what settles in the band is a country, and its box shows how many are
+  # present THERE right now instead of a face or a voice. Finland is the default
+  # until another is chosen. The list stays sorted the way the frame reads it —
+  # a plain roll of the world, no counts baked into the order.
+  @countries [
+    %{name: "Finland", count: 128},
+    %{name: "Nigeria", count: 4210},
+    %{name: "Brazil", count: 2670},
+    %{name: "Japan", count: 1840},
+    %{name: "Germany", count: 1520},
+    %{name: "Kenya", count: 980},
+    %{name: "India", count: 6350},
+    %{name: "Canada", count: 1130},
+    %{name: "Mexico", count: 2040},
+    %{name: "Egypt", count: 870},
+    %{name: "France", count: 1390},
+    %{name: "Indonesia", count: 3110},
+    %{name: "Sweden", count: 640},
+    %{name: "Philippines", count: 2280},
+    %{name: "Ghana", count: 720},
+    %{name: "Vietnam", count: 1560},
+    %{name: "Poland", count: 810},
+    %{name: "Argentina", count: 1240}
   ]
 
   # A LEFT PRESENCE is one someone recorded and left behind, as opposed to the
@@ -277,15 +397,18 @@ defmodule PresencemediaWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    users =
-      @users
+    scopes =
+      @scopes
       |> Enum.with_index()
-      |> Enum.map(fn {user, i} -> Map.put(user, :presences, presences_for(user, i)) end)
+      |> Enum.map(fn {scope, i} -> Map.put(scope, :presences, presences_for(scope, i)) end)
 
     {:ok,
      socket
-     |> assign(users: users, scope: "SCOPED", selected: nil, mode: :list)
-     |> assign(live: Enum.filter(users, &(&1.state == "live")))
+     |> assign(scopes: scopes, unscopes: @unscopes, countries: @countries)
+     |> assign(list_mode: :people, scope: "SCOPED", location: "Finland")
+     |> assign(selected: nil, mode: :list)
+     |> assign(live: Enum.filter(scopes, &(&1.state == "live")))
+     |> put_list()
      |> put_current()}
   end
 
@@ -375,23 +498,60 @@ defmodule PresencemediaWeb.HomeLive do
     {:noreply, socket |> assign(selected: nil, mode: :list) |> put_current()}
   end
 
-  # One event for both directions, because the band is one target and which way
-  # it goes is a fact the server already holds. Clicking it with nothing selected
-  # does nothing at all — there is no item to pick up.
+  # The band is one target, and what picking it MEANS depends on what the list is
+  # holding. Over people it opens (or closes) the panel on the chosen person.
+  # Over countries there is no panel — picking a country makes it the LOCATION
+  # button's state, the way you commit a place rather than open a person. Nothing
+  # selected, nothing to pick.
   def handle_event("toggle_open", _params, socket) do
-    case {socket.assigns.selected, socket.assigns.mode} do
-      {nil, _} -> {:noreply, socket}
-      {_, :open} -> {:noreply, assign(socket, mode: :list)}
-      {_, :list} -> {:noreply, assign(socket, mode: :open)}
+    case {socket.assigns.list_mode, socket.assigns.selected, socket.assigns.mode} do
+      {_, nil, _} ->
+        {:noreply, socket}
+
+      {:location, _, _} ->
+        loc = (socket.assigns.current && socket.assigns.current.name) || socket.assigns.location
+        {:noreply, assign(socket, location: loc)}
+
+      {:people, _, :open} ->
+        {:noreply, assign(socket, mode: :list)}
+
+      {:people, _, :list} ->
+        {:noreply, assign(socket, mode: :open)}
     end
   end
 
+  # THE TWO BUTTONS, and the rule that only one is ever lit. SCOPED and LOCATION
+  # are the two things the list can be about; pressing one is always a move TO
+  # its world, and pressing SCOPED while already there is the one place a second
+  # meaning lives — it flips which people, held versus everyone.
   def handle_event("toggle_scope", _params, socket) do
-    {:noreply,
-     update(socket, :scope, fn
-       "SCOPED" -> "UNSCOPED"
-       _ -> "SCOPED"
-     end)}
+    socket =
+      if socket.assigns.list_mode == :location do
+        # Coming back from LOCATION: just re-enter people, on the scope you left.
+        assign(socket, list_mode: :people)
+      else
+        update(socket, :scope, fn
+          "SCOPED" -> "UNSCOPED"
+          _ -> "SCOPED"
+        end)
+      end
+
+    {:noreply, reset_list(socket)}
+  end
+
+  # LOCATION is a detour off the people list, and SCOPED is home. Entering it
+  # settles the scope back to SCOPED so that pressing the people button again —
+  # from here or after — lands on the held people, not on whatever unscoped view
+  # happened to be open when you left. "Re-activate SCOPED" is exactly that.
+  def handle_event("to_location", _params, socket) do
+    {:noreply, socket |> assign(list_mode: :location, scope: "SCOPED") |> reset_list()}
+  end
+
+  # Swapping what the list holds makes the old selection meaningless — its index
+  # now points at a different person, or at a country. Drop it, close any open
+  # panel, and let the freshly-mounted list open unselected and silent.
+  defp reset_list(socket) do
+    socket |> assign(selected: nil, mode: :list) |> put_list() |> put_current()
   end
 
   # The chosen user is resolved ONCE, here, and stored. Looking it up inside the
@@ -402,9 +562,23 @@ defmodule PresencemediaWeb.HomeLive do
     assign(
       socket,
       :current,
-      socket.assigns.selected && Enum.at(socket.assigns.users, socket.assigns.selected)
+      socket.assigns.selected && Enum.at(current_list(socket.assigns), socket.assigns.selected)
     )
   end
+
+  # THE LIST IS MODAL — one scroller, three possible contents, chosen by the two
+  # buttons above it. LOCATION wins outright (it is a different KIND of thing, a
+  # roll of places); otherwise SCOPED shows the people you hold and UNSCOPED the
+  # rest of the world. Everything that renders or resolves the list reads it from
+  # here, so the buttons only ever have to move `list_mode` and `scope`.
+  defp current_list(%{list_mode: :location} = assigns), do: assigns.countries
+  defp current_list(%{scope: "UNSCOPED"} = assigns), do: assigns.unscopes
+  defp current_list(assigns), do: assigns.scopes
+
+  # The list the template renders is stored, not recomputed in the markup:
+  # reading it through a function in HEEx would switch change tracking off for
+  # the whole list. Called wherever the two buttons move `list_mode`/`scope`.
+  defp put_list(socket), do: assign(socket, :list, current_list(socket.assigns))
 
   @impl true
   def render(assigns) do
@@ -423,7 +597,7 @@ defmodule PresencemediaWeb.HomeLive do
          "THE RELATIONSHIP LIST" in app.css.
     --%>
     <div
-      id="regions"
+      id="scopes"
       class={[
         "fixed inset-0 z-0 bg-light-50 font-mono dark:bg-dark-950",
         @mode == :open && "is-open"
@@ -441,7 +615,7 @@ defmodule PresencemediaWeb.HomeLive do
            every label below them. --%>
       <%!-- z-30 clears the theme wash at z-20. The colour has to look like it is
            coming OUT of the mark, which it cannot do while painting over it. --%>
-      <div class="mark-slot pointer-events-none absolute inset-x-0 top-32 z-30">
+      <div class="mark-slot pointer-events-none absolute inset-x-0 top-24 z-30">
         <div class="mx-auto w-full max-w-6xl px-4">
           <%!-- A BUTTON, not a link. It used to point home, but home is this
                page — there is only one route — so the click was doing nothing
@@ -464,34 +638,50 @@ defmodule PresencemediaWeb.HomeLive do
       <%!-- the OLD design's measure, kept: the same mx-auto max-w-6xl px-4 the
            slot grid sat in, so this surface lines up with what came before. --%>
       <div class="mx-auto h-full w-full max-w-6xl px-4">
-        <div class="pt-[max(1rem,calc(37vh-84px))]">
+        <div class="pt-[max(1rem,calc(33vh-84px))]">
           <%!-- The heading is NOT held to the list's width — a line of prose
                needs the room to be a line of prose. It shares only the rows'
                inset, which is what puts every left edge on one line. --%>
           <div class="lede max-w-2xl px-[1.95rem]">
-            <%!-- w-fit is the whole mechanism, and it is load-bearing. A block
-                 <p> is as wide as its CONTAINER, not as its text, so anything
-                 right-aligned inside one lands at the container's edge and
-                 drifts away from the words the moment the copy changes length.
-                 Shrink-wrapping the pair means the box hangs off the end of the
-                 SENTENCE — shorten the line and the box comes with it, lengthen
-                 it and the box follows, with no measurement written down
-                 anywhere to go stale. --%>
-            <div class="w-fit">
-              <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-neutral-300 dark:text-neutral-200">
-                SO YOU DON'T DO LIFE ALONE
-              </p>
+            <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-neutral-300 dark:text-neutral-200">
+              SO YOU DON'T DO LIFE ALONE
+            </p>
 
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  phx-click="toggle_scope"
-                  aria-pressed={to_string(@scope == "SCOPED")}
-                  class="scope-box relative mt-3 cursor-pointer px-3 py-1.5 text-sm tracking-[0.18em] text-sky-600 transition-colors outline-none hover:text-sky-500 focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:text-sky-400 dark:hover:text-sky-300"
-                >
-                  {@scope}
-                </button>
-              </div>
+            <%!-- THE TWO LENSES on one list. SCOPED chooses WHOSE — the people
+                 you hold, or (pressed again) everyone you don't; LOCATION
+                 chooses WHERE, swapping the people out for a roll of the world.
+                 They are filled, faded chips rather than brackets because a
+                 bracket is a viewfinder aimed at ONE thing, and these are a
+                 pair you switch between — a lit one and a dim one reads as
+                 "this, not that" at a glance, which two identical brackets
+                 never could. Left-aligned onto the rows' own edge. --%>
+            <div class="mt-4 flex gap-2">
+              <button
+                type="button"
+                phx-click="toggle_scope"
+                aria-pressed={to_string(@list_mode == :people)}
+                class={[
+                  "cursor-pointer px-3 py-1.5 text-sm tracking-[0.18em] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40",
+                  (@list_mode == :people &&
+                     "bg-sky-500/15 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400") ||
+                    "bg-neutral-400/10 text-neutral-400 hover:text-sky-500 dark:bg-neutral-500/10 dark:text-neutral-500 dark:hover:text-sky-300"
+                ]}
+              >
+                {@scope}
+              </button>
+              <button
+                type="button"
+                phx-click="to_location"
+                aria-pressed={to_string(@list_mode == :location)}
+                class={[
+                  "flex cursor-pointer items-baseline gap-2 px-3 py-1.5 text-sm tracking-[0.18em] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40",
+                  (@list_mode == :location &&
+                     "bg-sky-500/15 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400") ||
+                    "bg-neutral-400/10 text-neutral-400 hover:text-sky-500 dark:bg-neutral-500/10 dark:text-neutral-500 dark:hover:text-sky-300"
+                ]}
+              >
+                LOCATION <span class="text-xs opacity-60">{String.upcase(@location)}</span>
+              </button>
             </div>
           </div>
 
@@ -504,11 +694,17 @@ defmodule PresencemediaWeb.HomeLive do
           <div class={["relative mt-5 w-[32rem]", @mode == :open && "list-away"]}>
             <%!-- phx-update="ignore": the hook marks the focused row with a
                  class, and a patch must never wipe it. --%>
+            <%!-- THE ID CARRIES THE MODE, on purpose. The scroller is
+                 phx-update="ignore" — the hook owns it and a patch never
+                 rewrites its rows — so the ONLY way to swap the list under it is
+                 to change its identity: a new id is a new element, mounted
+                 fresh, its hook re-run against the new rows. That is what lets
+                 SCOPED, UNSCOPED and LOCATION share one scroller and one band. --%>
             <div
-              id="regions-scroll"
-              phx-hook="Regions"
+              id={"scopes-scroll-#{@list_mode}-#{@scope}"}
+              phx-hook="Scopes"
               phx-update="ignore"
-              class="regions-scroll h-[50vh] overflow-y-auto overscroll-contain"
+              class="scopes-scroll h-[50vh] overflow-y-auto overscroll-contain"
             >
               <%!-- The lead and trail are what let the first and last row REACH
                    the band. The lead is one row deeper than the band, which
@@ -518,22 +714,31 @@ defmodule PresencemediaWeb.HomeLive do
                 <%!-- The row CARRIES its own frame, as data rather than as
                      markup. One shared frame reads these on settle, which is
                      why nineteen rows cost nineteen attributes instead of
-                     nineteen media elements. --%>
+                     nineteen media elements. A country carries no media — its
+                     answer is a headcount the server renders, not a face — so it
+                     lands in the band as a plain "empty" frame and the count box
+                     off to the side does the talking. --%>
                 <li
-                  :for={user <- @users}
-                  data-state={user.state}
-                  data-frame={user.frame}
-                  data-media={user.media}
-                  class="regions-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+                  :for={item <- @list}
+                  data-state={item[:state] || "present"}
+                  data-frame={item[:frame] || "empty"}
+                  data-media={item[:media]}
+                  class="scopes-item flex h-[4rem] cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
-                  <span>{user.label}</span>
+                  <span>{item[:label] || item[:name]}</span>
                   <%!-- their own name, quiet beside the label: it arrives only
                        when the row is in the band, and never competes with it.
                        It keeps its own colour on purpose — the focused row turns
                        terracotta, and the name staying muted is what stops the
-                       band reading as two labels shouting at once. --%>
-                  <span class="regions-name ml-3 text-light-300 opacity-0 transition-opacity duration-200 dark:text-dark-600">
-                    {user.name}
+                       band reading as two labels shouting at once. Only a SCOPED
+                       person has a label AND a name; an unscoped stranger or a
+                       country is one word, so this quiet second word is theirs
+                       alone. --%>
+                  <span
+                    :if={item[:label]}
+                    class="scopes-name ml-3 text-light-300 opacity-0 transition-opacity duration-200 dark:text-dark-600"
+                  >
+                    {item[:name]}
                   </span>
                 </li>
               </ul>
@@ -637,6 +842,7 @@ defmodule PresencemediaWeb.HomeLive do
                    which is honest — a playing media element cannot be driven
                    from the server anyway. --%>
               <div
+                :if={@list_mode == :people}
                 id="frame"
                 phx-update="ignore"
                 role="button"
@@ -686,6 +892,29 @@ defmodule PresencemediaWeb.HomeLive do
                      only thing a voice is allowed to look like. --%>
                 <audio class="frame-audio" preload="none"></audio>
               </div>
+
+              <%!-- THE COUNT, where the frame would be. In LOCATION mode a place
+                   in the band has no face and no voice to show — it has a
+                   HEADCOUNT, how many are present there right now. It is
+                   server-rendered rather than hook-owned (it is a number the
+                   process knows, not media the client has to play), so no
+                   phx-update="ignore" here: it simply follows the chosen
+                   country. ml-auto pins it to the same far edge the frame held,
+                   and it fades in only once a country is settled. --%>
+              <div
+                :if={@list_mode == :location}
+                class={[
+                  "count-box pointer-events-none ml-auto flex h-[3.8rem] shrink-0 items-baseline gap-2 bg-primary-600/15 px-4 transition-opacity duration-300 dark:bg-primary-500/20",
+                  (@current && "opacity-100") || "opacity-0"
+                ]}
+              >
+                <span class="text-[clamp(var(--text-2xl),0.9rem+0.5vw,var(--text-6xl))] leading-none tracking-[0.06em] text-primary-600 dark:text-primary-500">
+                  {@current && @current.count}
+                </span>
+                <span class="text-sm tracking-[0.18em] text-primary-600/55 dark:text-primary-500/55">
+                  HERE
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -719,6 +948,16 @@ defmodule PresencemediaWeb.HomeLive do
         <div class="mx-auto h-full w-full max-w-6xl px-4">
           <div class="flex h-full items-start gap-14 pt-8">
             <div class="relative h-full w-[32rem] shrink-0">
+              <%!-- RECORD names the left view against LIVE on the right: this
+                   column is the presences a relationship LEFT — recorded and
+                   held — where the other is who is on the line right now. It
+                   rides at the same height as LIVE so the two heads rhyme, and
+                   it is absolute so it labels the list without pushing the
+                   scroll (which owns the full column height) down off its
+                   band. --%>
+              <p class="absolute top-6 left-1 z-20 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
+                RECORD
+              </p>
               <%!-- THE BOX — the relationship list's own selection box, kept
                  whole: the wash, the brackets, the "--" placeholder for the
                  empty band. The ONLY thing left behind is the frame off to the
@@ -819,8 +1058,7 @@ defmodule PresencemediaWeb.HomeLive do
               class="live-grid pointer-events-none hidden w-[35rem] shrink-0 pt-[1.5rem] lg:block"
             >
               <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-                IN THE ROOM
-                <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
+                LIVE <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
               </p>
               <div class="relative grid grid-cols-3 gap-x-5 gap-y-4">
                 <div
