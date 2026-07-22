@@ -1096,12 +1096,12 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
    the voice is committed and holds where it paused. */
 .stage-progress {
   width: var(--played, 0%);
-  background-color: color-mix(in oklab, var(--color-primary-600) 17%, transparent);
+  background-color: color-mix(in oklab, var(--color-primary-600) 8.5%, transparent);
   opacity: 0;
 }
 [data-theme="dark"] .stage-progress,
 html:not([data-theme]) .stage-progress {
-  background-color: color-mix(in oklab, var(--color-primary-500) 17%, transparent);
+  background-color: color-mix(in oklab, var(--color-primary-500) 8.5%, transparent);
 }
 .stage.is-voice.is-live .stage-progress {
   opacity: 1;

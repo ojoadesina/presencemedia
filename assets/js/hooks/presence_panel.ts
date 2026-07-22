@@ -197,22 +197,25 @@ export const PresencePanel = {
     let snaps = 0;
 
     const rowHeight = () => items[0].getBoundingClientRect().height;
-    const bandCentre = () => {
-      const r = scroll.getBoundingClientRect();
-      return r.top + r.height * 0.34;
-    };
 
-    // Lead and trail are MEASURED, not written in the markup: the band sits at
-    // 34% of the scroller's HEIGHT and a percentage padding resolves against
-    // WIDTH. A full row deeper than the band, so the first row rests a row and a
-    // half below it and the list opens unselected and silent.
+    // THE BAND SITS A FIXED ROW-AND-A-HALF FROM THE TOP, not a third of the way
+    // down. The chosen presence reads NEAR THE TOP with a single row peeking
+    // above it, rather than adrift near the middle of the panel — a fixed offset
+    // rather than a fraction, so it does not drift lower as the panel grows
+    // taller. It is measured off the row's real height, which is also why the
+    // matching stage in the markup is pinned to the same 7.5rem.
+    const bandFromTop = () => rowHeight() * 1.5;
+    const bandCentre = () => scroll.getBoundingClientRect().top + bandFromTop();
+
+    // Lead and trail are MEASURED, not written in the markup. A full row deeper
+    // than the band, so the first row rests a row and a half below it and the
+    // list opens unselected and silent.
     const pad = () => {
       const ul = scroll.querySelector<HTMLElement>("ul");
       if (!ul) return;
-      const h = scroll.clientHeight;
       const rh = rowHeight();
-      ul.style.paddingTop = `${Math.max(0, h * 0.34 + rh)}px`;
-      ul.style.paddingBottom = `${Math.max(0, h * 0.66 - rh / 2)}px`;
+      ul.style.paddingTop = `${Math.max(0, bandFromTop() + rh)}px`;
+      ul.style.paddingBottom = `${Math.max(0, scroll.clientHeight - bandFromTop() - rh / 2)}px`;
     };
 
     const nearest = (): { el: HTMLElement; delta: number } | null => {

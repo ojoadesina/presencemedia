@@ -711,9 +711,15 @@ defmodule PresencemediaWeb.HomeLive do
         id="presence-panel"
         class="presence-panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
-        <div class="relative mx-auto h-full w-full max-w-6xl px-4">
-          <div class="relative h-full w-[32rem]">
-            <%!-- THE BOX — the relationship list's own selection box, kept
+        <%!-- TWO VIEWS, ONE ROOM. The panel is a flex row of equal top: the
+             PRESENCES you scroll on the left, who is IN THE ROOM on the right,
+             their heads on one line. A small top gap under the header, and both
+             pulled up so the eye starts high rather than in the middle of an
+             empty page. --%>
+        <div class="mx-auto h-full w-full max-w-6xl px-4">
+          <div class="flex h-full items-start gap-14 pt-8">
+            <div class="relative h-full w-[32rem] shrink-0">
+              <%!-- THE BOX — the relationship list's own selection box, kept
                  whole: the wash, the brackets, the "--" placeholder for the
                  empty band. The ONLY thing left behind is the frame off to the
                  side; its job moves in here. The box stands at the band always,
@@ -725,70 +731,70 @@ defmodule PresencemediaWeb.HomeLive do
                  phx-update="ignore" so a re-render never strips the src the hook
                  set; the id carries the selection so a different relationship
                  gets a clean element rather than a patched one. --%>
-            <div
-              id={"stage-#{@selected}"}
-              phx-update="ignore"
-              class="stage pointer-events-none absolute top-[34%] left-0 z-0 flex h-20 w-[32rem] -translate-y-10 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
-            >
-              <video
-                class="stage-video absolute inset-0 h-full w-full object-cover"
-                playsinline
-                preload="metadata"
+              <div
+                id={"stage-#{@selected}"}
+                phx-update="ignore"
+                class="stage pointer-events-none absolute top-[7.5rem] left-0 z-0 flex h-20 w-[32rem] -translate-y-10 items-center overflow-hidden bg-primary-600/15 px-[1.95rem] dark:bg-primary-500/20"
               >
-              </video>
-              <div class="stage-fill absolute inset-0"></div>
-              <%!-- THE PROGRESS — a voice's play effect. A translucent black
+                <video
+                  class="stage-video absolute inset-0 h-full w-full object-cover"
+                  playsinline
+                  preload="metadata"
+                >
+                </video>
+                <div class="stage-fill absolute inset-0"></div>
+                <%!-- THE PROGRESS — a voice's play effect. A translucent black
                    layer that grows left to right as the clip plays, its width
                    the fraction played, so the box fills like a bar rather than
                    breathing. --%>
-              <div class="stage-progress absolute inset-y-0 left-0"></div>
-              <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
-                --
-              </span>
-              <audio class="stage-audio" preload="none"></audio>
-            </div>
+                <div class="stage-progress absolute inset-y-0 left-0"></div>
+                <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
+                  --
+                </span>
+                <audio class="stage-audio" preload="none"></audio>
+              </div>
 
-            <%!-- THE LIST. Presence names, one per row, scrolling through the
+              <%!-- THE LIST. Presence names, one per row, scrolling through the
                  band. Lead and trail are set by the hook, not here, so the list
                  rests unselected and every row can still reach the band. --%>
-            <div
-              id={"presence-scroll-#{@selected}"}
-              phx-hook="PresencePanel"
-              phx-update="ignore"
-              class="presence-scroll relative z-10 h-full overflow-y-auto overscroll-contain"
-            >
-              <ul class="pt-[calc(34vh+4rem)] pb-[30vh]">
-                <li
-                  :for={presence <- @current.presences}
-                  data-kind={presence.kind}
-                  data-media={presence.media}
-                  class="presence-item flex h-20 cursor-pointer items-start whitespace-nowrap px-[1.95rem] pt-[1.15rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
-                >
-                  <%!-- The kind mark leads — face or voice — pinned to the TOP
+              <div
+                id={"presence-scroll-#{@selected}"}
+                phx-hook="PresencePanel"
+                phx-update="ignore"
+                class="presence-scroll relative z-10 h-full overflow-y-auto overscroll-contain"
+              >
+                <ul class="pt-[calc(34vh+4rem)] pb-[30vh]">
+                  <li
+                    :for={presence <- @current.presences}
+                    data-kind={presence.kind}
+                    data-media={presence.media}
+                    class="presence-item flex h-20 cursor-pointer items-start whitespace-nowrap px-[1.95rem] pt-[1.15rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-neutral-900 dark:text-neutral-100"
+                  >
+                    <%!-- The kind mark leads — face or voice — pinned to the TOP
                        beside the name rather than centred against the two-line
                        block, so it reads on the name's line and the age hangs
                        below. Mark and age hold the same muted neutral; text is
                        neutral throughout, and only the chosen name in the band
                        is allowed the terracotta. --%>
-                  <.presence_glyph
-                    kind={presence.kind}
-                    class="mr-3 -mt-[0.28em] text-neutral-400 dark:text-neutral-500"
-                  />
-                  <div class="flex flex-col leading-tight">
-                    <span>{presence.by}</span>
-                    <%!-- The age below the name, at the name's own size but faded
+                    <.presence_glyph
+                      kind={presence.kind}
+                      class="mr-3 -mt-[0.28em] text-neutral-400 dark:text-neutral-500"
+                    />
+                    <div class="flex flex-col leading-tight">
+                      <span>{presence.by}</span>
+                      <%!-- The age below the name, at the name's own size but faded
                          well back so it reads as a quiet second line rather than
                          a label competing with it. --%>
-                    <span class="presence-when mt-1 text-neutral-400/55 dark:text-neutral-500/60">
-                      {presence.when}
-                    </span>
-                  </div>
-                </li>
-              </ul>
+                      <span class="presence-when mt-1 text-neutral-400/55 dark:text-neutral-500/60">
+                        {presence.when}
+                      </span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
 
-          <%!-- ── THE LIVE ROOM ────────────────────────────────────────────────
+            <%!-- ── THE LIVE ROOM ────────────────────────────────────────────────
                Who is in THIS room right now — the live half, and now only ever
                here, inside a relationship you have opened, never out on the main
                page for anyone to see. The count is how many are in the room.
@@ -806,46 +812,48 @@ defmodule PresencemediaWeb.HomeLive do
 
                phx-update="ignore" so a re-render never resets the reticle the
                hook is positioning, or restarts the faces. --%>
-          <div
-            id="live-room"
-            phx-hook="LiveRoom"
-            phx-update="ignore"
-            class="live-grid pointer-events-none absolute top-1/2 right-6 hidden w-[35rem] -translate-y-1/2 lg:block"
-          >
-            <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-              IN THE ROOM <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
-            </p>
-            <div class="relative grid grid-cols-3 gap-x-5 gap-y-4">
-              <div
-                :for={{person, i} <- Enum.with_index(@live)}
-                class="live-cell"
-                data-speaks={to_string(person.frame != "empty")}
-                style={"--i: #{i}"}
-              >
-                <div class={[
-                  "live-frame is-live relative aspect-square w-full overflow-hidden",
-                  "is-#{person.frame}"
-                ]}>
-                  <video
-                    :if={person.frame == "face"}
-                    class="live-video absolute inset-0 h-full w-full object-cover"
-                    src={person.media}
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                  >
-                  </video>
-                  <div class="live-screen absolute inset-0"></div>
+            <div
+              id="live-room"
+              phx-hook="LiveRoom"
+              phx-update="ignore"
+              class="live-grid pointer-events-none hidden w-[35rem] shrink-0 pt-[1.5rem] lg:block"
+            >
+              <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
+                IN THE ROOM
+                <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
+              </p>
+              <div class="relative grid grid-cols-3 gap-x-5 gap-y-4">
+                <div
+                  :for={{person, i} <- Enum.with_index(@live)}
+                  class="live-cell"
+                  data-speaks={to_string(person.frame != "empty")}
+                  style={"--i: #{i}"}
+                >
+                  <div class={[
+                    "live-frame is-live relative aspect-square w-full overflow-hidden",
+                    "is-#{person.frame}"
+                  ]}>
+                    <video
+                      :if={person.frame == "face"}
+                      class="live-video absolute inset-0 h-full w-full object-cover"
+                      src={person.media}
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                    >
+                    </video>
+                    <div class="live-screen absolute inset-0"></div>
+                  </div>
+                  <span class="mt-2 block truncate px-1 text-sm tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
+                    {person.label}
+                  </span>
                 </div>
-                <span class="mt-2 block truncate px-1 text-sm tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
-                  {person.label}
-                </span>
-              </div>
 
-              <%!-- The single set of brackets that flies to the active speaker.
+                <%!-- The single set of brackets that flies to the active speaker.
                    Sized and moved entirely by the hook. --%>
-              <div class="live-reticle pointer-events-none absolute top-0 left-0"></div>
+                <div class="live-reticle pointer-events-none absolute top-0 left-0"></div>
+              </div>
             </div>
           </div>
         </div>
