@@ -463,7 +463,7 @@ defmodule PresencemediaWeb.HomeLive do
 
       <%!-- the OLD design's measure, kept: the same mx-auto max-w-6xl px-4 the
            slot grid sat in, so this surface lines up with what came before. --%>
-      <div class="relative mx-auto h-full w-full max-w-6xl px-4">
+      <div class="mx-auto h-full w-full max-w-6xl px-4">
         <div class="pt-[max(1rem,calc(37vh-84px))]">
           <%!-- The heading is NOT held to the list's width — a line of prose
                needs the room to be a line of prose. It shares only the rows'
@@ -689,50 +689,6 @@ defmodule PresencemediaWeb.HomeLive do
             </div>
           </div>
         </div>
-
-        <%!-- ── THE LIVE GRID ──────────────────────────────────────────────────
-             The right half's answer to the left. The list is who you HOLD; this
-             is who is HERE — the people whose line is open right now. Each is a
-             live frame in the same language as the one beside the list: a face
-             plays, a voice breathes, and an open-but-quiet line breathes too,
-             because a live line with nothing coming through is still someone
-             being there.
-
-             They breathe on their OWN phases, staggered by index, so the wall
-             reads as a room of people rather than one machine blinking in time.
-             The faces autoplay muted and looping — no gesture, no sound, just
-             presence you can glance at. It is out of the flow so it cannot move
-             the band the whole left side is measured from, hidden where a screen
-             is too narrow to hold a second column, and covered by the panel the
-             moment a relationship is opened. --%>
-        <div class="live-grid pointer-events-none absolute top-1/2 right-6 hidden w-[35rem] -translate-y-1/2 lg:block">
-          <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-            HERE NOW <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
-          </p>
-          <div class="grid grid-cols-3 gap-x-5 gap-y-4">
-            <div :for={{person, i} <- Enum.with_index(@live)} class="live-cell" style={"--i: #{i}"}>
-              <div class={[
-                "live-frame is-live relative aspect-square w-full overflow-hidden",
-                "is-#{person.frame}"
-              ]}>
-                <video
-                  :if={person.frame == "face"}
-                  class="live-video absolute inset-0 h-full w-full object-cover"
-                  src={person.media}
-                  autoplay
-                  muted
-                  loop
-                  playsinline
-                >
-                </video>
-                <div class="live-screen absolute inset-0"></div>
-              </div>
-              <span class="mt-2 block truncate px-1 text-sm tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
-                {person.label}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <%!-- ── THE PRESENCE PANEL ───────────────────────────────────────────────
@@ -755,7 +711,7 @@ defmodule PresencemediaWeb.HomeLive do
         id="presence-panel"
         class="presence-panel fixed inset-x-0 top-30 bottom-0 z-20"
       >
-        <div class="mx-auto h-full w-full max-w-6xl px-4">
+        <div class="relative mx-auto h-full w-full max-w-6xl px-4">
           <div class="relative h-full w-[32rem]">
             <%!-- THE BOX — the relationship list's own selection box, kept
                  whole: the wash, the brackets, the "--" placeholder for the
@@ -829,6 +785,67 @@ defmodule PresencemediaWeb.HomeLive do
                   </div>
                 </li>
               </ul>
+            </div>
+          </div>
+
+          <%!-- ── THE LIVE ROOM ────────────────────────────────────────────────
+               Who is in THIS room right now — the live half, and now only ever
+               here, inside a relationship you have opened, never out on the main
+               page for anyone to see. The count is how many are in the room.
+
+               Each is a live frame: a face plays, a voice breathes, an
+               open-but-quiet line breathes too. They breathe on their own
+               phases, so the room reads as people rather than one machine.
+
+               THE RETICLE is the difference from every call grid there is: one
+               set of brackets, not one per person, and it GLIDES to whoever is
+               speaking. Attention is a single thing that moves, the way it does
+               in a real room where you look at whoever is talking — not
+               nineteen boxes all outlined at once. The hook drives it; here it
+               is only the target the brackets fly between.
+
+               phx-update="ignore" so a re-render never resets the reticle the
+               hook is positioning, or restarts the faces. --%>
+          <div
+            id="live-room"
+            phx-hook="LiveRoom"
+            phx-update="ignore"
+            class="live-grid pointer-events-none absolute top-1/2 right-6 hidden w-[35rem] -translate-y-1/2 lg:block"
+          >
+            <p class="mb-5 flex items-center gap-3 px-1 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
+              IN THE ROOM <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
+            </p>
+            <div class="relative grid grid-cols-3 gap-x-5 gap-y-4">
+              <div
+                :for={{person, i} <- Enum.with_index(@live)}
+                class="live-cell"
+                data-speaks={to_string(person.frame != "empty")}
+                style={"--i: #{i}"}
+              >
+                <div class={[
+                  "live-frame is-live relative aspect-square w-full overflow-hidden",
+                  "is-#{person.frame}"
+                ]}>
+                  <video
+                    :if={person.frame == "face"}
+                    class="live-video absolute inset-0 h-full w-full object-cover"
+                    src={person.media}
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                  >
+                  </video>
+                  <div class="live-screen absolute inset-0"></div>
+                </div>
+                <span class="mt-2 block truncate px-1 text-sm tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
+                  {person.label}
+                </span>
+              </div>
+
+              <%!-- The single set of brackets that flies to the active speaker.
+                   Sized and moved entirely by the hook. --%>
+              <div class="live-reticle pointer-events-none absolute top-0 left-0"></div>
             </div>
           </div>
         </div>
