@@ -16,7 +16,7 @@
 // It reverts itself. When the media finishes, or the list moves under it, the
 // box shrinks back and mutes again. Nothing keeps playing over a moving list,
 // and nothing stays enlarged once it is done.
-type HookCtx = { el: HTMLElement };
+type HookCtx = { el: HTMLElement; cleanup?: () => void };
 
 export const PresencePanel = {
   mounted(this: HookCtx) {
@@ -71,8 +71,9 @@ export const PresencePanel = {
       stopMedia();
       // Reset the play effect up front rather than trusting the outgoing clip's
       // 'pause' to land in time — nothing plays on landing, and the box must not
-      // inherit the pulse from the presence that was showing a moment ago.
+      // inherit the last presence's progress.
       stage.classList.remove("is-live", "is-playing");
+      stage.style.setProperty("--played", "0%");
       setKind(nextMode);
       src = nextSrc;
 
@@ -126,6 +127,7 @@ export const PresencePanel = {
       stopMedia();
       collapse();
       stage.classList.remove("is-playing");
+      stage.style.setProperty("--played", "0%");
       setKind("empty");
       src = "";
     };
@@ -145,15 +147,40 @@ export const PresencePanel = {
       }
     });
 
+    // THE PROGRESS follows the media's OWN clock, on a rAF rather than the
+    // 'timeupdate' event, which fires about four times a second and would make a
+    // short clip's bar visibly step. It writes the played fraction to --played,
+    // which is the width of the black layer.
+    let raf = 0;
+    const follow = () => {
+      const m = media();
+      if (m && m.duration) {
+        stage.style.setProperty("--played", `${(m.currentTime / m.duration) * 100}%`);
+      }
+      raf = requestAnimationFrame(follow);
+    };
+    const track = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(follow);
+    };
+
     // THE PLAY EFFECT AND THE REVERT both follow the media's OWN state rather
     // than our intentions, so a clip that ends or is paused by the browser tells
-    // the truth. is-playing is what the pulse rides; ending drops the commit so
-    // the box shrinks with nothing else asked of it.
+    // the truth. is-playing marks that something is running; ending drops the
+    // commit so the box shrinks with nothing else asked of it.
     for (const m of [video, audio]) {
-      m?.addEventListener("play", () => stage.classList.add("is-playing"));
-      m?.addEventListener("pause", () => stage.classList.remove("is-playing"));
+      m?.addEventListener("play", () => {
+        stage.classList.add("is-playing");
+        track();
+      });
+      m?.addEventListener("pause", () => {
+        stage.classList.remove("is-playing");
+        cancelAnimationFrame(raf);
+      });
       m?.addEventListener("ended", () => {
         stage.classList.remove("is-playing");
+        cancelAnimationFrame(raf);
+        stage.style.setProperty("--played", "0%");
         collapse();
       });
     }
@@ -265,11 +292,19 @@ export const PresencePanel = {
 
     window.addEventListener("resize", settle);
 
+    // Opening another relationship replaces this element; stop the progress loop
+    // with it, or it runs on forever against a detached box.
+    this.cleanup = () => cancelAnimationFrame(raf);
+
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         pad();
         settle();
       }),
     );
+  },
+
+  destroyed(this: HookCtx) {
+    this.cleanup?.();
   },
 };

@@ -574,14 +574,16 @@ defmodule PresencemediaWeb.CoreComponents do
   THE KIND MARK — a small symbol that says, before the name, whether a presence
   is a face or a voice.
 
-  A FACE is a tiny head: a ring with two eyes, the same shape as the app's own
-  mark, so the thing that means "a person on camera" rhymes with the thing that
-  means the app. A VOICE is a short waveform, four bars — the plainest picture
-  of sound there is.
+  A FACE is a face reduced to three strokes: two rectangular eyes and, beneath
+  them, one mouth as wide as the pair of eyes together — all the same height, no
+  curve anywhere. It is a face without being a head, which is the point: a
+  rounded head reads as a generic avatar, where three bars read as ours.
+
+  A VOICE is a short waveform, four bars — sound, drawn in the same rectangles
+  the face is, so the two marks are plainly of one family.
 
   It draws in currentColor at a hair over the line's own size, so it sits with
-  the name rather than beside it, and it is a first pass at a symbol we are still
-  inventing rather than a settled glyph.
+  the name rather than beside it.
   """
   attr :kind, :string, required: true
   attr :class, :string, default: nil
@@ -589,10 +591,10 @@ defmodule PresencemediaWeb.CoreComponents do
   def presence_glyph(assigns) do
     ~H"""
     <span class={["presence-glyph flex shrink-0", @class]} aria-hidden="true">
-      <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]">
-        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2" />
-        <circle cx="9" cy="11.5" r="1.35" fill="currentColor" />
-        <circle cx="15" cy="11.5" r="1.35" fill="currentColor" />
+      <svg :if={@kind == "face"} viewBox="0 0 24 24" class="h-[1.15em] w-[1.15em]" fill="currentColor">
+        <rect x="6" y="7" width="4" height="3" rx="0.6" />
+        <rect x="14" y="7" width="4" height="3" rx="0.6" />
+        <rect x="6" y="14" width="12" height="3" rx="0.6" />
       </svg>
       <svg
         :if={@kind == "voice"}

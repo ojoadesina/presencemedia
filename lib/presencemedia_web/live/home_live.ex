@@ -167,7 +167,7 @@ defmodule PresencemediaWeb.HomeLive do
   @presence_pool [
     %{
       kind: "voice",
-      when: "07:12",
+      ago: 3,
       len: "0:10",
       from: "them",
       heard: true,
@@ -175,7 +175,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "08:03",
+      ago: 18,
       len: "0:37",
       from: "you",
       heard: true,
@@ -185,7 +185,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "09:41",
+      ago: 60,
       len: "0:15",
       from: "them",
       heard: true,
@@ -193,7 +193,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "11:26",
+      ago: 240,
       len: "0:17",
       from: "you",
       heard: true,
@@ -201,7 +201,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "12:58",
+      ago: 540,
       len: "0:46",
       from: "them",
       heard: true,
@@ -211,7 +211,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "14:07",
+      ago: 1440,
       len: "0:16",
       from: "them",
       heard: true,
@@ -219,7 +219,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "15:34",
+      ago: 2880,
       len: "0:54",
       from: "you",
       heard: true,
@@ -229,7 +229,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "17:19",
+      ago: 7200,
       len: "0:18",
       from: "them",
       heard: true,
@@ -237,7 +237,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "18:45",
+      ago: 20160,
       len: "0:48",
       from: "them",
       heard: false,
@@ -247,7 +247,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "voice",
-      when: "20:02",
+      ago: 43200,
       len: "0:16",
       from: "you",
       heard: true,
@@ -255,7 +255,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "21:30",
+      ago: 216_000,
       len: "0:56",
       from: "them",
       heard: false,
@@ -265,7 +265,7 @@ defmodule PresencemediaWeb.HomeLive do
     },
     %{
       kind: "face",
-      when: "22:51",
+      ago: 525_600,
       len: "0:58",
       from: "them",
       heard: false,
@@ -310,19 +310,34 @@ defmodule PresencemediaWeb.HomeLive do
     person_hue = index |> Kernel.*(137.508) |> round() |> Integer.mod(360)
     you_hue = Integer.mod(person_hue + 180, 360)
 
-    # Rotated so no two people's streams are identical, then SORTED, because a
-    # rotation would otherwise leave the times out of order — and a stream that
-    # is not chronological is not a stream.
+    # Rotated so no two people's streams are identical, then SORTED newest first
+    # by age — a stream that is not chronological is not a stream. `when` is the
+    # age FORMATTED for the eye (3m, 2d, 1y); `ago` is the number it sorts on.
     for k <- 0..5 do
       Enum.at(@presence_pool, rem(index * 4 + k, n))
     end
-    |> Enum.sort_by(& &1.when)
+    |> Enum.sort_by(& &1.ago)
     |> Enum.map(fn presence ->
       presence
       |> Map.put(:by, (presence.from == "you" && "YOU") || user.name)
       |> Map.put(:hue, (presence.from == "you" && you_hue) || person_hue)
+      |> Map.put(:when, relative(presence.ago))
       |> Map.put(:rule, rule_width(presence.len))
     end)
+  end
+
+  # HOW LONG AGO, in the compact way a feed reads it: the single largest unit
+  # that fits, one letter for it. Minutes climb to hours, days, weeks, then
+  # months as "mo" so it cannot be mistaken for minutes, and finally years.
+  defp relative(min) do
+    cond do
+      min < 60 -> "#{min}m"
+      min < 1_440 -> "#{div(min, 60)}h"
+      min < 10_080 -> "#{div(min, 1_440)}d"
+      min < 43_200 -> "#{div(min, 10_080)}w"
+      min < 525_600 -> "#{div(min, 43_200)}mo"
+      true -> "#{div(min, 525_600)}y"
+    end
   end
 
   # HOW LONG, AS A LENGTH. A collapsed presence needs to say more than who left
@@ -721,6 +736,11 @@ defmodule PresencemediaWeb.HomeLive do
               >
               </video>
               <div class="stage-fill absolute inset-0"></div>
+              <%!-- THE PROGRESS — a voice's play effect. A translucent black
+                   layer that grows left to right as the clip plays, its width
+                   the fraction played, so the box fills like a bar rather than
+                   breathing. --%>
+              <div class="stage-progress absolute inset-y-0 left-0"></div>
               <span class="focus-empty text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-primary-600 opacity-0 transition-opacity duration-200 dark:text-primary-500">
                 --
               </span>
@@ -753,7 +773,10 @@ defmodule PresencemediaWeb.HomeLive do
                     class="mr-3 text-neutral-400 dark:text-neutral-500"
                   />
                   <span>{presence.by}</span>
-                  <span class="presence-when ml-3 text-sm text-neutral-400 dark:text-neutral-500">
+                  <%!-- The age, at the name's own size but faded well back, so it
+                       reads as a quiet aside on the same line rather than a
+                       second label. --%>
+                  <span class="presence-when ml-3 text-neutral-400/55 dark:text-neutral-500/60">
                     {presence.when}
                   </span>
                 </li>

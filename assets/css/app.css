@@ -1045,29 +1045,22 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   opacity: 1;
 }
 
-/* THE PULSE IS THE PLAY EFFECT. A voice breathes the box only while it is
-   actually playing — muted preview or committed sound, either way — and holds
-   still the moment it ends or is paused. That is what makes the pulse read as
-   "playing now" rather than merely "selected". */
 .stage-fill {
   opacity: 0;
 }
-.stage.is-voice.is-playing .stage-fill {
-  background-color: var(--color-primary-600);
-  animation: stage-breathe 1.6s ease-in-out infinite;
+
+/* THE PROGRESS IS THE PLAY EFFECT for a voice: a translucent black layer that
+   grows from the left across the box, its width the fraction the hook reports as
+   played, so the box fills like a bar instead of breathing. It shows once the
+   voice is committed, and holds its position when paused rather than snapping
+   back — a bar, after all, remembers where it got to. */
+.stage-progress {
+  width: var(--played, 0%);
+  background-color: rgb(0 0 0 / 0.28);
+  opacity: 0;
 }
-[data-theme="dark"] .stage.is-voice.is-playing .stage-fill,
-html:not([data-theme]) .stage.is-voice.is-playing .stage-fill {
-  background-color: var(--color-primary-500);
-}
-@keyframes stage-breathe {
-  0%,
-  100% {
-    opacity: 0.12;
-  }
-  50% {
-    opacity: 0.32;
-  }
+.stage.is-voice.is-live .stage-progress {
+  opacity: 1;
 }
 
 /* FACE shows in the box. The name rides on top of a picture whose colours we do
@@ -1114,10 +1107,6 @@ html:not([data-theme]) .stage.is-voice.is-playing .stage-fill {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage.is-voice.is-playing .stage-fill {
-    animation: none;
-    opacity: 0.22;
-  }
   .stage {
     transition: none;
   }
