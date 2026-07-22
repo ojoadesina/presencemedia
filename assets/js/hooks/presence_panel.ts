@@ -68,7 +68,10 @@ export const PresencePanel = {
       if (mode === nextMode && src === nextSrc) return;
 
       stopMedia();
-      stage.classList.remove("is-live");
+      // Reset the play effect up front rather than trusting the outgoing clip's
+      // 'pause' to land in time — a voice preview does not play, and it must not
+      // inherit the pulse from the face that was showing a moment ago.
+      stage.classList.remove("is-live", "is-playing");
       setKind(nextMode);
       src = nextSrc;
 
@@ -76,10 +79,13 @@ export const PresencePanel = {
       if (!m || !nextSrc) return;
       m.src = nextSrc;
       m.muted = true;
-      // A scroll is not a user activation; a muted clip may still be refused,
-      // which is policy and must not throw. The pulse runs regardless once the
-      // 'play' event lands.
-      m.play().catch(() => {});
+      // A FACE previews itself — its muted picture plays so you see who it is
+      // while scrolling. A VOICE has nothing to preview silently, so it waits:
+      // the pulse is the play effect, and it must not run until the voice is
+      // actually being played, which is only ever on the click that commits it.
+      // A scroll is not a user activation, so even the muted face play may be
+      // refused; that is policy, not a fault, and must not throw.
+      if (nextMode === "face") m.play().catch(() => {});
     };
 
     // COMMIT: the click on the already-chosen presence turns the sound on, and
@@ -90,29 +96,43 @@ export const PresencePanel = {
     // pushes the rows below it down, an accordion rather than a card lifting
     // over its neighbours. The box (which holds the picture) grows to match and
     // stays welded to that row, top-anchored, so the two open as one.
-    const expand = () => stage.parentElement?.querySelector<HTMLElement>(".is-focused");
-    const commit = () => {
-      const m = media();
-      if (!m || !src) return;
-      m.muted = false;
-      if (m.ended || m.paused) {
-        m.currentTime = 0;
-        m.play().catch(() => {});
-      }
-      if (mode === "face") {
-        stage.classList.add("is-live");
-        expand()?.classList.add("is-expanded");
-      }
-    };
+    const focusedRow = () => stage.parentElement?.querySelector<HTMLElement>(".is-focused");
 
     const collapse = () => {
       stage.classList.remove("is-live");
-      expand()?.classList.remove("is-expanded");
+      focusedRow()?.classList.remove("is-expanded");
+    };
+
+    // The click on the chosen presence is a TOGGLE. First press commits: sound
+    // on, and a face opens to full height. Press it again and it goes back the
+    // way it came — collapsed and muted — because the row is the only control
+    // and pressing it twice should undo, not do nothing.
+    const commit = () => {
+      const m = media();
+      if (!m || !src) return;
+
+      if (stage.classList.contains("is-live")) {
+        m.muted = true;
+        collapse();
+        // A face keeps playing its muted picture — back to the preview it was.
+        // A voice has no silent preview to fall back to, so it simply stops.
+        if (mode === "voice") m.pause();
+        return;
+      }
+
+      m.muted = false;
+      if (m.paused || m.ended) {
+        m.currentTime = 0;
+        m.play().catch(() => {});
+      }
+      stage.classList.add("is-live");
+      if (mode === "face") focusedRow()?.classList.add("is-expanded");
     };
 
     const silence = () => {
       stopMedia();
       collapse();
+      stage.classList.remove("is-playing");
       setKind("empty");
       src = "";
     };

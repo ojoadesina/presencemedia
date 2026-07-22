@@ -741,9 +741,16 @@ defmodule PresencemediaWeb.HomeLive do
                   :for={presence <- @current.presences}
                   data-kind={presence.kind}
                   data-media={presence.media}
-                  class="presence-item flex h-16 cursor-pointer items-center whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
+                  class="presence-item flex h-16 cursor-pointer items-center justify-between whitespace-nowrap px-[1.95rem] text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.14em] text-light-900 dark:text-dark-100"
                 >
                   <span>{presence.by}</span>
+                  <%!-- WHEN it was left, on every row — the one fact a presence
+                       carries besides who and what. Held to its own muted colour
+                       so it never competes with the name, even when the row goes
+                       terracotta in the band. --%>
+                  <span class="presence-when ml-4 text-sm text-light-400 dark:text-dark-500">
+                    {presence.when}
+                  </span>
                 </li>
               </ul>
             </div>
