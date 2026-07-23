@@ -3,15 +3,11 @@
 // settles there is chosen. What is different is what "chosen" does. There is no
 // frame off to the side — the chosen box IS the player.
 //
-// Two stages, so scrolling the list is never a wall of noise:
-//
-//   PREVIEW — a presence that lands in the band plays MUTED. A voice breathes
-//   the box (the pulse is the play effect); a face shows silently at rest size.
-//   Nothing is audible, so you can scroll through a whole conversation in peace.
-//
-//   COMMIT — clicking the chosen presence is what turns the sound on. A face
-//   also grows to full height to be looked at properly; a voice just becomes
-//   audible. There is no play/pause control anywhere — the row is the control.
+// A presence that settles in the band PLAYS — settling on it is the choosing,
+// and asking for a second confirming tap bought nothing. What the tap is still
+// for is SIZE and STOP: it grows a face to full height to be looked at
+// properly, and pressing the playing one pauses it. There is no play/pause
+// control anywhere; the row is the control.
 //
 // It reverts itself. When the media finishes, or the list moves under it, the
 // box shrinks back and mutes again. Nothing keeps playing over a moving list,
@@ -60,10 +56,11 @@ export const PresencePanel = {
       }
     };
 
-    // PREVIEW: a presence lands READY, not playing. No commit, no sound, no
-    // motion — a face shows a still first frame, a voice shows its box, and
-    // both wait for the click.
-    const preview = (el: HTMLElement) => {
+    // CAPTURE: a presence that settles in the band PLAYS. It used to land ready
+    // and paused, waiting for a tap — a deliberate rule, and the wrong one:
+    // settling a presence in the band IS the act of choosing it, and choosing
+    // something and then being asked to confirm is a step that buys nothing.
+    const capture = (el: HTMLElement) => {
       const nextMode = el.dataset.kind || "empty";
       const nextSrc = el.dataset.media || "";
       if (mode === nextMode && src === nextSrc) return;
@@ -80,10 +77,23 @@ export const PresencePanel = {
       const m = media();
       if (!m || !nextSrc) return;
       m.src = nextSrc;
-      // Ready, paused. Because nothing ever plays until the click — and the click
-      // carries the activation sound needs — there is no muting anywhere, and so
-      // none to undo. A face's still frame is coaxed out by the loadedmetadata
-      // handler below; a voice simply has nothing to show until it is played.
+
+      // Sound needs a user activation and a scroll is not one, so a face with no
+      // gesture behind it starts MUTED — always permitted — and the first press
+      // gives it its voice back. Read up front rather than caught afterwards:
+      // once a clip has been refused unmuted, retrying is unreliable.
+      const activated = navigator.userActivation ? navigator.userActivation.hasBeenActive : true;
+      m.muted = nextMode === "face" && !activated;
+
+      m.play()
+        .then(() => {
+          // A VOICE takes the committed state, so its progress bar runs and a
+          // tap now means pause. A FACE deliberately does not: is-live also
+          // GROWS the box, and a list that resized itself every time a row
+          // settled under your thumb would be unusable. Its tap still expands.
+          if (nextMode === "voice") stage.classList.add("is-live");
+        })
+        .catch(() => {});
     };
 
     // COMMIT: the click on the already-chosen presence turns the sound on, and
@@ -267,7 +277,7 @@ export const PresencePanel = {
       clear();
       el.classList.add("is-focused");
       scroll.classList.add("has-selection");
-      preview(el);
+      capture(el);
     };
 
     scroll.addEventListener(
@@ -299,6 +309,12 @@ export const PresencePanel = {
         scroll.scrollBy({ top: r.top + r.height / 2 - bandCentre(), behavior: "smooth" });
       }),
     );
+
+    const unhush = () => {
+      const m = media();
+      if (m && m.muted) m.muted = false;
+    };
+    document.addEventListener("pointerdown", unhush);
 
     window.addEventListener("resize", settle);
 
