@@ -997,10 +997,17 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
 .scopes-item.is-focused .scopes-name {
   opacity: 1;
 }
-#scopes-scroll:not(.has-selection):not(.is-scrolling) ~ .bar .focus-empty {
+/* THESE TWO MATCH ON THE CLASS, NEVER ON THE ID, and that is load-bearing.
+   The scroller's id carries the list mode now (scopes-scroll-people-SCOPED) so
+   that swapping the list re-mounts the hook — which means an #id selector here
+   silently stops matching and takes two things with it: the "--" placeholder
+   that says the band is empty, and the FRAME, the right-hand box that shows the
+   settled person's latest presence. Both are essential and neither may be
+   dropped. The class is stable across every mode, so it is what they hang on. */
+.scopes-scroll:not(.has-selection):not(.is-scrolling) ~ .bar .focus-empty {
   opacity: 1;
 }
-#scopes-scroll.has-selection ~ .bar .frame {
+.scopes-scroll.has-selection ~ .bar .frame {
   opacity: 1;
 }
 
