@@ -104,17 +104,30 @@ export const Scopes = {
       if (!media || !nextSrc) return;
 
       media.src = nextSrc;
-      // Autoplay with sound needs a user activation. A scroll is not one, so
-      // the first selection of a session can legitimately be refused — that is
-      // the browser's policy, not a failure, and it must not throw an unhandled
-      // rejection. Any click on a row satisfies it from then on.
+      // Every clip starts wanting sound. Only a refusal takes it away, and only
+      // until the browser is satisfied — so this must be reset per clip rather
+      // than left wherever the last refusal put it.
+      media.muted = false;
+
+      // AUTOPLAY WITH SOUND NEEDS A USER ACTIVATION, and a scroll is not one —
+      // on a phone especially, flicking the list to settle a row is not a
+      // gesture the browser will accept. That is policy, not a failure.
       //
-      // A REFUSAL IS TREATED AS ENDED. Sound is the default and staying muted
-      // is not on offer, so the honest thing when the browser says no is to
-      // show the replay control — one click both satisfies the policy and
-      // starts the clip, instead of leaving a dead frame with no way in.
+      // What was wrong was the response to it. A refusal used to show the
+      // replay control and stop, which left a FACE sitting frozen: the person
+      // is right there, the clip is loaded, and nothing moves until you tap.
+      // So a face retries MUTED — you see them immediately, which is most of
+      // what a face is for — and unmutes itself the moment any real gesture
+      // arrives. A VOICE gets no such fallback, because silent audio is
+      // nothing at all; it keeps the replay control, which is the honest offer.
       media.play().catch(() => {
-        if (src === nextSrc) frame.classList.add("is-ended");
+        if (src !== nextSrc) return;
+        if (nextMode !== "face") {
+          frame.classList.add("is-ended");
+          return;
+        }
+        media.muted = true;
+        media.play().catch(() => frame.classList.add("is-ended"));
       });
     };
 
@@ -312,6 +325,16 @@ export const Scopes = {
         scroll.scrollBy({ top: r.top + r.height / 2 - bandCentre(), behavior: "smooth" });
       }),
     );
+
+    // THE FIRST REAL GESTURE BUYS THE SOUND BACK. A clip that fell back to
+    // muted has no way of knowing when the browser changed its mind, so the
+    // next press anywhere is taken as the answer. Cheap enough to leave on:
+    // it does nothing at all unless something is actually playing hushed.
+    const unhush = () => {
+      const m = current();
+      if (m && m.muted) m.muted = false;
+    };
+    document.addEventListener("pointerdown", unhush);
 
     window.addEventListener("resize", settle);
     // A frame's grace so the flex layout has resolved a real height to measure.

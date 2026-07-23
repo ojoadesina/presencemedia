@@ -66,10 +66,20 @@ export const SubPanel = {
       dragging = false;
       el.classList.remove("is-dragging");
 
+      const dt = Math.max(1, e.timeStamp - startTime);
+
+      // A TAP IS A TOGGLE. The handle looks pressable and people press it, so
+      // treating every pointerdown as a drag left a tap doing nothing at all —
+      // the panel sprang straight back and read as broken. Barely-moved and
+      // quick is a press; anything else is a drag and falls through below.
+      if (Math.abs(y - startAt) < 6 && dt < 500) {
+        set(y > 0 ? 0 : peek());
+        return;
+      }
+
       // A FLICK BEATS THE POSITION. Someone who throws it downward means it even
       // if they let go early, and someone who throws it up means to close it
       // even from near the bottom — going on distance alone ignores intent.
-      const dt = Math.max(1, e.timeStamp - startTime);
       const velocity = (y - startAt) / dt; // px per ms, positive = downward
       if (Math.abs(velocity) > 0.4) set(velocity > 0 ? peek() : 0);
       else set(y > peek() / 2 ? peek() : 0);

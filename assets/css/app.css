@@ -1352,36 +1352,43 @@ html:not([data-theme]) .live-screen {
     --sub-top: calc(var(--frame-h) + 1.75rem);
   }
 
-  /* THE BOX GOES ABOVE THE LIST, full width, with air around it — between the
-     line and the band rather than crammed against it. */
+  /* THE BOX MOVES ABOVE THE LIST, but keeps its own size and its own edge. Full
+     width belongs to the PANEL, where the box is the thing you are watching; on
+     the list it is an answer to the band, and blowing it up to the whole rail
+     made it the loudest thing on a page whose subject is the list. So it stays
+     the size it is on a desktop and holds the RIGHT edge, which is the edge it
+     holds there too — the position changes, the identity does not. */
   .frame,
   .counts {
     top: auto;
-    right: auto;
-    bottom: calc(100% + 1.5rem);
-    left: 0;
-    width: 100%;
+    right: 0;
+    bottom: calc(100% + 1rem);
+    left: auto;
     transform: none;
   }
-  .frame {
-    height: var(--frame-h);
-  }
-  /* The two counts stand side by side here rather than stacked: across the full
-     rail there is room for both on one line, and stacking them would push the
-     band down for no gain. */
+  /* The two counts stand side by side rather than stacked — side by side they
+     are one object the width of a box, stacked they are a column that pushes
+     the band down twice as far for nothing. */
   .counts {
-    display: grid;
+    display: flex;
     height: auto;
-    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
   }
   .count-unscoped {
     position: static;
     margin-top: 0;
   }
-  /* and the list starts far enough down to leave that box its room */
+
+  /* NO ROOM IS HELD FOR A BOX THAT IS NOT THERE. The gap only opens when
+     something is actually settled in the band, so an unselected list starts
+     where the page starts instead of under a reserved emptiness. :has() is what
+     lets the parent answer to its own descendant's state — the same
+     has-selection the frame itself is revealed by, read one level up. */
   .stage-box {
-    margin-top: calc(var(--frame-h) + 2.75rem);
+    transition: margin-top 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .stage-box:has(.scopes-scroll.has-selection) {
+    margin-top: calc(3.8rem + 2rem);
   }
 
   /* ── THE PANEL, AS TWO VIEWS ─────────────────────────────────────────────
@@ -1405,6 +1412,11 @@ html:not([data-theme]) .live-screen {
     width: 100%;
     padding-top: calc(var(--frame-h) + 2rem);
   }
+  /* IN THE PANEL the box IS the subject, so here it does go full width — and
+     flush with the header above it. Its own p-2 was insetting the picture 8px a
+     side, which is exactly why it read narrower than the header it sits under;
+     the padding exists to keep the brackets off the picture, and in this state
+     there are no brackets. */
   #scopes.is-open .frame {
     position: fixed;
     top: calc(var(--panel-top) + 0.5rem);
@@ -1413,6 +1425,27 @@ html:not([data-theme]) .live-screen {
     left: var(--app-gutter);
     z-index: 25;
     width: auto;
+    height: var(--frame-h);
+    padding: 0;
+  }
+
+  /* WHEN THE RECORD BAND HAS SOMETHING, THE BOX GETS OUT OF THE WAY. Choosing a
+     presence means you are working in the record stream, so the room and the
+     live box stop being the subject — the subpanel climbs into the space they
+     were holding and the stream gets the screen. It comes back the moment the
+     band is empty again. */
+  #scopes:has(.presence-scroll.has-selection) .frame {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #scopes:has(.presence-scroll.has-selection) .record-view {
+    top: 0.5rem;
+  }
+  #scopes:has(.presence-scroll.has-selection) .live-grid {
+    opacity: 0;
+  }
+  .live-grid {
+    transition: opacity 240ms ease-out;
   }
   .record-view {
     /* ABSOLUTE, against the panel, and said explicitly. It rendered correctly

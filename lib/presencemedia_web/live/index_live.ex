@@ -598,6 +598,27 @@ defmodule PresencemediaWeb.IndexLive do
             >
               <p class="mb-5 flex items-center gap-3 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                 LIVE <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>
+                <%!-- THE PAGER, which the hook hides whenever there is only one
+                     page — a control that can never do anything is furniture,
+                     not an affordance. pointer-events-auto against the room's
+                     none: the grid is a display, these two are the exception. --%>
+                <span class="live-pager pointer-events-auto ml-auto flex items-center gap-2" hidden>
+                  <button
+                    type="button"
+                    class="live-prev cursor-pointer px-1 transition-colors hover:text-neutral-500 disabled:cursor-default disabled:opacity-30 dark:hover:text-neutral-400"
+                    aria-label="Previous page"
+                  >
+                    &lt;
+                  </button>
+                  <span class="live-page text-neutral-300 tabular-nums dark:text-neutral-600"></span>
+                  <button
+                    type="button"
+                    class="live-next cursor-pointer px-1 transition-colors hover:text-neutral-500 disabled:cursor-default disabled:opacity-30 dark:hover:text-neutral-400"
+                    aria-label="Next page"
+                  >
+                    &gt;
+                  </button>
+                </span>
               </p>
               <div class="relative grid grid-cols-3 gap-x-5 gap-y-4">
                 <div

@@ -9,20 +9,41 @@
 // open-but-silent line), held for a beat, then the reticle moves on. When the
 // real signal exists, this is the one place that changes: pick by loudness
 // instead of by dice, and the brackets already know how to fly.
+//
+// IT PAGES, because a room is not a list. Twenty open lines shrunk to fit one
+// screen gives twenty faces too small to recognise, which defeats the point of
+// showing faces at all. A page holds as many as can be seen properly — fewer on
+// a phone — and the rest wait their turn. Paging happens HERE rather than on the
+// server because the grid is phx-update="ignore": the server may not touch these
+// rows without throwing away the playing videos and the reticle mid-flight.
 type HookCtx = { el: HTMLElement; cleanup?: () => void };
+
+const PHONE = "(max-width: 40rem)";
 
 export const LiveRoom = {
   mounted(this: HookCtx) {
     const root = this.el;
     const reticle = root.querySelector<HTMLElement>(".live-reticle");
     const stage = reticle?.parentElement ?? null; // the positioned grid
-    const speakers = Array.from(root.querySelectorAll<HTMLElement>(".live-cell")).filter(
-      (c) => c.dataset.speaks === "true",
-    );
-    if (!reticle || !stage || !speakers.length) return;
+    const cells = Array.from(root.querySelectorAll<HTMLElement>(".live-cell"));
+    const pager = root.querySelector<HTMLElement>(".live-pager");
+    const label = root.querySelector<HTMLElement>(".live-page");
+    const prev = root.querySelector<HTMLButtonElement>(".live-prev");
+    const next = root.querySelector<HTMLButtonElement>(".live-next");
+    if (!reticle || !stage || !cells.length) return;
 
+    // Six reads as a room on a wide screen (three across, two deep); four is
+    // what a phone can show at a size where a face is still a face.
+    const perPage = () => (window.matchMedia(PHONE).matches ? 4 : 6);
+    const pages = () => Math.max(1, Math.ceil(cells.length / perPage()));
+    let page = 0;
     let idx = 0;
     let timer: number | undefined;
+
+    // ONLY WHAT IS ON SCREEN CAN BE LOOKED AT. The reticle picks from the
+    // current page, so it never flies off to someone three pages away — and a
+    // page with nobody able to speak simply keeps the brackets away.
+    const speakers = () => cells.filter((c) => !c.hidden && c.dataset.speaks === "true");
 
     // Lay the reticle over a cell's FRAME (not the whole cell, which carries the
     // name below it), measured against the grid it lives in. Every frame is the
@@ -43,27 +64,66 @@ export const LiveRoom = {
       }
     };
 
+    const render = (animate: boolean) => {
+      const n = perPage();
+      const total = pages();
+      page = Math.min(page, total - 1);
+      const start = page * n;
+      cells.forEach((c, i) => {
+        c.hidden = i < start || i >= start + n;
+      });
+
+      // ONE PAGE IS NOT A PAGER. Controls that can never do anything are just
+      // furniture, so they are absent rather than sitting there greyed out.
+      if (pager) pager.hidden = total < 2;
+      if (label) label.textContent = `${page + 1}/${total}`;
+      if (prev) prev.disabled = page === 0;
+      if (next) next.disabled = page >= total - 1;
+
+      const live = speakers();
+      reticle.hidden = live.length === 0;
+      if (live.length) {
+        idx = Math.min(idx, live.length - 1);
+        place(live[idx], animate);
+      }
+    };
+
     // Move to a DIFFERENT speaker each time, so the reticle never appears to
     // stall on the person it is already watching.
     const step = () => {
-      let next = idx;
-      if (speakers.length > 1) {
-        while (next === idx) next = Math.floor(Math.random() * speakers.length);
+      const live = speakers();
+      if (live.length) {
+        let nextIdx = idx;
+        if (live.length > 1) {
+          while (nextIdx === idx) nextIdx = Math.floor(Math.random() * live.length);
+        }
+        idx = nextIdx;
+        place(live[idx], true);
       }
-      idx = next;
-      place(speakers[idx], true);
       timer = window.setTimeout(step, 1300 + Math.random() * 1300);
     };
+
+    const turn = (by: number) => {
+      page = Math.max(0, Math.min(pages() - 1, page + by));
+      idx = 0;
+      // A page change is a JUMP, not a glide: flying the brackets across a grid
+      // whose occupants all just changed would be tracking nobody.
+      render(false);
+    };
+    prev?.addEventListener("click", () => turn(-1));
+    next?.addEventListener("click", () => turn(1));
 
     // First placement is a jump, not a glide — there is nowhere for it to fly
     // FROM. Wait a frame so the grid has laid out and the frames have real
     // rects to measure.
     requestAnimationFrame(() => {
-      place(speakers[0], false);
+      render(false);
       timer = window.setTimeout(step, 1000);
     });
 
-    const onResize = () => place(speakers[idx], false);
+    // A rotation can change how many fit, which changes how many pages there
+    // are — and the reticle has to be re-measured against the new geometry.
+    const onResize = () => render(false);
     window.addEventListener("resize", onResize);
 
     this.cleanup = () => {
