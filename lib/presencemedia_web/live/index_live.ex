@@ -375,7 +375,7 @@ defmodule PresencemediaWeb.IndexLive do
                    picture rather than cropping it, and square on every corner —
                    a screen has corners, and rounding them makes it a widget. --%>
             <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/15 dark:bg-primary-500/20">
-              <video class="frame-video h-full w-full object-cover" playsinline preload="none">
+              <video class="frame-video h-full w-full object-cover" playsinline preload="metadata">
               </video>
               <%!-- Sits ON the screen, covering it: after a clip ends the
                      screen is the only thing there, and a control tucked into

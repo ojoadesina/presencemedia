@@ -104,10 +104,19 @@ export const Scopes = {
       if (!media || !nextSrc) return;
 
       media.src = nextSrc;
-      // Every clip starts wanting sound. Only a refusal takes it away, and only
-      // until the browser is satisfied — so this must be reset per clip rather
-      // than left wherever the last refusal put it.
-      media.muted = false;
+
+      // ASK BEFORE PLAYING, rather than play and handle the refusal. Catching
+      // the rejection was the wrong shape: on iOS a clip that has already been
+      // refused unmuted does not reliably start when you set muted and call
+      // play() again — the decision is made at the first call. So the state is
+      // read UP FRONT and the right call is made once.
+      //
+      // A face with no activation yet plays MUTED, which is always permitted,
+      // so you see the person immediately; the first press unmutes it. A voice
+      // is left alone — silent audio is nothing at all, so it keeps its sound
+      // and takes the replay control if the browser says no.
+      const activated = navigator.userActivation ? navigator.userActivation.hasBeenActive : true;
+      media.muted = nextMode === "face" && !activated;
 
       // AUTOPLAY WITH SOUND NEEDS A USER ACTIVATION, and a scroll is not one —
       // on a phone especially, flicking the list to settle a row is not a
@@ -122,6 +131,8 @@ export const Scopes = {
       // nothing at all; it keeps the replay control, which is the honest offer.
       media.play().catch(() => {
         if (src !== nextSrc) return;
+        // Belt and braces for a browser with no userActivation API: a face that
+        // is still refused falls back to muted, a voice offers the replay.
         if (nextMode !== "face") {
           frame.classList.add("is-ended");
           return;
