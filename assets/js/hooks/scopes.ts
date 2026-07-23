@@ -168,9 +168,20 @@ export const Scopes = {
     let snaps = 0;
 
     const rowHeight = () => items[0].getBoundingClientRect().height;
+
+    // WHERE THE BAND SITS IS THE STYLESHEET'S ANSWER, and this reads it rather
+    // than restating it. The selection box is already ON that line — the CSS put
+    // it there — so measuring the box IS the answer, and moving the band becomes
+    // a one-line change in app.css with nothing here to fall out of step with
+    // it. The fraction below is only a fallback for a surface that somehow has
+    // no bar to measure.
+    const band = document.getElementById("bar")?.querySelector<HTMLElement>(".focus-box") ?? null;
     const bandCentre = () => {
+      if (band) {
+        const r = band.getBoundingClientRect();
+        return r.top + r.height / 2;
+      }
       const r = scroll.getBoundingClientRect();
-      // The band sits at 34% of the list, not its middle.
       return r.top + r.height * 0.34;
     };
 
@@ -189,6 +200,30 @@ export const Scopes = {
 
     const clear = () => items.forEach((i) => i.classList.remove("is-focused"));
 
+    // LEAD AND TRAIL ARE MEASURED, not written into the markup, and that is what
+    // frees the list's HEIGHT. They used to be viewport fractions that only
+    // worked while the scroller was exactly 50vh; the moment it grew to fill the
+    // page they were wrong in both directions — too little lead to open
+    // unselected, too much trail to stop scrolling into nothing.
+    //
+    // Measured, they follow whatever height the layout hands over: a full row
+    // DEEPER than the band up top, so the first row rests below it and the list
+    // opens with the band standing empty; and exactly enough underneath for the
+    // last row to reach the band and no further.
+    const pad = () => {
+      const ul = scroll.querySelector<HTMLElement>("ul");
+      if (!ul) return;
+      const rh = rowHeight();
+      const offset = bandCentre() - scroll.getBoundingClientRect().top;
+      // A FULL ROW deeper than the band, not half of one. Half leaves the first
+      // row's centre exactly one row-height from the band, which is precisely
+      // the distance `settle` counts as "in reach" — so the list opened with the
+      // first row already magnetised in and the band never stood empty. The
+      // unselected state, and the "--" that says so, are load-bearing.
+      ul.style.paddingTop = `${Math.max(0, offset + rh)}px`;
+      ul.style.paddingBottom = `${Math.max(0, scroll.clientHeight - offset - rh / 2)}px`;
+    };
+
     // WHO IS SELECTED NOW BELONGS TO THE SERVER. The hook is still the only
     // thing that can DECIDE it — it owns the scroll, and the answer is a
     // question about pixels — but the panel is real content about a real
@@ -203,6 +238,7 @@ export const Scopes = {
     };
 
     const settle = () => {
+      pad();
       scroll.classList.remove("is-scrolling");
       clear();
       const near = nearest();
@@ -278,6 +314,7 @@ export const Scopes = {
     );
 
     window.addEventListener("resize", settle);
-    settle();
+    // A frame's grace so the flex layout has resolved a real height to measure.
+    requestAnimationFrame(() => requestAnimationFrame(settle));
   },
 };

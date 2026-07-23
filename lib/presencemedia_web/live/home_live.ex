@@ -610,13 +610,18 @@ defmodule PresencemediaWeb.HomeLive do
            with it. Out of flow, the mark cannot move the one piece of geometry
            this screen is built on.
 
-           It shares the rows' 1.95rem inset rather than the container's, which
-           is what puts it on the same left edge as "19+", RELATIONSHIPS, and
-           every label below them. --%>
+           IT IS THE APP'S MARK NOW, NOT THE LIST'S. It used to carry the rows'
+           own 1.95rem inset so it sat on the same left edge as the labels below
+           it — correct while it was a heading FOR the list, and wrong the moment
+           it became the permanent header of the whole surface. A thing that
+           belongs to the app cannot take its position from one column inside the
+           app, or it reads as that column's title and shifts whenever the column
+           does. So it goes hard against the left edge and holds it, no measure,
+           no centred container, no inset borrowed from anything. --%>
       <%!-- z-30 clears the theme wash at z-20. The colour has to look like it is
            coming OUT of the mark, which it cannot do while painting over it. --%>
-      <div class="mark-slot pointer-events-none absolute inset-x-0 top-24 z-30">
-        <div class="mx-auto w-full max-w-6xl px-4">
+      <div class="mark-slot pointer-events-none absolute inset-x-0 top-24 z-30 bg-amber-500">
+        <div class="w-full">
           <%!-- A BUTTON, not a link. It used to point home, but home is this
                page — there is only one route — so the click was doing nothing
                and the affordance was lying. It flips the theme instead, and
@@ -627,10 +632,10 @@ defmodule PresencemediaWeb.HomeLive do
             id="logo"
             type="button"
             phx-hook="Head"
-            class="pointer-events-auto inline-block cursor-pointer px-[1.95rem] outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+            class="pointer-events-auto inline-block cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 bg-blue-500"
             aria-label="Switch theme"
           >
-            <.head class="h-20 text-primary-600 dark:text-primary-500" />
+            <.head class="h-7 text-primary-600 dark:text-primary-500" />
           </button>
         </div>
       </div>
@@ -642,47 +647,59 @@ defmodule PresencemediaWeb.HomeLive do
           <%!-- The heading is NOT held to the list's width — a line of prose
                needs the room to be a line of prose. It shares only the rows'
                inset, which is what puts every left edge on one line. --%>
-          <div class="lede max-w-2xl px-[1.95rem]">
+          <div class="lede max-w-2xl px-[1.95rem] bg-green-500">
             <p class="mt-2 text-[clamp(var(--text-xl),0.85rem+0.38vw,var(--text-4xl))] tracking-[0.15em] text-neutral-300 dark:text-neutral-200">
               SO YOU DON'T DO LIFE ALONE
             </p>
 
-            <%!-- THE TWO LENSES on one list. SCOPED chooses WHOSE — the people
-                 you hold, or (pressed again) everyone you don't; LOCATION
-                 chooses WHERE, swapping the people out for a roll of the world.
-                 They are filled, faded chips rather than brackets because a
-                 bracket is a viewfinder aimed at ONE thing, and these are a
-                 pair you switch between — a lit one and a dim one reads as
-                 "this, not that" at a glance, which two identical brackets
-                 never could. Left-aligned onto the rows' own edge. --%>
-            <div class="mt-4 flex gap-2">
-              <button
-                type="button"
-                phx-click="toggle_scope"
-                aria-pressed={to_string(@list_mode == :people)}
-                class={[
-                  "cursor-pointer px-3 py-1.5 text-sm tracking-[0.18em] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40",
-                  (@list_mode == :people &&
-                     "bg-sky-500/15 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400") ||
-                    "bg-neutral-400/10 text-neutral-400 hover:text-sky-500 dark:bg-neutral-500/10 dark:text-neutral-500 dark:hover:text-sky-300"
-                ]}
-              >
-                {@scope}
-              </button>
-              <button
-                type="button"
-                phx-click="to_location"
-                aria-pressed={to_string(@list_mode == :location)}
-                class={[
-                  "flex cursor-pointer items-baseline gap-2 px-3 py-1.5 text-sm tracking-[0.18em] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40",
-                  (@list_mode == :location &&
-                     "bg-sky-500/15 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400") ||
-                    "bg-neutral-400/10 text-neutral-400 hover:text-sky-500 dark:bg-neutral-500/10 dark:text-neutral-500 dark:hover:text-sky-300"
-                ]}
-              >
-                LOCATION <span class="text-xs opacity-60">{String.upcase(@location)}</span>
-              </button>
-            </div>
+          </div>
+
+          <%!-- THE TWO LENSES on one list, standing where RECORD stands over the
+               presence list — a label directly above the thing it names, in the
+               same small tracked type, so the two surfaces are read the same
+               way. SCOPED chooses WHOSE (the people you hold, or pressed again
+               everyone you don't); the other chooses WHERE.
+
+               TEXT, NOT CHIPS. A filled box reads as a control you press once
+               and are done with; these are a pair you live in, and the lit one
+               is simply the one you are inside. Colour alone carries that —
+               PRIMARY for the one you are in, muted for the one you are not —
+               which is the same language the focused row and the band already
+               speak, so there is no second vocabulary to learn.
+
+               The location lens wears its PLACE as its name. "LOCATION FINLAND"
+               said the same thing twice; the country alone is both the label
+               and the state, exactly as SCOPED is.
+
+               They sit OUTSIDE the list's positioned box on purpose: the bar is
+               absolutely placed at 34% of that box to meet the band the hook
+               measures on the scroller, so anything added inside it would push
+               the two out of agreement. --%>
+          <div class="scope-tags mt-8 mb-5 flex w-lg bg-red-500 gap-6 px-1">
+            <button
+              type="button"
+              phx-click="toggle_scope"
+              aria-pressed={to_string(@list_mode == :people)}
+              class={[
+                "cursor-pointer text-sm tracking-[0.22em] transition-colors outline-none focus-visible:underline",
+                (@list_mode == :people && "text-primary-600 dark:text-primary-500") ||
+                  "text-neutral-400 hover:text-neutral-500 dark:text-neutral-500 dark:hover:text-neutral-400"
+              ]}
+            >
+              {@scope}
+            </button>
+            <button
+              type="button"
+              phx-click="to_location"
+              aria-pressed={to_string(@list_mode == :location)}
+              class={[
+                "cursor-pointer text-sm tracking-[0.22em] transition-colors outline-none focus-visible:underline",
+                (@list_mode == :location && "text-primary-600 dark:text-primary-500") ||
+                  "text-neutral-400 hover:text-neutral-500 dark:text-neutral-500 dark:hover:text-neutral-400"
+              ]}
+            >
+              {String.upcase(@location)}
+            </button>
           </div>
 
           <%!-- The list steps aside for the panel by FADING, never by
@@ -691,7 +708,7 @@ defmodule PresencemediaWeb.HomeLive do
                halfway through the flight — and keeping the DOM is also what
                makes the return free: same scroll offset, same focused row,
                because nothing was ever destroyed. --%>
-          <div class={["relative mt-5 w-[32rem]", @mode == :open && "list-away"]}>
+          <div class={["relative w-[32rem]", @mode == :open && "list-away"]}>
             <%!-- phx-update="ignore": the hook marks the focused row with a
                  class, and a patch must never wipe it. --%>
             <%!-- THE ID CARRIES THE MODE, on purpose. The scroller is

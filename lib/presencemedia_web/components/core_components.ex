@@ -742,25 +742,34 @@ defmodule PresencemediaWeb.CoreComponents do
   end
 
   @doc """
-  Renders the mark: a head, face on, eyes open.
+  Renders the mark: a face, in the app's own handwriting.
 
   It is the whole argument of the product in one shape — people are the primary
-  focus — so it is a FACE rather than a monogram or a glyph of a network. Two
-  eyes on a circle is the least you can draw that a person reads as another
-  person looking back.
+  focus — so it is a FACE rather than a monogram or a glyph of a network. What
+  changed is HOW it draws one. This surface already had a face: `presence_glyph`
+  says a face is TWO RECTANGLES and a voice is ONE, and those proportions are
+  deliberate (the mouth is exactly as wide as the eyes' span). The mark used to
+  answer the same question differently — a circle with two round eyes — so the
+  app drew a face two contradictory ways, and the round one was the odd shape on
+  a surface that is square everywhere else and argues, in its own comments, that
+  rounding a screen turns it into a widget.
 
-  `animated` blinks it. The blink is long-cycle and single-frame on purpose: a
-  logo that blinks often is a logo that nags, but one that blinks occasionally
-  is alive in peripheral vision, which is exactly the claim the mark is making.
-  Pass `animated={false}` where stillness matters — a favicon, a print sheet, a
-  dense list of many marks.
+  So the mark is the glyph at mark scale: the same two squares, the same gap,
+  cropped to their own bounds so they fill the box. One way to draw a face.
+
+  `animated` OPENS it — each eye scales up from nothing on arrival, the second a
+  beat behind the first. One motion, once. It is deliberately not a blink or a
+  breath: this surface's motion is instrument-like (the reticle glides, the band
+  snaps, the bar fills), and a mark that performs on a loop belongs to a mascot,
+  which this is not. Pass `animated={false}` where stillness matters — a
+  favicon, a print sheet, a dense list of many marks.
 
   ## Examples
 
       <.head />
-      <.head class="h-8 text-primary-600" animated={false} />
+      <.head class="h-7 text-primary-600" animated={false} />
   """
-  attr :class, :string, default: "h-20 text-primary-500"
+  attr :class, :string, default: "h-7 text-primary-500"
   attr :animated, :boolean, default: true
   attr :rest, :global
 
@@ -768,18 +777,13 @@ defmodule PresencemediaWeb.CoreComponents do
     ~H"""
     <svg
       class={["head", @animated && "is-animated", @class]}
-      viewBox="50.8 0 298 400"
-      fill="none"
+      viewBox="0 0 16 6"
+      fill="currentColor"
       aria-hidden="true"
       {@rest}
     >
-      <g class="head-face">
-        <circle cx="199.8" cy="197.8" r="149" fill="currentColor" />
-        <g class="head-eyes">
-          <circle cx="108.6" cy="231.3" r="18" fill="#000000" />
-          <circle cx="291" cy="231.3" r="18" fill="#000000" />
-        </g>
-      </g>
+      <rect class="head-eye" x="0" y="0" width="6" height="6" />
+      <rect class="head-eye" x="10" y="0" width="6" height="6" />
     </svg>
     """
   end

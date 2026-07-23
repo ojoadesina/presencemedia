@@ -234,115 +234,113 @@ html[data-theme="dark"] {
 /* This file is for your main application CSS */
 
 /* ── THE MARK ──────────────────────────────────────────────────────────────────
-   THREE animations, layered, and they do not fight because they act on
-   different things: the FACE scales, the EYES scale on Y only, and the two are
-   nested so the eyes inherit the face's motion for free.
+   TWO SQUARES, which is what this surface already means by "a face":
+   presence_glyph draws a face as two rectangles and a voice as one, with the
+   mouth exactly as wide as the eyes' span. The mark is that same glyph at mark
+   scale, cropped to its own bounds so it fills the box.
 
-   The blink runs about once every six seconds — roughly human, and rare enough
-   that you never catch the logo mid-performance. A mark blinking on a short
-   cycle stops being a face and becomes a loading spinner.
+   It used to be a circle with two round eyes, imported from a sister project.
+   That made the app answer "how do you draw a face" two incompatible ways, and
+   the round one lost: it was the only circle on a surface that is square
+   everywhere else, and whose own comments argue that rounding a screen turns it
+   into a widget.
 
-   fill-box is what makes all of it work without arithmetic: it puts each
-   origin at the centre of that element's own bounding box, so the face grows
-   from its middle and the eyes close onto their own line — rather than both
-   flying off the SVG user-space origin, which sits outside the artwork
-   entirely. */
-/* The circle is exactly as wide as the viewBox — it spans x 50.8 to 348.8 of a
-   298-wide box — so it is flush against both sides with nowhere to grow. An SVG
-   root clips to its viewport by default, which meant every scale above 1 shaved
-   the head into a flat-sided oval: the overshoot at 1.22 obviously, but the
-   breath at 1.05 continuously, which is worse for being subtle. Letting it
-   paint outside costs nothing here; there is empty surface on every side. */
+   THEY OPEN, THEY WINK, THEY BLINK — and the order matters, because the job is
+   not decoration. Two squares at rest read as two squares; what makes a pair of
+   shapes read as EYES is behaviour, and only one behaviour is unambiguous. Lots
+   of things blink. Nothing winks but a face.
+
+   So the wink comes EARLY — about two seconds in, while you are still looking
+   at the mark for the first time — and it is the second eye alone, held closed
+   for a beat rather than flicked. The hold is what separates a wink from a
+   blink; a fast asymmetric flick just looks like a dropped frame.
+
+   After that the two settle into a shared rhythm on one twelve-second cycle:
+   the wink near the top of it, a blink by BOTH eyes past the middle. Something
+   happens every five or six seconds, alternating, and neither is frequent
+   enough to nag. Real eyes blink together, so the blink is synchronised to the
+   frame — the only stagger in the whole mark is the 90ms on the opening, where
+   it reads as one act of opening rather than two shapes appearing.
+
+   ONE ANIMATION PER EYE, carrying both events, rather than a blink and a wink
+   layered on top of each other. Two animations driving the same transform would
+   fight whenever they overlapped, and the later one would simply win; folding
+   them into a single cycle per eye means the timing cannot drift and the two
+   eyes cannot fall out of sync.
+
+   fill-box is what makes it work without arithmetic: it puts the origin at the
+   centre of each rect's own box, so an eye closes onto its own line rather than
+   flying off the SVG user-space origin. */
 .head {
   overflow: visible;
 }
-
-.head-face,
-.head.is-animated .head-eyes {
+.head .head-eye {
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* ARRIVE, then BREATHE, from one declaration. The delay on the second is
-   exactly the duration of the first, so the loop picks up the instant the
-   entrance lands. Both drive `transform`, and the later one in the list wins
-   while it is running — during the delay it contributes nothing at all, which
-   is precisely why the handover is clean rather than a fight. */
-.head.is-animated .head-face {
-  animation:
-    head-arrive 1150ms both,
-    head-breathe 3.6s ease-in-out 1150ms infinite;
-}
-
-/* HELD, THEN RELEASED. The shape of this is the whole point, and it is why the
-   easing lives on the keyframes instead of on the animation: one curve across
-   the whole thing can only accelerate or decelerate, and what is wanted here is
-   both, in that order.
-
-   For the first 30% it barely moves — 0.04 to 0.16 in a third of a second,
-   decelerating, straining against something. Then it is let go: the release
-   curve is front-loaded almost to the point of being a step, so it does not
-   ramp up to speed but leaves at speed, covering the remaining 1.3x of scale in
-   a sixth of the total. The restraint is what sells it; without the slow part
-   the fast part is just a fast animation. But the hold is a wind-up, not an
-   interlude — long enough to feel resisted, short enough that you are never
-   waiting for it.
-
-   After that it rings down through four decaying bounces, alternating over and
-   under, the way something with mass actually settles rather than stopping
-   dead on arrival. */
-@keyframes head-arrive {
+@keyframes head-open {
   0% {
-    transform: scale(0.04);
-    opacity: 0;
-    animation-timing-function: cubic-bezier(0.18, 0.66, 0.44, 0.9);
-  }
-  30% {
-    transform: scale(0.16);
-    opacity: 0.95;
-    /* Front-loaded, but not to the point of being a cut. At its most extreme
-       this covered 0.16 to 1.2 inside three frames, which the eye reads as a
-       jump rather than as travel — a spring you cannot see spring is just a
-       pop. Pulled back enough to leave a visible arc, still fast enough that
-       nothing about it feels eased into place. */
-    animation-timing-function: cubic-bezier(0.12, 0.74, 0.24, 1);
-  }
-  48% {
-    transform: scale(1.45);
-    opacity: 1;
-    animation-timing-function: ease-in-out;
-  }
-  63% {
-    transform: scale(0.83);
-    animation-timing-function: ease-in-out;
-  }
-  75% {
-    transform: scale(1.18);
-    animation-timing-function: ease-in-out;
-  }
-  85% {
-    transform: scale(0.92);
-    animation-timing-function: ease-in-out;
-  }
-  93% {
-    transform: scale(1.05);
-    animation-timing-function: ease-in-out;
+    transform: scaleY(0);
   }
   100% {
-    transform: scale(1);
+    transform: scaleY(1);
   }
 }
 
-/* In and out, never up and down. A logo that bobs vertically looks like it is
-   loading; one that swells very slightly on a slow cycle looks like it is
-   breathing, which is the only claim this mark is allowed to make. */
-@keyframes head-breathe {
+/* The quiet eye: open throughout, except for the shared blink at 55%. */
+@keyframes eye-blink {
   0%,
+  54%,
+  56.6%,
   100% {
-    transform: scale(1);
+    transform: scaleY(1);
   }
-  50% {
-    transform: scale(1.075);
+  55.3% {
+    transform: scaleY(0.08);
+  }
+}
+
+/* The winking eye: the same blink at 55%, plus its own closure at 7-11% —
+   held, not flicked, which is the whole difference between a wink and a
+   glitch. */
+@keyframes eye-wink {
+  0%,
+  6%,
+  12%,
+  54%,
+  56.6%,
+  100% {
+    transform: scaleY(1);
+  }
+  7.5%,
+  10.5% {
+    transform: scaleY(0.08);
+  }
+  55.3% {
+    transform: scaleY(0.08);
+  }
+}
+
+.head.is-animated .head-eye {
+  animation:
+    head-open 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    eye-blink 12s ease-in-out 1.2s infinite;
+}
+.head.is-animated .head-eye + .head-eye {
+  animation:
+    head-open 420ms cubic-bezier(0.2, 0.8, 0.2, 1) 90ms both,
+    eye-wink 12s ease-in-out 1.2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .head.is-animated .head-eye,
+  .head.is-animated .head-eye + .head-eye {
+    animation: none;
+    /* head-open starts at scaleY(0). Cancelling without restoring this would
+       leave the mark invisible for anyone who asked for less motion — the one
+       group that must never lose content. */
+    transform: none;
   }
 }
 
@@ -392,32 +390,6 @@ html[data-theme="dark"] {
   background-color: var(--color-dark-950);
 }
 
-.head.is-animated .head-eyes {
-  animation: head-blink 6.4s ease-in-out infinite;
-}
-@keyframes head-blink {
-  0%,
-  93%,
-  100% {
-    transform: scaleY(1);
-  }
-  95.5% {
-    transform: scaleY(0.06);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .head.is-animated .head-face,
-  .head.is-animated .head-eyes {
-    animation: none;
-    /* Arrive starts at scale(0.05) and opacity 0. Cancelling the animation
-       without restoring these would leave the mark invisible for anyone who
-       asked for less motion — the one group that must never lose content. */
-    transform: none;
-    opacity: 1;
-  }
-}
-
 /* ── THE RELATIONSHIP LIST ─────────────────────────────────────────────────────
    Only what Tailwind cannot express lives here — the corner brackets, the two
    fade masks, and the state rules the hook drives. Every size, colour and piece
@@ -462,6 +434,7 @@ html[data-theme="dark"] {
 .frame::before,
 .band::before,
 .stage::before,
+.count-pick.is-active::before,
 .live-reticle::before {
   content: "";
   position: absolute;
@@ -492,6 +465,17 @@ html[data-theme="dark"] {
 /* 512x56: 24px arms leave 464px open across, 14px arms leave 28px down. */
 .focus-box::before {
   --ax: 24px;
+  --ay: 14px;
+}
+/* THE TWO COUNTS ARE IDENTICAL BOXES — same size, same colour — because they
+   are the same kind of thing: a population of that place, and a door into it.
+   What separates them is not weight but AIM. The brackets go on whichever one
+   you are currently inside, which is the same job they do everywhere else on
+   this surface: they do not decorate a box, they point at the chosen one. Short
+   arms both ways, since these are small boxes and a corner does not get more
+   corner by being longer. */
+.count-pick.is-active::before {
+  --ax: 14px;
   --ay: 14px;
 }
 /* THE BAND is a bigger box — 512x108 — and the temptation was to grow the arms
@@ -753,10 +737,24 @@ html[data-theme="dark"] {
 }
 /* dark-900 rather than dark-100: the two ramps run in opposite directions, so
    the counterpart of "one gentle step off the page" is a low number in light
-   and a high one in dark. Pairing them by number would put #e6e6e6 on black. */
-[data-theme="dark"] .bar.is-picked .focus-box,
-html:not([data-theme]) .bar.is-picked .focus-box {
+   and a high one in dark. Pairing them by number would put #e6e6e6 on black.
+
+   AND NOTE THE MEDIA QUERY, which is not optional. "System" theme means the
+   data-theme attribute is ABSENT, so `html:not([data-theme])` on its own is not
+   "system and dark" — it is EVERY system user, on a light OS as much as a dark
+   one. Written bare, this rule painted the picked header near-black for anyone
+   who had never touched the theme toggle, which is every first-time visitor;
+   toggling once wrote data-theme and the bug vanished, which is exactly why it
+   looked like a first-load-only glitch. Hand-written dark rules need BOTH
+   branches, the attribute one and the media one. Tailwind's `dark:` variant
+   already does this correctly — prefer it. */
+[data-theme="dark"] .bar.is-picked .focus-box {
   background-color: var(--color-dark-900);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .bar.is-picked .focus-box {
+    background-color: var(--color-dark-900);
+  }
 }
 
 /* THE TOP MATTER YIELDS. A header is not something laid over a page — it is
@@ -777,6 +775,7 @@ html:not([data-theme]) .bar.is-picked .focus-box {
    way back, so neither direction is ever clickable-but-invisible. */
 #scopes.is-open .mark-slot,
 #scopes.is-open .lede,
+#scopes.is-open .scope-tags,
 .list-away .scopes-scroll {
   opacity: 0;
   visibility: hidden;
@@ -785,7 +784,8 @@ html:not([data-theme]) .bar.is-picked .focus-box {
     visibility 0s 220ms;
 }
 .mark-slot,
-.lede {
+.lede,
+.scope-tags {
   transition:
     opacity 220ms ease-out,
     visibility 0s;
@@ -971,9 +971,13 @@ html:not([data-theme]) .presence-row .stream-name {
 .presence.is-unheard .presence-cover {
   background-color: var(--color-primary-150);
 }
-[data-theme="dark"] .presence.is-unheard .presence-cover,
-html:not([data-theme]) .presence.is-unheard .presence-cover {
+[data-theme="dark"] .presence.is-unheard .presence-cover {
   background-color: var(--color-primary-900);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .presence.is-unheard .presence-cover {
+    background-color: var(--color-primary-900);
+  }
 }
 
 /* The arrow is the only instruction on the card, so it says its piece and stops
@@ -1086,9 +1090,13 @@ html:not([data-theme]) .presence.is-unheard .presence-cover {
   background-color: color-mix(in oklab, var(--color-primary-600) 8.5%, transparent);
   opacity: 0;
 }
-[data-theme="dark"] .stage-progress,
-html:not([data-theme]) .stage-progress {
+[data-theme="dark"] .stage-progress {
   background-color: color-mix(in oklab, var(--color-primary-500) 8.5%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .stage-progress {
+    background-color: color-mix(in oklab, var(--color-primary-500) 8.5%, transparent);
+  }
 }
 .stage.is-voice.is-live .stage-progress {
   opacity: 1;
@@ -1198,4 +1206,123 @@ html:not([data-theme]) .live-screen {
     animation: none;
     opacity: 0.16;
   }
+}
+
+/* ── THE APP SHELL ───────────────────────────────────────────────────────────
+   ONE BOUND AND ONE RAIL, declared once, obeyed by everything.
+
+   The surface this replaces had no layout system — it had a max-w-6xl here, a
+   w-[32rem] there, a px-4 on the container, a px-[1.95rem] on the rows, a px-1
+   on the tags and a bar sized by `calc(min(100vw,72rem)-2rem)` to paper over
+   the fact that it lived inside a box narrower than itself. Five different left
+   edges, and a logo that had escaped all of them to sit on the viewport edge.
+   That is what accretion looks like: every piece measured against the piece
+   before it instead of against the page.
+
+   So the page is measured ONCE, here:
+
+     --app-max     the app's outer bound. Nothing crosses it, ever. This is what
+                   stops anything drifting to the screen edge.
+     --app-gutter  the breathing room between that bound and the viewport.
+     --rail        (implied) the content box of .rail — the PAGE's left edge,
+                   where the app's own furniture sits, and the right edge every
+                   trailing thing ends on.
+     --list-pad    the LIST's left edge, measured in from the rail. A second
+                   edge, deliberately.
+     --list-w      the list column.
+     --row-h       one row, and therefore the unit the band is placed by.
+     --bleed       how far a FILL may extend past the text rail.
+
+   TWO EDGES, AND KNOWING WHICH IS WHICH. The app's furniture — the mark, the
+   line, the tags — belongs to the PAGE, so it sits on the rail with no inset
+   whatsoever. The list belongs to itself: it is a component inside the frame
+   with no header of its own, so it is padded like any box, its wash starting at
+   the rail and its words --list-pad in.
+
+   Both mistakes have been made here. The old surface gave the MARK the list's
+   inset, so a page-level thing read as that column's heading and moved whenever
+   the column did. The first cut of this shell then took the inset off the ROWS
+   to force one universal edge, which flattened the list against the page. They
+   are different levels and are measured separately. */
+.app-root {
+  --app-max: 72rem;
+  --app-gutter: 1.5rem;
+  --list-w: 32rem;
+  --list-h: 50vh;
+  --row-h: 4rem;
+  --panel-row-h: 5rem;
+
+  /* WHERE THE BAND SITS in the list, measured from the scroller's top. A row
+     and a half, which is the panel's own figure — one row peeks above the
+     selection and no more.
+
+     It used to be 34% of the list, and that is what put the tags in an
+     impossible spot: a label belongs against the box it names, but at 34% the
+     whole region above the band is live scrolling list, so anything parked
+     there gets rows sliding through it. Near the top there is only the one
+     peeking row, so the tags clear the scroller entirely and still read as
+     sitting on the band — exactly the relationship RECORD has to the stage.
+
+     The BAR is placed by this, and scopes.ts finds the band by MEASURING that
+     bar rather than recomputing the fraction, so this is the only place the
+     answer exists. */
+  --band-top: calc(var(--row-h) * 1.5);
+
+  /* THE LIST'S OWN INSET — and the second of the two levels this page has.
+     They are NOT the same thing, and collapsing them is the mistake that put
+     the rows flat against the edge:
+
+       THE RAIL belongs to the PAGE. The mark, the line and the tags are the
+       app's furniture, they answer to the app's bound, and they take no inset
+       whatsoever — they sit on the rail.
+
+       --list-pad belongs to the LIST, which is a component standing inside
+       that frame and has no header of its own. Its wash begins at the rail
+       like any other block, and its WORDS begin this far in, the way any
+       padded box works.
+
+     So there are two left edges on purpose, each with one job: the app's, and
+     the list's. Every row and the band share the second, which is what keeps a
+     row's label exactly on top of the band's as it passes through. */
+  --list-pad: 1.95rem;
+
+  /* The mark stands clear of the top edge rather than pinned to it, and the
+     line follows CLOSE underneath — mark and strapline are one masthead, not
+     two stacked things, so the air belongs above the pair and not between them.
+     Note the head's own artwork carries ~10px of empty box above and below the
+     circle, so the gap on screen reads a little wider than these numbers. */
+  --head-top: 8rem;
+  --body-top: 10.6rem;
+  --panel-top: 7.5rem;
+}
+
+/* THE RAIL. Every band of the page — the header, the body, the panel — wears
+   this and nothing else, which is the whole reason their left edges agree. */
+.rail {
+  width: 100%;
+  max-width: var(--app-max);
+  margin-inline: auto;
+  padding-inline: var(--app-gutter);
+}
+
+/* THE LIST BOX. The band and the panel's stage are both "a list row, filled":
+   the same column width, the same inset, so their label lands exactly where a
+   row's label does and a row passing through the band never shifts sideways. */
+.list-box {
+  width: var(--list-w);
+  padding-inline: var(--list-pad);
+}
+
+/* The header fades with the rest of the page when the panel takes over. */
+#scopes.is-open .app-head {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s 220ms;
+}
+.app-head {
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s;
 }
