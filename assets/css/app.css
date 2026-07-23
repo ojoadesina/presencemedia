@@ -1296,6 +1296,36 @@ html:not([data-theme]) .live-screen {
   --panel-top: 7.5rem;
 }
 
+/* ── THE PHONE ─────────────────────────────────────────────────────────────────
+   ONE BREAKPOINT, AND IT ONLY MOVES TOKENS. Every rule on this surface is
+   already written against the shell's numbers, so the phone is a different set
+   of numbers rather than a different set of rules — no duplicated layout, and
+   nothing that can drift out of step with the desktop version.
+
+   --list-w stops being a fixed 32rem and becomes FLUID: whatever the rail is,
+   less the room the trailing box needs beside it. That single change is what
+   makes the left view fit a phone at all, and because the band, the scroller,
+   the tags and the panel's own column are all sized from it, they adapt
+   together. The reserve is sized for the widest trailing thing — the two
+   country counts, not the little frame — so the row cannot overflow in either
+   mode. The right view (the live room) is already `hidden lg:block` and stays
+   gone here; a room of faces cannot be shown honestly in one column. */
+@media (max-width: 40rem) {
+  .app-root {
+    --app-gutter: 1rem;
+    --list-pad: 1.25rem;
+    /* VIEWPORT-BASED, not a percentage. As `calc(100% - Xrem)` this compounds
+       the moment it is used inside something already sized by it — the panel's
+       stage sits in a column that is itself --list-w wide, and rendered at
+       118px instead of 238px. A length measured off the viewport cannot nest
+       wrongly, because it does not depend on its parent at all. */
+    --list-w: calc(100vw - 10.5rem);
+    --head-top: 3.5rem;
+    --body-top: 6.1rem;
+    --panel-top: 5.5rem;
+  }
+}
+
 /* THE RAIL. Every band of the page — the header, the body, the panel — wears
    this and nothing else, which is the whole reason their left edges agree. */
 .rail {

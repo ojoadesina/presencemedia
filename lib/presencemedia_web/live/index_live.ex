@@ -437,7 +437,7 @@ defmodule PresencemediaWeb.IndexLive do
                   "count-pick count-box pointer-events-auto relative flex h-full cursor-pointer items-baseline gap-2 px-4 transition-colors",
                   (@scope == "SCOPED" &&
                      "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
-                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-500/15 dark:hover:bg-neutral-500/25"
+                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
                 ]}
               >
                 <span class={[
@@ -464,10 +464,10 @@ defmodule PresencemediaWeb.IndexLive do
                 phx-value-scope="UNSCOPED"
                 disabled={is_nil(@current)}
                 class={[
-                  "count-pick count-unscoped pointer-events-auto absolute top-full right-0 mt-2 flex h-[3.8rem] cursor-pointer items-baseline gap-2 px-4 transition-colors",
+                  "count-pick count-unscoped pointer-events-auto absolute top-full right-0 mt-4 flex h-[3.8rem] cursor-pointer items-baseline gap-2 px-4 transition-colors",
                   (@scope == "UNSCOPED" &&
                      "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
-                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-500/15 dark:hover:bg-neutral-500/25"
+                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
                 ]}
               >
                 <span class={[
@@ -508,7 +508,7 @@ defmodule PresencemediaWeb.IndexLive do
       >
         <div class="rail h-full">
           <div class="flex h-full items-start gap-14 pt-8">
-            <div class="relative h-full w-(--list-w) shrink-0">
+            <div class="relative h-full w-full shrink-0 lg:w-(--list-w)">
               <p class="absolute top-6 left-0 z-20 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                 RECORD
               </p>
@@ -523,7 +523,7 @@ defmodule PresencemediaWeb.IndexLive do
               <div
                 id={"stage-#{@selected}"}
                 phx-update="ignore"
-                class="stage list-box pointer-events-none absolute top-[calc(var(--panel-row-h)*1.5)] left-0 z-0 flex h-(--panel-row-h) -translate-y-10 items-center overflow-hidden bg-primary-600/15 dark:bg-primary-500/20"
+                class="stage w-full px-(--list-pad) lg:w-(--list-w) pointer-events-none absolute top-[calc(var(--panel-row-h)*1.5)] left-0 z-0 flex h-(--panel-row-h) -translate-y-10 items-center overflow-hidden bg-primary-600/15 dark:bg-primary-500/20"
               >
                 <video
                   class="stage-video absolute inset-0 h-full w-full object-cover"
