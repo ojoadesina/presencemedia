@@ -204,7 +204,7 @@ defmodule PresencemediaWeb.IndexLive do
              Its height comes from the scroller inside it (the bar is absolute
              and adds none), which is what lets the bar's top:34% and the band
              the hook measures at 34% of the scroller be the same line. --%>
-        <div class={["relative mt-12 min-h-0 w-full flex-1", @mode == :open && "list-away"]}>
+        <div class={["stage-box relative mt-12 min-h-0 w-full flex-1", @mode == :open && "list-away"]}>
           <%!-- phx-update="ignore": the hook marks the focused row with a class
                and a patch must never wipe it. THE ID CARRIES THE MODE, because
                on an ignored element a new identity is the only way to swap the
@@ -347,8 +347,9 @@ defmodule PresencemediaWeb.IndexLive do
                 </span>
               </span>
             </div>
+          </div>
 
-            <%!-- THE FRAME — the box that shows what the settled person is
+          <%!-- THE FRAME — the box that shows what the settled person is
                  sending, and the reason this surface exists. ml-auto pins it to
                  the RAIL'S RIGHT EDGE, which is the app's right bound: anything
                  else that ever sits on the right of this line lands on the same
@@ -361,61 +362,61 @@ defmodule PresencemediaWeb.IndexLive do
                  data-* from the server's copy and deletes any the client added.
                  The frame is wholly client-owned, which is honest, since a
                  playing media element cannot be driven from the server. --%>
-            <div
-              :if={@list_mode == :people}
-              id="frame"
-              phx-update="ignore"
-              role="button"
-              tabindex="0"
-              aria-label="Expand frame"
-              class="frame is-empty pointer-events-auto relative ml-auto flex size-[3.8rem] shrink-0 cursor-pointer items-center justify-center p-2 opacity-0 transition-[opacity,width,height,padding] duration-300"
-            >
-              <%!-- The screen is inset from the frame so the brackets bracket the
+          <div
+            :if={@list_mode == :people}
+            id="frame"
+            phx-update="ignore"
+            role="button"
+            tabindex="0"
+            aria-label="Expand frame"
+            class="frame is-empty pointer-events-auto relative ml-auto flex size-[3.8rem] shrink-0 cursor-pointer items-center justify-center p-2 opacity-0 transition-[opacity,width,height,padding] duration-300"
+          >
+            <%!-- The screen is inset from the frame so the brackets bracket the
                    picture rather than cropping it, and square on every corner —
                    a screen has corners, and rounding them makes it a widget. --%>
-              <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/15 dark:bg-primary-500/20">
-                <video class="frame-video h-full w-full object-cover" playsinline preload="none">
-                </video>
-                <%!-- Sits ON the screen, covering it: after a clip ends the
+            <div class="frame-screen relative h-full w-full overflow-hidden bg-primary-600/15 dark:bg-primary-500/20">
+              <video class="frame-video h-full w-full object-cover" playsinline preload="none">
+              </video>
+              <%!-- Sits ON the screen, covering it: after a clip ends the
                      screen is the only thing there, and a control tucked into
                      the corner of a 45px square is a target nobody can hit. --%>
-                <button
-                  type="button"
-                  class="frame-restart absolute inset-0 hidden items-center justify-center bg-light-950/15 text-light-50 transition-colors hover:bg-light-950/30 dark:bg-dark-950/25 dark:hover:bg-dark-950/40"
-                  aria-label="Play again"
-                >
-                  <%!-- A three-quarter arc with an arrowhead, which reads as
+              <button
+                type="button"
+                class="frame-restart absolute inset-0 hidden items-center justify-center bg-light-950/15 text-light-50 transition-colors hover:bg-light-950/30 dark:bg-dark-950/25 dark:hover:bg-dark-950/40"
+                aria-label="Play again"
+              >
+                <%!-- A three-quarter arc with an arrowhead, which reads as
                        "again"; heroicons' closed two-arrow loop says "sync". --%>
-                  <svg
-                    viewBox="0 0 1024 1024"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-width="0"
-                    aria-hidden="true"
-                    class="size-4"
-                  >
-                    <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 0 0-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 0 1 655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 0 1 279 755.2a342.16 342.16 0 0 1-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 0 1 109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 0 0 3 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z" />
-                  </svg>
-                </button>
-              </div>
-              <%!-- No controls, so the UA never renders any — the screen is the
-                   only thing a voice is allowed to look like. --%>
-              <audio class="frame-audio" preload="none"></audio>
+                <svg
+                  viewBox="0 0 1024 1024"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="0"
+                  aria-hidden="true"
+                  class="size-4"
+                >
+                  <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 0 0-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 0 1 655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 0 1 279 755.2a342.16 342.16 0 0 1-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 0 1 109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 0 0 3 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z" />
+                </svg>
+              </button>
             </div>
+            <%!-- No controls, so the UA never renders any — the screen is the
+                   only thing a voice is allowed to look like. --%>
+            <audio class="frame-audio" preload="none"></audio>
+          </div>
 
-            <%!-- THE HEADCOUNT, on the same right edge the frame holds. A place
+          <%!-- THE HEADCOUNT, on the same right edge the frame holds. A place
                  in the band has no face and no voice — it has how many are
                  present there right now. Server-rendered rather than hook-owned,
                  because it is a number the process knows and not media the
                  client has to play. --%>
-            <div
-              :if={@list_mode == :location}
-              class={[
-                "counts relative ml-auto flex h-[3.8rem] shrink-0 items-center transition-opacity duration-300",
-                (@current && "opacity-100") || "opacity-0"
-              ]}
-            >
-              <%!-- TWO IDENTICAL BOXES, and that is the point. They are the same
+          <div
+            :if={@list_mode == :location}
+            class={[
+              "counts relative ml-auto flex h-[3.8rem] shrink-0 items-center transition-opacity duration-300",
+              (@current && "opacity-100") || "opacity-0"
+            ]}
+          >
+            <%!-- TWO IDENTICAL BOXES, and that is the point. They are the same
                    kind of thing — a population of this place, and a door into it
                    — so making one bigger or colder would rank them, and they are
                    not ranked. The scoped box keeps the frame's footprint and the
@@ -428,64 +429,63 @@ defmodule PresencemediaWeb.IndexLive do
                    do everywhere here — they do not decorate a box, they aim at
                    the chosen one — so nothing new has to be learned to read
                    which of the two you are looking through. --%>
-              <button
-                type="button"
-                phx-click="enter_people"
-                phx-value-scope="SCOPED"
-                disabled={is_nil(@current)}
-                class={[
-                  "count-pick count-box pointer-events-auto relative flex h-full cursor-pointer items-baseline gap-2 px-4 transition-colors",
-                  (@scope == "SCOPED" &&
-                     "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
-                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
-                ]}
-              >
-                <span class={[
-                  "text-[clamp(var(--text-2xl),0.9rem+0.5vw,var(--text-6xl))] leading-none tracking-[0.06em]",
-                  (@scope == "SCOPED" && "text-primary-600 dark:text-primary-500") ||
-                    "text-neutral-500 dark:text-neutral-400"
-                ]}>
-                  {@current && @current.scopes}
-                </span>
-                <span class={[
-                  "text-sm tracking-[0.18em]",
-                  (@scope == "SCOPED" && "text-primary-600/55 dark:text-primary-500/55") ||
-                    "text-neutral-400 dark:text-neutral-500"
-                ]}>
-                  SCOPES
-                </span>
-              </button>
+            <button
+              type="button"
+              phx-click="enter_people"
+              phx-value-scope="SCOPED"
+              disabled={is_nil(@current)}
+              class={[
+                "count-pick count-box pointer-events-auto relative flex h-full cursor-pointer items-baseline gap-2 px-4 transition-colors",
+                (@scope == "SCOPED" &&
+                   "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
+                  "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
+              ]}
+            >
+              <span class={[
+                "text-[clamp(var(--text-2xl),0.9rem+0.5vw,var(--text-6xl))] leading-none tracking-[0.06em]",
+                (@scope == "SCOPED" && "text-primary-600 dark:text-primary-500") ||
+                  "text-neutral-500 dark:text-neutral-400"
+              ]}>
+                {@current && @current.scopes}
+              </span>
+              <span class={[
+                "text-sm tracking-[0.18em]",
+                (@scope == "SCOPED" && "text-primary-600/55 dark:text-primary-500/55") ||
+                  "text-neutral-400 dark:text-neutral-500"
+              ]}>
+                SCOPES
+              </span>
+            </button>
 
-              <%!-- Everyone else there, hung under it on the same right edge so
+            <%!-- Everyone else there, hung under it on the same right edge so
                    the two stack as one object. --%>
-              <button
-                type="button"
-                phx-click="enter_people"
-                phx-value-scope="UNSCOPED"
-                disabled={is_nil(@current)}
-                class={[
-                  "count-pick count-unscoped pointer-events-auto absolute top-full right-0 mt-4 flex h-[3.8rem] cursor-pointer items-baseline gap-2 px-4 transition-colors",
-                  (@scope == "UNSCOPED" &&
-                     "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
-                    "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
-                ]}
-              >
-                <span class={[
-                  "text-[clamp(var(--text-2xl),0.9rem+0.5vw,var(--text-6xl))] leading-none tracking-[0.06em]",
-                  (@scope == "UNSCOPED" && "text-primary-600 dark:text-primary-500") ||
-                    "text-neutral-500 dark:text-neutral-400"
-                ]}>
-                  {@current && @current.unscopes}
-                </span>
-                <span class={[
-                  "text-sm tracking-[0.18em]",
-                  (@scope == "UNSCOPED" && "text-primary-600/55 dark:text-primary-500/55") ||
-                    "text-neutral-400 dark:text-neutral-500"
-                ]}>
-                  UNSCOPES
-                </span>
-              </button>
-            </div>
+            <button
+              type="button"
+              phx-click="enter_people"
+              phx-value-scope="UNSCOPED"
+              disabled={is_nil(@current)}
+              class={[
+                "count-pick count-unscoped pointer-events-auto absolute top-full right-0 mt-4 flex h-[3.8rem] cursor-pointer items-baseline gap-2 px-4 transition-colors",
+                (@scope == "UNSCOPED" &&
+                   "is-active bg-primary-600/15 hover:bg-primary-600/25 dark:bg-primary-500/20 dark:hover:bg-primary-500/30") ||
+                  "bg-neutral-400/10 hover:bg-neutral-400/20 dark:bg-neutral-300/20 dark:hover:bg-neutral-300/30"
+              ]}
+            >
+              <span class={[
+                "text-[clamp(var(--text-2xl),0.9rem+0.5vw,var(--text-6xl))] leading-none tracking-[0.06em]",
+                (@scope == "UNSCOPED" && "text-primary-600 dark:text-primary-500") ||
+                  "text-neutral-500 dark:text-neutral-400"
+              ]}>
+                {@current && @current.unscopes}
+              </span>
+              <span class={[
+                "text-sm tracking-[0.18em]",
+                (@scope == "UNSCOPED" && "text-primary-600/55 dark:text-primary-500/55") ||
+                  "text-neutral-400 dark:text-neutral-500"
+              ]}>
+                UNSCOPES
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -507,8 +507,17 @@ defmodule PresencemediaWeb.IndexLive do
         class="presence-panel fixed inset-x-0 top-(--panel-top) bottom-0 z-20"
       >
         <div class="rail h-full">
-          <div class="flex h-full items-start gap-14 pt-8">
-            <div class="relative h-full w-full shrink-0 lg:w-(--list-w)">
+          <div class="panel-views flex h-full items-start gap-14 pt-8">
+            <div
+              id="record-view"
+              phx-hook="SubPanel"
+              class="record-view relative h-full w-full shrink-0 lg:w-(--list-w)"
+            >
+              <%!-- THE HANDLE, phone only. The record list rides OVER the live
+                   view there, so it needs somewhere to be taken hold of — and a
+                   handle is also the only honest way to say "this moves", which
+                   a panel that simply sits there does not. --%>
+              <div class="sub-handle lg:hidden" aria-hidden="true"><span></span></div>
               <p class="absolute top-6 left-0 z-20 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                 RECORD
               </p>
@@ -585,7 +594,7 @@ defmodule PresencemediaWeb.IndexLive do
               id="live-room"
               phx-hook="LiveRoom"
               phx-update="ignore"
-              class="live-grid pointer-events-none hidden min-w-0 flex-1 pt-6 lg:block"
+              class="live-grid pointer-events-none min-w-0 flex-1 pt-6"
             >
               <p class="mb-5 flex items-center gap-3 text-sm tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                 LIVE <span class="text-neutral-300 dark:text-neutral-600">{length(@live)}</span>

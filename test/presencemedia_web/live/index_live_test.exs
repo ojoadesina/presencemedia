@@ -3,7 +3,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   import Phoenix.LiveViewTest
 
   test "the surface renders its line and every scoped person", %{conn: conn} do
-    {:ok, _live, html} = live(conn, ~p"/index")
+    {:ok, _live, html} = live(conn, ~p"/")
 
     assert html =~ "SO YOU DON&#39;T DO LIFE ALONE"
     # the label leads, their own name follows it
@@ -15,7 +15,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "the rail is the only measure the page uses", %{conn: conn} do
-    {:ok, _live, html} = live(conn, ~p"/index")
+    {:ok, _live, html} = live(conn, ~p"/")
 
     # Every band of the page wears .rail and nothing else decides its edges. The
     # old surface had five different left edges; this asserts there is one.
@@ -29,7 +29,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "every person carries the frame its row hands to the screen", %{conn: conn} do
-    {:ok, _live, html} = live(conn, ~p"/index")
+    {:ok, _live, html} = live(conn, ~p"/")
 
     for mode <- ~w(empty voice face), do: assert(html =~ ~s(data-frame="#{mode}"))
     for state <- ~w(absent present live), do: assert(html =~ ~s(data-state="#{state}"))
@@ -40,7 +40,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "picking a person lifts them into a header and opens the panel", %{conn: conn} do
-    {:ok, live, html} = live(conn, ~p"/index")
+    {:ok, live, html} = live(conn, ~p"/")
 
     refute html =~ "id=\"presence-panel\""
     refute has_element?(live, "#bar.is-picked")
@@ -68,7 +68,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "losing the selection closes the panel with it", %{conn: conn} do
-    {:ok, live, _html} = live(conn, ~p"/index")
+    {:ok, live, _html} = live(conn, ~p"/")
 
     render_hook(live, "select", %{"index" => 0})
     live |> element(".focus-box") |> render_click()
@@ -80,7 +80,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "the tag is one sentence, and it opens the world", %{conn: conn} do
-    {:ok, live, html} = live(conn, ~p"/index")
+    {:ok, live, html} = live(conn, ~p"/")
 
     # A scope and a place said together, on ONE button — not two switches.
     assert html =~ "SCOPED FINLAND"
@@ -92,7 +92,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "a place answers with two counts, and each is a door into its people", %{conn: conn} do
-    {:ok, live, _html} = live(conn, ~p"/index")
+    {:ok, live, _html} = live(conn, ~p"/")
     live |> element(~s(button[phx-click="to_location"])) |> render_click()
 
     # Nigeria settles in the band: both populations appear, as two numbers
@@ -115,7 +115,7 @@ defmodule PresencemediaWeb.IndexLiveTest do
   end
 
   test "the unscoped count opens the strangers of that place", %{conn: conn} do
-    {:ok, live, _html} = live(conn, ~p"/index")
+    {:ok, live, _html} = live(conn, ~p"/")
     live |> element(~s(button[phx-click="to_location"])) |> render_click()
     render_hook(live, "select", %{"index" => 2})
 

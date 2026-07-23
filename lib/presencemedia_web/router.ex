@@ -17,11 +17,7 @@ defmodule PresencemediaWeb.Router do
   scope "/", PresencemediaWeb do
     pipe_through :browser
 
-    live "/", HomeLive
-    # THE REBUILD. The same surface as "/", measured properly: one bound, one
-    # rail, every left edge agreeing. It stands alongside the old one while the
-    # two are compared; when it wins, it takes "/" and HomeLive goes.
-    live "/index", IndexLive
+    live "/", IndexLive
     # A reference exhibit of the old recorder UI, kept only while it is being
     # mined for ideas. Not a feature; delete the route with the module.
     live "/recorder", RecorderLive
