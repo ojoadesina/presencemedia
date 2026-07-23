@@ -1,12 +1,16 @@
-# presencemedia — the presence app. No database: the surface is fixture data for
+# peoplemedia — the presence app. No database: the surface is fixture data for
 # now, and the app does not depend on Ecto at all, so there is nothing to attach.
-app = "presencemedia"
+#
+# MIGRATION IN PROGRESS. This points at the NEW app; presencemedia is still up
+# and serving until peoplemedia has a good deploy, so there is never a gap with
+# nothing live. Destroy the old one only after the handover.
+app = "peoplemedia"
 primary_region = "fra"
 
 [build]
 
 [env]
-  PHX_HOST = "presencemedia.fly.dev"
+  PHX_HOST = "peoplemedia.fly.dev"
   PORT = "8080"
 
 [http_service]
